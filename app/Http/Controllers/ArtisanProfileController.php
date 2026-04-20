@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\ArtisanProfile;
+use Illuminate\Http\Request;
+
+class ArtisanProfileController extends Controller
+{
+    /**
+     * Display all artisans.
+     */
+    public function index()
+    {
+        $artisans = User::artisans()
+            ->active()
+            ->with('artisanProfile')
+            ->withCount(['products' => function ($query) {
+                $query->public();
+            }])
+            ->has('artisanProfile')
+            ->paginate(12);
+
+        return view('artisans.index', compact('artisans'));
+    }
+
+    /**
+     * Show artisan profile and products.
+     */
+    public function show(User $artisan)
+    {
+        if (!$artisan->isArtisan()) {
+            abort(404);
+        }
+
+        $artisan->load('artisanProfile');
+
+        $products = $artisan->products()
+            ->public()
+            ->with('images', 'category')
+            ->latest()
+            ->paginate(12);
+
+        return view('artisans.show', compact('artisan', 'products'));
+    }
+}

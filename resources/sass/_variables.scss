@@ -1,0 +1,30 @@
+// Likha PH - Modern marketplace theme
+// Warm + clean palette (indigo primary, terracotta accent, soft paper background)
+$brand-primary: #4f46e5; // indigo-600
+$brand-primary-dark: #4338ca; // indigo-700
+$brand-primary-light: #c7d2fe; // indigo-200
+$brand-accent: #f97316; // orange-500
+$brand-accent-dark: #ea580c; // orange-600
+$brand-dark: #0f172a; // slate-900
+$body-bg: #fffaf5;
+$neo-yellow: #fbbf24;
+$neo-black: $brand-dark;
+$surface: #ffffff;
+$border-color: #e7e5e4; // stone-200
+$text-muted: #64748b; // slate-500
+$card-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+$card-shadow-hover: 0 14px 30px rgba(15, 23, 42, 0.12);
+$border-radius-sm: 0.5rem;
+$border-radius: 0.75rem;
+$border-radius-lg: 1rem;
+
+// Bootstrap overrides
+$primary: $brand-primary;
+$secondary: #6B7280;
+
+// Typography
+$font-family-sans-serif: 'DM Sans', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-size-base: 0.9375rem;
+$line-height-base: 1.6;
+$headings-font-weight: 600;
+$font-family-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;

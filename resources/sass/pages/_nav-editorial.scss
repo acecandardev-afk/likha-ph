@@ -1,0 +1,112 @@
+// Top bar — editorial / storefront (reference: centered caps nav, icon logo, thin rule)
+.nav-editorial {
+  background: $body-bg !important;
+  border-bottom: 1px solid rgba($neo-black, 0.12);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+}
+
+.nav-editorial__brand {
+  font-family: $font-family-sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: $neo-black !important;
+}
+
+.nav-editorial__logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: $brand-primary;
+  color: #fff !important;
+  border: 2px solid $neo-black;
+  box-shadow: 3px 3px 0 $neo-black;
+  font-size: 1.1rem;
+}
+
+.nav-editorial__site-name {
+  color: $neo-black;
+}
+
+.nav-editorial__center .nav-editorial__link {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba($neo-black, 0.45) !important;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $brand-primary !important;
+  }
+
+  &.active {
+    color: $brand-primary !important;
+  }
+}
+
+.nav-editorial__icon {
+  color: $neo-black !important;
+
+  &:hover {
+    color: $brand-primary !important;
+  }
+}
+
+.nav-editorial__muted {
+  color: rgba($neo-black, 0.5) !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.btn-nav-editorial {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0;
+  border: 2px solid $neo-black;
+  background: $brand-primary;
+  color: #fff !important;
+  box-shadow: 4px 4px 0 $neo-black;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    background: $brand-primary-dark;
+    color: #fff !important;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 $neo-black;
+  }
+
+  &:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+  }
+}
+
+.nav-editorial__toggler {
+  filter: none;
+}
+
+.nav-editorial .navbar-toggler-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+@media (max-width: 991.98px) {
+  .nav-editorial__center {
+    padding-top: 0.75rem;
+    text-align: center;
+  }
+}

@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Artisan;
+
+use App\Models\Order;
+use Illuminate\Http\Request;
+
+class OrderController extends ArtisanController
+{
+    /**
+     * Display artisan's orders.
+     */
+    public function index(Request $request)
+    {
+        $artisan = $this->getArtisan();
+
+        $query = $artisan->artisanOrders()
+            ->with(['customer', 'items.product', 'payment']);
+
+        // Filter by status
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->latest()->paginate(20);
+
+        return view('artisan.orders.index', compact('orders'));
+    }
+
+    /**
+     * Show order details.
+     */
+    public function show(Order $order)
+    {
+        $this->authorize('view', $order);
+
+        $order->load([
+            'customer',
+            'items.product.images',
+            'payment',
+            'messages.sender'
+        ]);
+
+        return view('artisan.orders.show', compact('order'));
+    }
+
+    /**
+     * Mark order as completed.
+     */
+    public function complete(Order $order)
+    {
+        $this->authorize('complete', $order);
+
+        if (!$order->canBeCompleted()) {
+            return back()->withErrors(['error' => 'Order cannot be completed at this time.']);
+        }
+
+        $order->update(['status' => 'completed']);
+
+        return back()->with('success', 'Order marked as completed.');
+    }
+}

@@ -1,0 +1,429 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=DM+Sans:400,500,600,700|Nunito:400,600');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Bootstrap Icons
+@import url('bootstrap-icons/font/bootstrap-icons.css');
+
+// =============================================================================
+// Likha PH – E-commerce theme
+// =============================================================================
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: $body-bg;
+  color: $brand-dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Subtle paper gradient on larger screens
+@media (min-width: 992px) {
+  body {
+    background-image: radial-gradient(1200px 600px at 10% -10%, rgba($brand-primary, 0.08), transparent 55%),
+      radial-gradient(900px 500px at 95% 10%, rgba($brand-accent, 0.10), transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+// Default reading width — use .container on inner pages; landing uses .container-fluid
+.container {
+  max-width: 1140px;
+  @media (max-width: 575.98px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+.container-fluid {
+  width: 100%;
+  max-width: 100%;
+
+  @media (max-width: 575.98px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+// Cards – e-commerce clean
+.card {
+  border: 1px solid rgba($neo-black, 0.08);
+  border-radius: 0.65rem;
+  box-shadow: none;
+  background: $surface;
+  transition: border-color 0.2s ease;
+
+  .card-header {
+    font-weight: 600;
+    background: transparent;
+    border-bottom: 1px solid rgba($neo-black, 0.08);
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.65rem 0.65rem 0 0;
+    color: $brand-dark;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  @media (max-width: 575.98px) {
+    .card-body { padding: 1rem; }
+    .card-header { padding: 0.75rem 1rem; }
+  }
+}
+
+.card:hover {
+  box-shadow: none;
+}
+
+// Forms
+.form-control, .form-select {
+  border-radius: $border-radius-sm;
+  border-color: $border-color;
+  padding: 0.5rem 0.75rem;
+  &:focus { border-color: $brand-primary; box-shadow: 0 0 0 3px rgba($brand-primary, 0.15); }
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+  color: $brand-dark;
+}
+
+// Buttons – e-commerce CTA
+.btn {
+  border-radius: $border-radius-sm;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, $brand-primary 0%, $brand-primary-dark 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba($brand-primary, 0.35);
+  &:hover {
+    background: linear-gradient(135deg, $brand-primary-dark 0%, darken($brand-primary-dark, 5%) 100%);
+    box-shadow: 0 4px 14px rgba($brand-primary, 0.4);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-outline-primary {
+  border-color: $brand-primary;
+  color: $brand-primary;
+  &:hover {
+    background-color: rgba($brand-primary, 0.08);
+    border-color: $brand-primary-dark;
+    color: $brand-primary-dark;
+  }
+}
+
+.btn-lg {
+  padding: 0.6rem 1.25rem;
+}
+
+// Alerts
+.alert {
+  border-radius: $border-radius-sm;
+  border: 1px solid transparent;
+}
+
+// Tables
+.table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  @media (max-width: 767.98px) {
+    font-size: 0.875rem;
+  }
+}
+
+.table-light {
+  background: #f8fafc;
+}
+
+// Navbar – modern sticky header
+.navbar {
+  border-radius: 0;
+  background: $surface !important;
+  border-bottom: 1px solid $border-color;
+  box-shadow: 0 2px 12px rgba(45, 49, 66, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: $brand-dark !important;
+  letter-spacing: -0.02em;
+  &:hover { color: $brand-primary !important; }
+}
+
+.nav-link {
+  font-weight: 500;
+  color: $brand-dark !important;
+  transition: color 0.2s ease;
+  &:hover { color: $brand-primary !important; }
+}
+
+a {
+  color: $brand-primary;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: $brand-primary-dark;
+}
+
+.cart-icon-link {
+  transition: transform 0.2s ease;
+  &:hover { transform: scale(1.08); }
+}
+
+.cart-badge {
+  font-size: 0.7rem;
+  min-width: 1.25rem;
+}
+
+.dropdown-menu {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  box-shadow: none;
+}
+
+@media (max-width: 767.98px) {
+  .navbar-collapse {
+    padding-top: 0.75rem;
+  }
+}
+
+// Footer – clean e-commerce footer
+.site-footer {
+  background: $surface;
+  border-top: 1px solid $border-color;
+  margin-top: auto;
+  padding-top: 0;
+
+  .footer-shell {
+    // Keep the footer content away from screen edges on large monitors.
+    max-width: 1240px;
+  }
+
+  .footer-heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: $brand-dark;
+  }
+
+  .footer-text {
+    font-size: 0.9rem;
+    color: $text-muted;
+  }
+
+  .footer-links a {
+    color: $text-muted;
+    text-decoration: none;
+    &:hover { color: $brand-primary; }
+  }
+
+  .footer-links__btn {
+    color: $text-muted;
+    text-decoration: none;
+    font-size: inherit;
+    line-height: inherit;
+
+    &:hover {
+      color: $brand-primary;
+      text-decoration: none;
+    }
+  }
+
+  .footer-divider {
+    border-color: $border-color;
+  }
+}
+
+// Page titles
+h1, .h1 { color: $brand-dark; }
+h2, .h2 { color: $brand-dark; }
+
+// Stats cards
+.stat-card {
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  transition: box-shadow 0.2s ease;
+}
+
+// Auth cards
+.auth-card {
+  border: 1px solid rgba($neo-black, 0.08);
+  border-radius: 0.85rem;
+  box-shadow: none;
+  background: $surface;
+}
+
+// Badges
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+// Pagination
+.pagination {
+  flex-wrap: wrap;
+  gap: 0.25rem;
+
+  .page-link {
+    border-radius: $border-radius-sm !important;
+    &:hover { color: $brand-primary; }
+  }
+  .page-item.active .page-link {
+    background-color: $brand-primary;
+    border-color: $brand-primary;
+  }
+}
+
+// List group (sidebar, chats)
+.list-group-item-action:hover {
+  background-color: rgba($brand-primary, 0.06);
+}
+.list-group-item.active {
+  background-color: rgba($brand-primary, 0.12);
+  border-color: rgba($brand-primary, 0.2);
+  color: $brand-primary;
+  font-weight: 500;
+}
+
+// Hero (home)
+.hero-section {
+  background: linear-gradient(135deg, rgba($brand-primary, 0.06) 0%, rgba($brand-accent, 0.04) 100%);
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  position: relative;
+  overflow: hidden;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(circle at 70% 50%, rgba($brand-primary, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+// Product cards
+.product-card {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.2s ease;
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2px);
+    border-color: rgba($brand-primary, 0.2);
+  }
+}
+
+.product-card-img,
+.product-card-placeholder {
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  @media (max-width: 575.98px) { height: 180px; }
+}
+
+.product-card:hover .product-card-img {
+  transform: scale(1.03);
+}
+
+.product-card-placeholder {
+  background: linear-gradient(180deg, #f5f2ed 0%, #ebe6df 100%);
+}
+
+// Card links
+.card a.text-dark:hover {
+  color: $brand-primary !important;
+}
+
+// Category & artisan cards on home
+.category-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2px);
+    border-color: rgba($brand-primary, 0.25);
+  }
+}
+
+.artisan-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2px);
+  }
+}
+
+.hero-title {
+  color: $brand-dark;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+}
+
+.sort-select {
+  min-width: 10rem;
+}
+
+.product-carousel-image {
+  max-height: 400px;
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+.qty-input {
+  width: 5rem;
+}
+
+.artisan-placeholder-icon {
+  font-size: 3.5rem;
+}
+
+// Page partials
+@import 'pages/layout-modern';
+@import 'pages/chat-modern';
+@import 'pages/auth-ecommerce';
+@import 'pages/nav-editorial';
+@import 'pages/home-storefront';
+@import 'pages/likha-subscription';

@@ -1,0 +1,46 @@
+.chat-shell {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.chat-card {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+}
+
+.chat-back-btn {
+  width: 36px;
+  height: 36px;
+}
+
+.chat-messages {
+  min-height: 280px;
+  max-height: 420px;
+  background: #f8fafc;
+}
+
+.chat-msg {
+  max-width: 85%;
+}
+
+.chat-msg.mine {
+  margin-left: auto;
+}
+
+.chat-meta {
+  font-size: 0.72rem;
+}
+
+#chatModal .modal-dialog {
+  max-width: 420px;
+}
+
+@media (max-width: 575.98px) {
+  .chat-messages {
+    max-height: 60vh;
+  }
+
+  .chat-msg {
+    max-width: 92%;
+  }
+}
