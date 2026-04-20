@@ -13,6 +13,20 @@ if [ ! -f .env ] && [ -f .env.example ]; then
   cp .env.example .env
 fi
 
+# Render provides a HTTPS external URL. If APP_URL is missing or still http://,
+# force Laravel + Vite to generate HTTPS asset URLs to avoid mixed-content blocking.
+if [ -n "${RENDER_EXTERNAL_URL:-}" ]; then
+  if [ -z "${APP_URL:-}" ] || [[ "${APP_URL}" == http://* ]]; then
+    export APP_URL="${RENDER_EXTERNAL_URL}"
+  fi
+  if [ -z "${ASSET_URL:-}" ] || [[ "${ASSET_URL}" == http://* ]]; then
+    export ASSET_URL="${RENDER_EXTERNAL_URL}"
+  fi
+  if [ -z "${VITE_ASSET_URL:-}" ] || [[ "${VITE_ASSET_URL}" == http://* ]]; then
+    export VITE_ASSET_URL="${RENDER_EXTERNAL_URL}"
+  fi
+fi
+
 php artisan storage:link >/dev/null 2>&1 || true
 
 # Run package discovery (composer scripts are disabled during image build).
