@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsureUserIsArtisan;
 use App\Http\Middleware\EnsureUserIsCustomer;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\ShareUiState;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,6 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Render sits behind a reverse proxy. Trust forwarded headers so Laravel
+        // correctly detects HTTPS and generates secure URLs (e.g. /logout).
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+                | Request::HEADER_X_FORWARDED_AWS_ELB
+        );
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'artisan' => EnsureUserIsArtisan::class,
