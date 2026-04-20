@@ -3,6 +3,12 @@ set -euo pipefail
 
 cd /var/www/html
 
+mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache || true
+
+# Ensure runtime write permissions (Apache runs as www-data)
+chown -R www-data:www-data storage bootstrap/cache >/dev/null 2>&1 || true
+chmod -R ug+rwX storage bootstrap/cache >/dev/null 2>&1 || true
+
 if [ ! -f .env ] && [ -f .env.example ]; then
   cp .env.example .env
 fi
