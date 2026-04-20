@@ -5,9 +5,20 @@
 
 <div class="offcanvas offcanvas-end likha-auth-offcanvas" tabindex="-1" id="likhaAuthPanel" aria-labelledby="likhaAuthLabel" data-bs-scroll="true">
     <div class="offcanvas-header border-bottom border-opacity-10">
-        <div>
-            <p class="small text-uppercase text-muted mb-0 letter-spacing-sm" id="likhaAuthLabel">{{ config('app.name') }}</p>
-            <h2 class="h5 mb-0 fw-bold">Account</h2>
+        <div class="d-flex align-items-center gap-2">
+            <img
+                src="{{ asset('likha-ph-logo.png') }}"
+                alt="{{ config('app.name', 'Likha PH') }} logo"
+                width="32"
+                height="32"
+                loading="eager"
+                decoding="async"
+                style="object-fit:contain;"
+            >
+            <div>
+                <p class="small text-uppercase text-muted mb-0 letter-spacing-sm" id="likhaAuthLabel">{{ config('app.name') }}</p>
+                <h2 class="h5 mb-0 fw-bold">Account</h2>
+            </div>
         </div>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>

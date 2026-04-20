@@ -1,7 +1,16 @@
 <nav class="navbar navbar-expand-lg navbar-light nav-editorial">
     <div class="container-fluid px-3 px-lg-5">
         <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2" href="{{ url('/') }}">
-            <span class="nav-editorial__logo-icon" aria-hidden="true"><i class="bi bi-bag-heart-fill"></i></span>
+            <img
+                src="{{ asset('likha-ph-logo.png') }}"
+                alt="{{ config('app.name', 'Likha PH') }} logo"
+                width="34"
+                height="34"
+                class="nav-editorial__logo-img flex-shrink-0"
+                loading="eager"
+                decoding="async"
+                style="object-fit:contain;"
+            >
             <span class="nav-editorial__site-name">{{ config('app.name', 'Likha PH') }}</span>
         </a>
         <button class="navbar-toggler nav-editorial__toggler border-0 rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

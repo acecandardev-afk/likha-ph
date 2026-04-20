@@ -16,7 +16,16 @@
                 <div class="auth-ecommerce-hero">
                     <div class="auth-ecommerce-hero-inner text-center text-lg-start">
                         <p class="auth-ecommerce-badge mb-2">
-                            <i class="bi bi-shop-window me-1" aria-hidden="true"></i>Likha PH Marketplace
+                            <img
+                                src="{{ asset('likha-ph-logo.png') }}"
+                                alt="{{ config('app.name', 'Likha PH') }} logo"
+                                width="22"
+                                height="22"
+                                class="me-1"
+                                loading="eager"
+                                decoding="async"
+                                style="object-fit:contain;"
+                            >{{ config('app.name', 'Likha PH') }} Marketplace
                         </p>
                         <h1 class="auth-ecommerce-title mb-2">
                             Handcrafted finds from Filipino artisans

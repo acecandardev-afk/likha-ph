@@ -2,7 +2,18 @@
     <div class="container footer-shell px-3 px-md-4 px-lg-5">
         <div class="row g-4 py-5 py-lg-5 align-items-start">
             <div class="col-12 col-lg-4">
-                <h5 class="footer-heading mb-3">{{ config('app.name', 'Likha PH') }}</h5>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <img
+                        src="{{ asset('likha-ph-logo.png') }}"
+                        alt="{{ config('app.name', 'Likha PH') }} logo"
+                        width="36"
+                        height="36"
+                        loading="lazy"
+                        decoding="async"
+                        style="object-fit:contain;"
+                    >
+                    <h5 class="footer-heading mb-0">{{ config('app.name', 'Likha PH') }}</h5>
+                </div>
                 <p class="footer-text mb-3">
                     A marketplace for handcrafted products from local makers. Browse approved listings, message artisans, and track your orders in one place.
                 </p>
