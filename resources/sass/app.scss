@@ -26,6 +26,27 @@ body {
   color: $brand-dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+// Global responsive safeguards (prevent horizontal scroll)
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+pre,
+code {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.text-break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 // Subtle paper gradient on larger screens

@@ -2,16 +2,6 @@
 # Production container for Render (Laravel + Apache)
 #
 
-FROM composer:2 AS vendor
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install \
-  --no-dev \
-  --no-interaction \
-  --no-progress \
-  --prefer-dist \
-  --optimize-autoloader
-
 FROM node:20-alpine AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -39,13 +29,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && a2enmod rewrite headers \
   && rm -rf /var/lib/apt/lists/*
 
+# Composer (copied from official image)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
 # Apache: serve Laravel from /public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
   && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Install PHP dependencies after extensions exist (composer checks platform reqs)
+COPY composer.json composer.lock ./
+RUN composer install \
+  --no-dev \
+  --no-interaction \
+  --no-progress \
+  --prefer-dist \
+  --optimize-autoloader
+
 COPY . .
-COPY --from=vendor /app/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 
 # Entrypoint to run one-time runtime tasks (migrate/cache/storage link)
