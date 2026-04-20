@@ -9,6 +9,9 @@ fi
 
 php artisan storage:link >/dev/null 2>&1 || true
 
+# Run package discovery (composer scripts are disabled during image build).
+php artisan package:discover --ansi >/dev/null 2>&1 || true
+
 # Ensure APP_KEY exists (Render env var is preferred).
 if [ -z "${APP_KEY:-}" ]; then
   php artisan key:generate --force >/dev/null 2>&1 || true
