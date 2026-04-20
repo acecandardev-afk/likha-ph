@@ -3,32 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
-    use AuthenticatesUsers;
-
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
-
     /**
      * Create a new controller instance.
      *
@@ -54,31 +33,40 @@ class LoginController extends Controller
     }
 
     /**
-     * Add a friendly success message after login.
+     * Handle a login request.
      */
-    protected function authenticated(Request $request, $user)
+    public function login(Request $request)
     {
-        return redirect()->intended($this->redirectPath())->with(
-            'success',
-            'Welcome back, ' . $user->name . '! You are now signed in.'
-        );
-    }
-
-    /**
-     * Keep failed login feedback generic and safe.
-     */
-    protected function sendFailedLoginResponse(Request $request)
-    {
-        throw ValidationException::withMessages([
-            $this->username() => ['We could not sign you in. Please check your email and password and try again.'],
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
+
+        $remember = $request->boolean('remember');
+
+        if (! Auth::attempt($credentials, $remember)) {
+            return back()
+                ->withErrors(['email' => 'We could not sign you in. Please check your email and password and try again.'])
+                ->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()
+            ->intended(route('home'))
+            ->with('success', 'Welcome back!');
     }
 
     /**
-     * Add a friendly message on logout.
+     * Log out the current user.
      */
-    protected function loggedOut(Request $request)
+    public function logout(Request $request)
     {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('home')->with('success', 'You have been signed out successfully.');
     }
 }

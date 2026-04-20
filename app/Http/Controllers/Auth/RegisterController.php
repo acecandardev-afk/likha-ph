@@ -4,33 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Register Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
-    |
-    */
-
-    use RegistersUsers;
-
-    /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/home';
-
     /**
      * Create a new controller instance.
      *
@@ -75,13 +55,27 @@ class RegisterController extends Controller
     }
 
     /**
-     * Add a user-friendly welcome message after registration.
+     * Show the registration form.
      */
-    protected function registered(Request $request, $user)
+    public function showRegistrationForm()
     {
-        return redirect($this->redirectPath())->with(
-            'success',
-            'Welcome to Likha PH, ' . $user->name . '! Your account has been created successfully.'
-        );
+        return view('auth.register');
+    }
+
+    /**
+     * Handle a registration request.
+     */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        $user = $this->create($request->all());
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()
+            ->intended(route('home'))
+            ->with('success', 'Welcome to Likha PH, ' . $user->name . '! Your account has been created successfully.');
     }
 }
