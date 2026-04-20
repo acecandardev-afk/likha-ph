@@ -72,6 +72,8 @@ Route::get('/artisans/{artisan}', [ArtisanProfileController::class, 'show'])->na
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Avoid 500s when /logout is opened directly (GET). Real logout is POST.
+Route::get('/logout', fn () => redirect()->route('home'));
 
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
