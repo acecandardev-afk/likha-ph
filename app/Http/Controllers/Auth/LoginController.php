@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -37,18 +39,34 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
         $remember = $request->boolean('remember');
 
-        if (! Auth::attempt($credentials, $remember)) {
+        $email = strtolower(trim($validated['email']));
+        $password = $validated['password'];
+
+        // Case-insensitive email match (PostgreSQL string compare is case-sensitive).
+        $user = User::query()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->first();
+
+        if (! $user || ! Hash::check($password, $user->getAuthPassword())) {
             return back()
                 ->withErrors(['email' => 'We could not sign you in. Please check your email and password and try again.'])
                 ->onlyInput('email');
         }
+
+        if ($user->isSuspended()) {
+            return back()
+                ->withErrors(['email' => 'Your account has been suspended. Please contact support.'])
+                ->onlyInput('email');
+        }
+
+        Auth::login($user, $remember);
 
         $request->session()->regenerate();
 
