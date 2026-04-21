@@ -92,13 +92,13 @@
                 </div>
             </div>
 
-            @if($order->shipping_barangay || $order->shipping_address || $order->shipping_phone)
+            @if($order->country || $order->region || $order->province || $order->city || $order->barangay || $order->street_address || $order->shipping_phone)
             <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="mb-0 fw-semibold">Delivery address</h5>
                 </div>
                 <div class="card-body">
-                    @if($order->shipping_barangay || $order->shipping_address)
+                    @if(trim($order->formattedShippingAddress()))
                         <p class="mb-1 small" style="white-space: pre-line;">{{ $order->formattedShippingAddress() }}</p>
                     @endif
                     @if($order->shipping_phone)<p class="mb-0 small"><strong>Contact:</strong> {{ $order->shipping_phone }}</p>@endif

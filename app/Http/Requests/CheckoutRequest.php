@@ -22,9 +22,18 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'shipping_barangay' => Guihulngan::barangayRules(true),
-            'shipping_address' => ['nullable', 'string', 'max:500'],
-            'shipping_phone' => ['required', 'string', 'max:20'],
+            'country' => ['required', 'string', 'in:Philippines'],
+            'region' => ['required', 'integer', 'exists:regions,id'],
+            'province' => ['required', 'integer', 'exists:provinces,id'],
+            'city' => ['required', 'integer', 'exists:cities,id'],
+            'barangay' => ['required', 'integer', 'exists:barangays,id'],
+            'street_address' => ['nullable', 'string', 'max:500'],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^(09\d{9}|\+63\d{10})$/',
+                'max:13'
+            ],
             'payment_method' => [
                 'required',
                 'string',
@@ -38,12 +47,10 @@ class CheckoutRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom validation messages.
-     */
     public function messages(): array
     {
         return [
+            'phone.regex' => 'Phone number must start with 09 (followed by 9 digits) or +63 (followed by 10 digits).',
             'payment_method.required' => 'Please select a payment method.',
             'payment_method.in' => 'Invalid payment method selected.',
             'customer_notes.max' => 'Notes cannot exceed 500 characters.',
@@ -56,9 +63,13 @@ class CheckoutRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'shipping_barangay' => 'barangay',
-            'shipping_address' => 'street or additional directions',
-            'shipping_phone' => 'contact number',
+            'country' => 'country',
+            'region' => 'region',
+            'province' => 'province',
+            'city' => 'city',
+            'barangay' => 'barangay',
+            'street_address' => 'street address',
+            'phone' => 'contact number',
             'payment_method' => 'payment method',
             'customer_notes' => 'order notes',
         ];

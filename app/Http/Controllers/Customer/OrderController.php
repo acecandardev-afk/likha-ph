@@ -87,25 +87,18 @@ class OrderController extends CustomerController
     }
 
     /**
-     * Cancel order.
+     * Mark order as received.
      */
-    public function cancel(Order $order)
+    public function markReceived(Order $order)
     {
-        $this->authorize('cancel', $order);
+        $this->authorize('view', $order);
 
-        if (!$order->canBeCancelled()) {
-            return back()->withErrors(['error' => 'Order cannot be cancelled at this time.']);
+        if (!$order->canBeReceived()) {
+            return back()->withErrors(['error' => 'Order cannot be marked as received at this time.']);
         }
 
-        DB::transaction(function () use ($order) {
-            // Restore stock
-            foreach ($order->items as $item) {
-                $item->product->increment('stock', $item->quantity);
-            }
+        $order->update(['status' => 'delivered']);
 
-            $order->update(['status' => 'cancelled']);
-        });
-
-        return back()->with('success', 'Order cancelled successfully.');
+        return back()->with('success', 'Order marked as received. Thank you for your feedback!');
     }
 }

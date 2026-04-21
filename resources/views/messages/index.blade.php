@@ -31,30 +31,18 @@
                         </div>
                     @endif
 
-                    <div class="mb-4" style="max-height: 400px; overflow-y: auto;">
-                        @forelse($messages as $message)
-                            <div class="mb-3 pb-3 border-bottom">
-                                <div class="d-flex justify-content-between align-items-start gap-2">
-                                    <span class="fw-medium small">{{ $message->sender->name }}</span>
-                                    <span class="text-muted small">{{ $message->created_at?->format('M d, Y H:i') ?? '' }}</span>
-                                </div>
-                                <div class="mt-1">{{ $message->message }}</div>
-                            </div>
-                        @empty
-                            <p class="text-muted mb-0">No messages yet. Send one below.</p>
-                        @endforelse
+                    <div id="messagesContainer" class="mb-4" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Messages will be loaded here via AJAX -->
                     </div>
 
-                    <form action="{{ route('messages.store', $order) }}" method="POST">
+                    <form id="messageForm">
                         @csrf
                         <div class="mb-2">
                             <label for="message" class="form-label small">Your message</label>
-                            <textarea name="message" id="message" class="form-control @error('message') is-invalid @enderror" rows="3" placeholder="Type your message..." maxlength="1000" required>{{ old('message') }}</textarea>
-                            @error('message')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <textarea name="message" id="message" class="form-control" rows="3" placeholder="Type your message..." maxlength="1000" required></textarea>
+                            <small class="text-danger" id="messageError" style="display: none;"></small>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm">
+                        <button type="submit" class="btn btn-primary btn-sm" id="sendBtn">
                             <i class="bi bi-send me-1"></i> Send
                         </button>
                     </form>
@@ -63,4 +51,141 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderId = {{ $order->id }};
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('message');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const sendBtn = document.getElementById('sendBtn');
+    let lastRefreshTime = new Date();
+    let pollingInterval;
+
+    // Load initial messages
+    loadMessages();
+
+    // Start polling for new messages every 2 seconds
+    pollingInterval = setInterval(loadMessages, 2000);
+
+    // Handle form submission
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+
+        fetch(`/orders/${orderId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageInput.value = '';
+                lastRefreshTime = new Date();
+                loadMessages();
+            } else {
+                alert('Error sending message');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error sending message');
+        })
+        .finally(() => {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="bi bi-send me-1"></i> Send';
+        });
+    });
+
+    function loadMessages() {
+        const sinceParam = lastRefreshTime.toISOString();
+
+        fetch(`/orders/${orderId}/messages/fetch?since=${encodeURIComponent(sinceParam)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    // Only update if there are new messages
+                    const hasNewMessages = data.messages.some(msg => msg.id > (window.lastMessageId || 0));
+                    
+                    if (hasNewMessages) {
+                        loadAllMessages();
+                        window.lastMessageId = Math.max(...data.messages.map(m => m.id));
+                    }
+
+                    lastRefreshTime = new Date();
+                }
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+    }
+
+    function loadAllMessages() {
+        fetch(`/orders/${orderId}/messages/fetch`)
+            .then(response => response.json())
+            .then(data => {
+                renderMessages(data.messages);
+                // Auto-scroll to bottom
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 100);
+            })
+            .catch(error => console.error('Error loading messages:', error));
+    }
+
+    function renderMessages(messages) {
+        messagesContainer.innerHTML = '';
+
+        if (messages.length === 0) {
+            messagesContainer.innerHTML = '<p class="text-muted mb-0">No messages yet. Send one below.</p>';
+            return;
+        }
+
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'mb-3 pb-3 border-bottom';
+            
+            const alignment = msg.is_own ? 'text-end' : '';
+            const bgColor = msg.is_own ? 'bg-primary bg-opacity-10' : '';
+
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start gap-2 ${alignment}">
+                    <span class="fw-medium small">${escapeHtml(msg.sender_name)}</span>
+                    <span class="text-muted small">${msg.created_at}</span>
+                </div>
+                <div class="mt-1 ${bgColor} p-2 rounded">${escapeHtml(msg.message)}</div>
+            `;
+
+            messagesContainer.appendChild(div);
+        });
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        clearInterval(pollingInterval);
+    });
+});
+</script>
+@endpush
+
 @endsection

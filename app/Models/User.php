@@ -19,6 +19,12 @@ class User extends Authenticatable
         'role',
         'phone',
         'address',
+        'country',
+        'region',
+        'province',
+        'city',
+        'barangay',
+        'street_address',
         'shipping_address',
         'shipping_barangay',
         'shipping_phone',
@@ -125,6 +131,36 @@ class User extends Authenticatable
      */
     public function formattedShippingAddress(): string
     {
+        $addressParts = [];
+
+        if ($this->street_address) {
+            $addressParts[] = $this->street_address;
+        }
+
+        if ($this->barangay) {
+            $addressParts[] = 'Barangay ' . $this->barangay;
+        }
+
+        if ($this->city) {
+            $addressParts[] = $this->city;
+        }
+
+        if ($this->province) {
+            $addressParts[] = $this->province;
+        }
+
+        if ($this->region) {
+            $addressParts[] = $this->region;
+        }
+
+        if ($this->country) {
+            $addressParts[] = $this->country;
+        }
+
+        if (!empty($addressParts)) {
+            return implode(', ', array_reverse($addressParts));
+        }
+
         if ($this->shipping_barangay) {
             $line = 'Barangay '.$this->shipping_barangay.', '.config('guihulngan.city_name').', '.config('guihulngan.province');
             if ($this->shipping_address) {

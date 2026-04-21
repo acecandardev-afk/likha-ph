@@ -25,9 +25,13 @@ class OrderService
     public function createOrdersFromCart(
         User $customer,
         string $paymentMethod,
-        string $shippingBarangay,
-        ?string $shippingAddress,
-        string $shippingPhone,
+        string $country,
+        string $region,
+        string $province,
+        string $city,
+        string $barangay,
+        ?string $streetAddress,
+        string $phone,
         ?string $customerNotes = null
     ): Collection {
         // Validate cart
@@ -44,7 +48,7 @@ class OrderService
 
         $orders = collect();
 
-        DB::transaction(function () use ($customer, $cartItems, $paymentMethod, $shippingBarangay, $shippingAddress, $shippingPhone, $customerNotes, &$orders) {
+        DB::transaction(function () use ($customer, $cartItems, $paymentMethod, $country, $region, $province, $city, $barangay, $streetAddress, $phone, $customerNotes, &$orders) {
             // Group cart items by artisan
             $groupedByArtisan = $cartItems->groupBy('product.artisan_id');
 
@@ -54,9 +58,13 @@ class OrderService
                     $artisanId,
                     $items,
                     $paymentMethod,
-                    $shippingBarangay,
-                    $shippingAddress,
-                    $shippingPhone,
+                    $country,
+                    $region,
+                    $province,
+                    $city,
+                    $barangay,
+                    $streetAddress,
+                    $phone,
                     $customerNotes
                 );
 
@@ -83,9 +91,13 @@ class OrderService
         int $artisanId,
         Collection $items,
         string $paymentMethod,
-        string $shippingBarangay,
-        ?string $shippingAddress,
-        string $shippingPhone,
+        string $country,
+        string $region,
+        string $province,
+        string $city,
+        string $barangay,
+        ?string $streetAddress,
+        string $phone,
         ?string $customerNotes
     ): Order {
         $subtotal = 0;
@@ -111,9 +123,13 @@ class OrderService
             'total' => $total,
             'status' => 'pending',
             'customer_notes' => $customerNotes,
-            'shipping_barangay' => $shippingBarangay,
-            'shipping_address' => $shippingAddress,
-            'shipping_phone' => $shippingPhone,
+            'country' => $country,
+            'region' => $region,
+            'province' => $province,
+            'city' => $city,
+            'barangay' => $barangay,
+            'street_address' => $streetAddress,
+            'shipping_phone' => $phone,
         ]);
 
         // Create order items and reduce each product's stock by the ordered quantity

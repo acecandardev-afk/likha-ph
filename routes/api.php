@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
@@ -57,3 +58,28 @@ Route::get('/artisans/{artisan}', function (User $artisan) {
 
     return $artisan;
 })->whereNumber('artisan');
+
+// Address API endpoints for cascading dropdowns
+Route::get('/regions', function () {
+    return Cache::remember('regions', 3600, function () {
+        return \App\Models\Region::select('id', 'name', 'code')->orderBy('name')->get();
+    });
+});
+
+Route::get('/provinces/{region}', function (\App\Models\Region $region) {
+    return Cache::remember("provinces.{$region->id}", 3600, function () use ($region) {
+        return $region->provinces()->select('id', 'name', 'code')->orderBy('name')->get();
+    });
+});
+
+Route::get('/cities/{province}', function (\App\Models\Province $province) {
+    return Cache::remember("cities.{$province->id}", 3600, function () use ($province) {
+        return $province->cities()->select('id', 'name', 'code')->orderBy('name')->get();
+    });
+});
+
+Route::get('/barangays/{city}', function (\App\Models\City $city) {
+    return Cache::remember("barangays.{$city->id}", 3600, function () use ($city) {
+        return $city->barangays()->select('id', 'name', 'code')->orderBy('name')->get();
+    });
+});

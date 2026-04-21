@@ -28,6 +28,11 @@ class CartService
      */
     public function addToCart(User $user, Product $product, int $quantity): Cart
     {
+        // Prevent sellers from purchasing their own products
+        if ($user->isArtisan() && $product->artisan_id === $user->id) {
+            throw new \Exception("You cannot purchase your own products.");
+        }
+
         // Validate product availability
         if (!$product->isAvailable()) {
             throw new \Exception("Product '{$product->name}' is not available.");

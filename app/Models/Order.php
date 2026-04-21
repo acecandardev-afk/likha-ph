@@ -18,6 +18,12 @@ class Order extends Model
         'total',
         'status',
         'customer_notes',
+        'country',
+        'region',
+        'province',
+        'city',
+        'barangay',
+        'street_address',
         'shipping_address',
         'shipping_barangay',
         'shipping_phone',
@@ -66,9 +72,24 @@ class Order extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeConfirmed($query)
+    public function scopeShipped($query)
     {
-        return $query->where('status', 'confirmed');
+        return $query->where('status', 'shipped');
+    }
+
+    public function scopeOnDelivery($query)
+    {
+        return $query->where('status', 'on_delivery');
+    }
+
+    public function scopeReceived($query)
+    {
+        return $query->where('status', 'received');
+    }
+
+    public function scopeDelivered($query)
+    {
+        return $query->where('status', 'delivered');
     }
 
     public function scopeCompleted($query)
@@ -82,9 +103,24 @@ class Order extends Model
         return $this->status === 'pending';
     }
 
-    public function isConfirmed(): bool
+    public function isShipped(): bool
     {
-        return $this->status === 'confirmed';
+        return $this->status === 'shipped';
+    }
+
+    public function isOnDelivery(): bool
+    {
+        return $this->status === 'on_delivery';
+    }
+
+    public function isReceived(): bool
+    {
+        return $this->status === 'received';
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->status === 'delivered';
     }
 
     public function isCompleted(): bool
@@ -99,7 +135,12 @@ class Order extends Model
 
     public function canBeCancelled(): bool
     {
-        return $this->isPending() || $this->isConfirmed();
+        return $this->isPending() || $this->isShipped();
+    }
+
+    public function canBeReceived(): bool
+    {
+        return $this->isOnDelivery();
     }
 
     public function canBeCompleted(): bool
@@ -142,15 +183,32 @@ class Order extends Model
 
     public function formattedShippingAddress(): string
     {
-        if ($this->shipping_barangay) {
-            $line = 'Barangay '.$this->shipping_barangay.', '.config('guihulngan.city_name').', '.config('guihulngan.province');
-            if ($this->shipping_address) {
-                return $line."\n".$this->shipping_address;
-            }
+        $addressParts = [];
 
-            return $line;
+        if ($this->street_address) {
+            $addressParts[] = $this->street_address;
         }
 
-        return (string) ($this->shipping_address ?? '');
+        if ($this->barangay) {
+            $addressParts[] = 'Barangay ' . $this->barangay;
+        }
+
+        if ($this->city) {
+            $addressParts[] = $this->city;
+        }
+
+        if ($this->province) {
+            $addressParts[] = $this->province;
+        }
+
+        if ($this->region) {
+            $addressParts[] = $this->region;
+        }
+
+        if ($this->country) {
+            $addressParts[] = $this->country;
+        }
+
+        return implode(', ', array_reverse($addressParts));
     }
 }

@@ -22,11 +22,12 @@ class DashboardController extends ArtisanController
             'rejected_products' => $artisan->products()->where('approval_status', 'rejected')->count(),
             'total_orders' => $artisan->artisanOrders()->count(),
             'pending_orders' => $artisan->artisanOrders()->pending()->count(),
-            'confirmed_orders' => $artisan->artisanOrders()->confirmed()->count(),
-            'completed_orders' => $artisan->artisanOrders()->completed()->count(),
-            'total_revenue' => $artisan->artisanOrders()->confirmed()->sum('total'),
+            'shipped_orders' => $artisan->artisanOrders()->shipped()->count(),
+            'on_delivery_orders' => $artisan->artisanOrders()->onDelivery()->count(),
+            'delivered_orders' => $artisan->artisanOrders()->delivered()->count(),
+            'total_revenue' => $artisan->artisanOrders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
             'monthly_revenue' => $artisan->artisanOrders()
-                ->confirmed()
+                ->whereIn('status', ['delivered', 'completed'])
                 ->whereMonth('created_at', now()->month)
                 ->sum('total'),
         ];

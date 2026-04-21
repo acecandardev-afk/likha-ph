@@ -57,6 +57,50 @@ class MessageController extends Controller
         $message->load('sender');
         $this->notificationService->notifyOrderThreadMessage($order, $message);
 
+        // Return JSON if AJAX request
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'success' => true,
+            ]);
+        }
+
         return back()->with('success', 'Message sent.');
+    }
+
+    /**
+     * Fetch messages for an order (for real-time updates).
+     */
+    public function fetch(Order $order, Request $request)
+    {
+        $this->authorize('viewMessages', $order);
+
+        $query = $order->messages()->with('sender');
+
+        // Get messages since a certain timestamp (for real-time polling)
+        if ($request->has('since')) {
+            $since = $request->input('since');
+            $query->where('created_at', '>', $since);
+        }
+
+        $messages = $query->orderBy('created_at')->get();
+
+        // Mark messages as read
+        $order->messages()
+            ->where('sender_id', '!=', auth()->id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json([
+            'messages' => $messages->map(function ($message) {
+                return [
+                    'id' => $message->id,
+                    'sender_name' => $message->sender->name,
+                    'message' => $message->message,
+                    'created_at' => $message->created_at->format('M d, Y H:i'),
+                    'is_own' => $message->sender_id === auth()->id(),
+                ];
+            }),
+        ]);
     }
 }

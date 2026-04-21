@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Requests\CheckoutRequest;
+use App\Models\Barangay;
+use App\Models\City;
+use App\Models\Province;
+use App\Models\Region;
 use App\Services\CartService;
 use App\Services\OrderService;
 
@@ -40,13 +44,19 @@ class CheckoutController extends CustomerController
         $validated = $request->validated();
 
         try {
+            $resolvedAddress = $this->resolveLocationNames($validated);
+
             $orders = $this->orderService->createOrdersFromCart(
                 $this->getCustomer(),
-                $validated['payment_method'],
-                $validated['shipping_barangay'],
-                $validated['shipping_address'] ?? null,
-                $validated['shipping_phone'],
-                $validated['customer_notes'] ?? null
+                $resolvedAddress['payment_method'],
+                $resolvedAddress['country'],
+                $resolvedAddress['region'],
+                $resolvedAddress['province'],
+                $resolvedAddress['city'],
+                $resolvedAddress['barangay'],
+                $resolvedAddress['street_address'] ?? null,
+                $resolvedAddress['phone'],
+                $resolvedAddress['customer_notes'] ?? null
             );
 
             return redirect()
@@ -57,5 +67,26 @@ class CheckoutController extends CustomerController
                 ->withInput()
                 ->withErrors(['error' => $e->getMessage()]);
         }
+    }
+
+    protected function resolveLocationNames(array $validated): array
+    {
+        if (!empty($validated['region'])) {
+            $validated['region'] = Region::find($validated['region'])->name ?? $validated['region'];
+        }
+
+        if (!empty($validated['province'])) {
+            $validated['province'] = Province::find($validated['province'])->name ?? $validated['province'];
+        }
+
+        if (!empty($validated['city'])) {
+            $validated['city'] = City::find($validated['city'])->name ?? $validated['city'];
+        }
+
+        if (!empty($validated['barangay'])) {
+            $validated['barangay'] = Barangay::find($validated['barangay'])->name ?? $validated['barangay'];
+        }
+
+        return $validated;
     }
 }

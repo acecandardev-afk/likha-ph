@@ -23,28 +23,72 @@
                         @csrf
                         @method('PUT')
 
+                        <!-- Country (Fixed to Philippines) -->
                         <div class="mb-3">
-                            <label for="shipping_barangay" class="form-label fw-medium">Barangay</label>
-                            <x-guihulngan.barangay-select name="shipping_barangay" id="shipping_barangay" :value="old('shipping_barangay', $user->shipping_barangay)" :required="false" class="form-select @error('shipping_barangay') is-invalid @enderror" empty-label="Select barangay" />
-                            <small class="text-muted">Guihulngan City, {{ config('guihulngan.province') }}</small>
-                            @error('shipping_barangay')
+                            <label for="country" class="form-label fw-medium">Country</label>
+                            <input type="text" class="form-control" value="Philippines" readonly>
+                            <input type="hidden" name="country" value="Philippines">
+                        </div>
+
+                        <!-- Region -->
+                        <div class="mb-3">
+                            <label for="region" class="form-label fw-medium">Region</label>
+                            <select name="region" id="region" class="form-select @error('region') is-invalid @enderror">
+                                <option value="">Select region</option>
+                            </select>
+                            @error('region')
                                 <span class="invalid-feedback d-block">{{ $message }}</span>
                             @enderror
                         </div>
 
+                        <!-- Province -->
                         <div class="mb-3">
-                            <label for="shipping_address" class="form-label fw-medium">Street, house no., landmarks</label>
-                            <textarea name="shipping_address" id="shipping_address" rows="3" class="form-control @error('shipping_address') is-invalid @enderror" placeholder="Optional details to help couriers find you">{{ old('shipping_address', $user->shipping_address) }}</textarea>
+                            <label for="province" class="form-label fw-medium">Province</label>
+                            <select name="province" id="province" class="form-select @error('province') is-invalid @enderror" disabled>
+                                <option value="">Select province</option>
+                            </select>
+                            @error('province')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- City -->
+                        <div class="mb-3">
+                            <label for="city" class="form-label fw-medium">City</label>
+                            <select name="city" id="city" class="form-select @error('city') is-invalid @enderror" disabled>
+                                <option value="">Select city</option>
+                            </select>
+                            @error('city')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Barangay -->
+                        <div class="mb-3">
+                            <label for="barangay" class="form-label fw-medium">Barangay</label>
+                            <select name="barangay" id="barangay" class="form-select @error('barangay') is-invalid @enderror" disabled>
+                                <option value="">Select barangay</option>
+                            </select>
+                            @error('barangay')
+                                <span class="invalid-feedback d-block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Street Address -->
+                        <div class="mb-3">
+                            <label for="street_address" class="form-label fw-medium">Street, house no., landmarks</label>
+                            <textarea name="street_address" id="street_address" rows="3" class="form-control @error('street_address') is-invalid @enderror" placeholder="Optional details to help couriers find you">{{ old('street_address', $user->street_address) }}</textarea>
                             <small class="text-muted">Leave blank if you prefer to enter everything at checkout.</small>
-                            @error('shipping_address')
+                            @error('street_address')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>
 
+                        <!-- Phone -->
                         <div class="mb-4">
-                            <label for="shipping_phone" class="form-label fw-medium">Contact number for delivery</label>
-                            <input type="text" name="shipping_phone" id="shipping_phone" class="form-control @error('shipping_phone') is-invalid @enderror" value="{{ old('shipping_phone', $user->shipping_phone) }}" placeholder="e.g. +63 912 345 6789">
-                            @error('shipping_phone')
+                            <label for="phone" class="form-label fw-medium">Contact number for delivery</label>
+                            <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}" placeholder="09XXXXXXXXX or +63XXXXXXXXXXX">
+                            @error('phone')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>
@@ -61,4 +105,179 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const savedRegion = @json($user->region ?? '');
+    const savedProvince = @json($user->province ?? '');
+    const savedCity = @json($user->city ?? '');
+    const savedBarangay = @json($user->barangay ?? '');
+
+    // Load regions on page load and restore saved selections.
+    loadRegions().then(() => {
+        populateSavedAddress();
+    });
+
+    function selectOptionByText(select, text) {
+        if (!text) {
+            return null;
+        }
+
+        const normalized = text.toString().trim().toLowerCase();
+        const option = Array.from(select.options).find(opt => opt.textContent.trim().toLowerCase() === normalized);
+
+        if (option) {
+            select.value = option.value;
+            return option.value;
+        }
+
+        return null;
+    }
+
+    function populateSavedAddress() {
+        if (!savedRegion) {
+            return;
+        }
+
+        const regionSelect = document.getElementById('region');
+        const regionId = selectOptionByText(regionSelect, savedRegion);
+
+        if (regionId) {
+            loadProvinces(regionId, savedProvince);
+        }
+    }
+
+    // Event listeners for cascading dropdowns
+    document.getElementById('region').addEventListener('change', function() {
+        const regionId = this.value;
+        if (regionId) {
+            resetSelect('province');
+            resetSelect('city');
+            resetSelect('barangay');
+            loadProvinces(regionId);
+        } else {
+            resetSelect('province', true);
+            resetSelect('city', true);
+            resetSelect('barangay', true);
+        }
+    });
+
+    document.getElementById('province').addEventListener('change', function() {
+        const provinceId = this.value;
+        if (provinceId) {
+            resetSelect('city');
+            resetSelect('barangay');
+            loadCities(provinceId);
+        } else {
+            resetSelect('city', true);
+            resetSelect('barangay', true);
+        }
+    });
+
+    document.getElementById('city').addEventListener('change', function() {
+        const cityId = this.value;
+        if (cityId) {
+            resetSelect('barangay');
+            loadBarangays(cityId);
+        } else {
+            resetSelect('barangay', true);
+        }
+    });
+
+    function loadRegions() {
+        return fetch('/api/regions')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('region');
+                select.innerHTML = '<option value="">Select region</option>';
+                data.forEach(region => {
+                    const option = document.createElement('option');
+                    option.value = region.id;
+                    option.textContent = region.name;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading regions:', error));
+    }
+
+    function loadProvinces(regionId, selectedProvince = null) {
+        return fetch(`/api/provinces/${regionId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('province');
+                select.innerHTML = '<option value="">Select province</option>';
+                data.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province.id;
+                    option.textContent = province.name;
+                    select.appendChild(option);
+                });
+                select.disabled = false;
+
+                if (selectedProvince) {
+                    const provinceId = selectOptionByText(select, selectedProvince);
+                    if (provinceId) {
+                        loadCities(provinceId, savedCity);
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading provinces:', error));
+    }
+
+    function loadCities(provinceId, selectedCity = null) {
+        return fetch(`/api/cities/${provinceId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('city');
+                select.innerHTML = '<option value="">Select city</option>';
+                data.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    select.appendChild(option);
+                });
+                select.disabled = false;
+
+                if (selectedCity) {
+                    const cityId = selectOptionByText(select, selectedCity);
+                    if (cityId) {
+                        loadBarangays(cityId, savedBarangay);
+                    }
+                }
+            })
+            .catch(error => console.error('Error loading cities:', error));
+    }
+
+    function loadBarangays(cityId, selectedBarangay = null) {
+        return fetch(`/api/barangays/${cityId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('barangay');
+                select.innerHTML = '<option value="">Select barangay</option>';
+                data.forEach(barangay => {
+                    const option = document.createElement('option');
+                    option.value = barangay.id;
+                    option.textContent = barangay.name;
+                    select.appendChild(option);
+                });
+                select.disabled = false;
+
+                if (selectedBarangay) {
+                    selectOptionByText(select, selectedBarangay);
+                }
+            })
+            .catch(error => console.error('Error loading barangays:', error));
+    }
+
+    function resetSelect(selectId, disable = false) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">Select ${selectId}</option>`;
+        if (disable) {
+            select.disabled = true;
+        }
+    }
+});
+</script>
+@endpush
 @endsection

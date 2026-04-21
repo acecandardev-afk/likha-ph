@@ -212,6 +212,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
         Route::get('/{order}', [CustomerOrderController::class, 'show'])->name('show');
         Route::post('/{order}/payment-proof', [CustomerOrderController::class, 'uploadPaymentProof'])->name('payment-proof');
         Route::patch('/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('cancel');
+        Route::patch('/{order}/mark-received', [CustomerOrderController::class, 'markReceived'])->name('mark-received');
     });
 
     // Reviews
@@ -239,6 +240,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('orders/{order}/messages')->name('messages.')->group(function () {
         Route::get('/', [MessageController::class, 'index'])->name('index');
         Route::post('/', [MessageController::class, 'store'])->name('store');
+        Route::get('/fetch', [MessageController::class, 'fetch'])->name('fetch');
     });
 
     // Profile chat (user ↔ artisan)
