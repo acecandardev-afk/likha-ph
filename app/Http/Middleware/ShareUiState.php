@@ -44,10 +44,15 @@ class ShareUiState
             });
         }
 
+        // Server-side only: never expose credentials to the client; views only get a boolean.
+        $googleSignInAvailable = filled(config('services.google.client_id'))
+            && filled(config('services.google.client_secret'));
+
         View::share([
             'uiCartCount' => $cartCount,
             'uiUnreadNotificationsCount' => $unreadNotificationsCount,
             'uiApplicationBanner' => $applicationBanner,
+            'uiGoogleSignInAvailable' => $googleSignInAvailable,
         ]);
 
         return $next($request);

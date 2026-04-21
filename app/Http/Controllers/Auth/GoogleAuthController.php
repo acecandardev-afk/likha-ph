@@ -24,7 +24,7 @@ class GoogleAuthController extends Controller
         if (! config('services.google.client_id') || ! config('services.google.client_secret')) {
             return redirect()
                 ->route('login')
-                ->with('error', 'Google sign-in is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file (see Google Cloud Console → APIs & Services → Credentials).');
+                ->with('error', 'Google sign-in is not configured for this site.');
         }
 
         return Socialite::driver('google')

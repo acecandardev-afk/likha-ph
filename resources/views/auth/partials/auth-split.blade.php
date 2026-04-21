@@ -3,7 +3,6 @@
     if ($errors->any() && filled(old('name'))) {
         $activeAuthTab = 'register';
     }
-    $googleConfigured = filled(config('services.google.client_id')) && filled(config('services.google.client_secret'));
 @endphp
 
 <div class="auth-ecommerce-landing">
@@ -66,8 +65,8 @@
                         </button>
                     </div>
 
-                    <div class="auth-oauth-block {{ $googleConfigured ? '' : 'auth-oauth-block--inactive' }}">
-                        @if($googleConfigured)
+                    <div class="auth-oauth-block {{ ($uiGoogleSignInAvailable ?? false) ? '' : 'auth-oauth-block--inactive' }}">
+                        @if($uiGoogleSignInAvailable ?? false)
                             <p class="text-center small text-body-secondary mb-2 mb-md-2">Or continue with</p>
                             <div class="d-grid">
                                 <a href="{{ route('auth.google') }}" class="btn btn-auth-google">
@@ -76,7 +75,7 @@
                             </div>
                         @else
                             <p class="small text-body-secondary text-center mb-0 lh-sm">
-                                Google sign-in is disabled until you add <code class="px-1">GOOGLE_CLIENT_ID</code> and <code class="px-1">GOOGLE_CLIENT_SECRET</code> to <code class="px-1">.env</code>.
+                                Google sign-in is not available on this site yet.
                             </p>
                         @endif
                     </div>
