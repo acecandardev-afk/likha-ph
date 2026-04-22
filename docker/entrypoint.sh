@@ -37,14 +37,19 @@ if [ -z "${APP_KEY:-}" ]; then
   php artisan key:generate --force >/dev/null 2>&1 || true
 fi
 
+# Clear stale caches before rebuilding.
+php artisan config:clear >/dev/null 2>&1 || true
+php artisan route:clear >/dev/null 2>&1 || true
+php artisan view:clear >/dev/null 2>&1 || true
+
 # Cache for performance (safe to fail during first boot).
 php artisan config:cache >/dev/null 2>&1 || true
 php artisan route:cache >/dev/null 2>&1 || true
 php artisan view:cache >/dev/null 2>&1 || true
 
-# Run migrations on startup (recommended for Render).
+# Run migrations on startup (recommended for Render) with a timeout to avoid hanging if DB is unavailable.
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
-  php artisan migrate --force --no-interaction || true
+  timeout 30s php artisan migrate --force --no-interaction >/dev/null 2>&1 || true
 fi
 
 exec "$@"

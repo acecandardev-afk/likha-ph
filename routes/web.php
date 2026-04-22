@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ArtisanProfileController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\DirectMessageController;
 use App\Http\Controllers\Auth\ArtisanRegistrationController;
@@ -46,9 +47,7 @@ use App\Http\Controllers\Auth\VerificationController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/up', function () {
-    return response('OK', 200);
-});
+Route::get('/up', [HealthController::class, 'index']);
 
 // Backwards-compatible /home URL used by auth scaffolding
 Route::get('/home', function () {
