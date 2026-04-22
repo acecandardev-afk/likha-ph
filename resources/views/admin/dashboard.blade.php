@@ -96,13 +96,6 @@
                         </div>
                         <a href="{{ route('admin.payments.pending') }}" class="btn btn-sm btn-outline-info">Verify</a>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-medium">Unapproved reviews</div>
-                            <div class="fw-semibold fs-4">{{ $stats['unapproved_reviews'] }}</div>
-                        </div>
-                        <a href="{{ route('admin.products.pending') }}" class="btn btn-sm btn-outline-danger">Triage</a>
-                    </div>
                 </div>
             </div>
         </div>
