@@ -50,12 +50,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/up', [HealthController::class, 'index']);
 
 // Backwards-compatible /home URL used by auth scaffolding
-Route::get('/home', function () {
-    if (auth()->user()?->isAdmin()) {
-        return redirect()->route('admin.dashboard');
-    }
-    return redirect()->route('home');
-});
+Route::get('/home', [HomeController::class, 'index']);
 
 // Products
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -76,7 +71,7 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Avoid 500s when /logout is opened directly (GET). Real logout is POST.
-Route::get('/logout', fn () => redirect()->route('home'));
+Route::get('/logout', [HomeController::class, 'index']);
 
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
