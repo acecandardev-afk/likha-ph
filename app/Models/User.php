@@ -133,41 +133,47 @@ class User extends Authenticatable
     {
         $addressParts = [];
 
-        if ($this->street_address) {
-            $addressParts[] = $this->street_address;
-        }
-
-        if ($this->barangay) {
-            $addressParts[] = 'Barangay ' . $this->barangay;
-        }
-
-        if ($this->city) {
-            $addressParts[] = $this->city;
-        }
-
-        if ($this->province) {
-            $addressParts[] = $this->province;
+        if ($this->country) {
+            $addressParts[] = $this->country;
         }
 
         if ($this->region) {
             $addressParts[] = $this->region;
         }
 
-        if ($this->country) {
-            $addressParts[] = $this->country;
+        if ($this->province) {
+            $addressParts[] = $this->province;
+        }
+
+        if ($this->city) {
+            $addressParts[] = $this->city;
+        }
+
+        if ($this->barangay) {
+            $addressParts[] = 'Barangay ' . $this->barangay;
+        }
+
+        if ($this->street_address) {
+            $addressParts[] = $this->street_address;
         }
 
         if (!empty($addressParts)) {
-            return implode(', ', array_reverse($addressParts));
+            return implode(', ', $addressParts);
         }
 
         if ($this->shipping_barangay) {
-            $line = 'Barangay '.$this->shipping_barangay.', '.config('guihulngan.city_name').', '.config('guihulngan.province');
+            $fallbackParts = [
+                'Philippines',
+                config('guihulngan.province'),
+                config('guihulngan.city_name'),
+                'Barangay ' . $this->shipping_barangay,
+            ];
+
             if ($this->shipping_address) {
-                return $line."\n".$this->shipping_address;
+                $fallbackParts[] = $this->shipping_address;
             }
 
-            return $line;
+            return implode(', ', array_filter($fallbackParts));
         }
 
         return (string) ($this->shipping_address ?? '');

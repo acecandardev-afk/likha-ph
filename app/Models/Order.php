@@ -195,30 +195,30 @@ class Order extends Model
     {
         $addressParts = [];
 
-        if ($this->street_address) {
-            $addressParts[] = $this->street_address;
-        }
-
-        if ($this->barangay) {
-            $addressParts[] = 'Barangay ' . $this->barangay;
-        }
-
-        if ($this->city) {
-            $addressParts[] = $this->city;
-        }
-
-        if ($this->province) {
-            $addressParts[] = $this->province;
+        if ($this->country) {
+            $addressParts[] = $this->country;
         }
 
         if ($this->region) {
             $addressParts[] = $this->region;
         }
 
-        if ($this->country) {
-            $addressParts[] = $this->country;
+        if ($this->province) {
+            $addressParts[] = $this->province;
         }
 
-        return implode(', ', array_reverse($addressParts));
+        if ($this->city) {
+            $addressParts[] = $this->city;
+        }
+
+        if ($this->barangay) {
+            $addressParts[] = 'Barangay ' . $this->barangay;
+        }
+
+        if ($this->street_address) {
+            $addressParts[] = $this->street_address;
+        }
+
+        return implode(', ', $addressParts);
     }
 }
