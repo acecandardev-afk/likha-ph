@@ -46,6 +46,10 @@ use App\Http\Controllers\Auth\VerificationController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::get('/up', function () {
+    return response('OK', 200);
+});
+
 // Backwards-compatible /home URL used by auth scaffolding
 Route::get('/home', function () {
     if (auth()->user()?->isAdmin()) {
