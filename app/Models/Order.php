@@ -97,6 +97,11 @@ class Order extends Model
         return $query->where('status', 'completed');
     }
 
+    public function scopeConfirmed($query)
+    {
+        return $query->where('status', 'confirmed');
+    }
+
     // Helpers
     public function isPending(): bool
     {
@@ -126,6 +131,11 @@ class Order extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === 'confirmed';
     }
 
     public function isCancelled(): bool
