@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('city')->nullable()->after('province');
             $table->string('barangay')->nullable()->after('city');
             $table->text('street_address')->nullable()->after('barangay');
-            $table->enum('status', ['pending', 'shipped', 'on_delivery', 'received', 'delivered'])->default('pending')->change();
+            $table->enum('status', ['pending', 'confirmed', 'shipped', 'on_delivery', 'received', 'delivered', 'completed', 'cancelled'])->default('pending')->change();
         });
     }
 
