@@ -10,6 +10,13 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\ShareUiState;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Spatie\Health\Facades\Health;
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Checks\Checks\DebugModeCheck;
+use Spatie\Health\Checks\Checks\EnvironmentCheck;
+use Spatie\Health\Checks\Checks\OptimizedAppCheck;
+use Spatie\Health\Checks\Checks\ScheduleCheck;
+use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +25,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->then(function () {
+        // Configure health checks to exclude database check during startup
+        Health::checks([
+            CacheCheck::class,
+            DebugModeCheck::class,
+            EnvironmentCheck::class,
+            OptimizedAppCheck::class,
+            ScheduleCheck::class,
+            UsedDiskSpaceCheck::class,
+        ]);
+    })
     ->withMiddleware(function (Middleware $middleware) {
         // Render sits behind a reverse proxy. Trust forwarded headers so Laravel
         // correctly detects HTTPS and generates secure URLs (e.g. /logout).
