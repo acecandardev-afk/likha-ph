@@ -34,7 +34,7 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            populateProvinces(this.value, options.savedProvince, options.savedCity, options.savedBarangay);
+            loadProvinces(this.value, options.savedProvince, options.savedCity, options.savedBarangay);
         }
     });
 
@@ -45,7 +45,7 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            populateCities(this.value, options.savedCity, options.savedBarangay);
+            loadCities(this.value, options.savedCity, options.savedBarangay);
         }
     });
 
@@ -54,18 +54,22 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            populateBarangays(this.value, options.savedBarangay);
+            loadBarangays(this.value, options.savedBarangay);
         }
     });
 
-    // Load all location data upfront
-    loadAllLocationData().then(() => {
-        populateRegions();
+    loadRegions().then(() => {
         if (options.savedRegion) {
             const selectedRegion = setSelectValue(regionSelect, options.savedRegion);
             if (selectedRegion) {
-                populateProvinces(selectedRegion, options.savedProvince, options.savedCity, options.savedBarangay);
+                loadProvinces(selectedRegion, options.savedProvince, options.savedCity, options.savedBarangay);
             }
+        }
+    }).catch(error => {
+        console.error('Failed to load regions:', error);
+        const regionSelect = document.getElementById('region');
+        if (regionSelect) {
+            regionSelect.innerHTML = '<option value="">Error loading regions</option>';
         }
     });
 }
@@ -94,82 +98,128 @@ function resetSelect(select, placeholder) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
 }
 
-function loadAllLocationData() {
-    return Promise.all([
-        fetch('/api/regions').then(response => response.json()).then(data => allRegions = data),
-        fetch('/api/provinces').then(response => response.json()).then(data => allProvinces = data),
-        fetch('/api/cities').then(response => response.json()).then(data => allCities = data),
-        fetch('/api/barangays').then(response => response.json()).then(data => allBarangays = data)
-    ]).catch(error => console.error('Error loading location data:', error));
+function loadRegions() {
+    return fetch('/api/regions')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById('region');
+            select.innerHTML = '<option value="">Select region</option>';
+            data.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region.id;
+                option.textContent = region.name;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading regions:', error);
+            throw error; // Re-throw to be caught by the caller
+        });
 }
 
-function populateRegions() {
-    const select = document.getElementById('region');
-    select.innerHTML = '<option value="">Select region</option>';
-    allRegions.forEach(region => {
-        const option = document.createElement('option');
-        option.value = region.id;
-        option.textContent = region.name;
-        select.appendChild(option);
-    });
+function loadProvinces(regionId, selectedProvince = null, selectedCity = null, selectedBarangay = null) {
+    return fetch(`/api/provinces/${regionId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById('province');
+            select.innerHTML = '<option value="">Select province</option>';
+            data.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.id;
+                option.textContent = province.name;
+                select.appendChild(option);
+            });
+            select.disabled = false;
+
+            if (selectedProvince) {
+                const selected = setSelectValue(select, selectedProvince);
+                if (selected) {
+                    loadCities(selected, selectedCity, selectedBarangay);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading provinces:', error);
+            const select = document.getElementById('province');
+            if (select) {
+                select.innerHTML = '<option value="">Error loading provinces</option>';
+            }
+        });
 }
 
-function populateProvinces(regionId, selectedProvince = null, selectedCity = null, selectedBarangay = null) {
-    const select = document.getElementById('province');
-    select.innerHTML = '<option value="">Select province</option>';
+function loadCities(provinceId, selectedCity = null, selectedBarangay = null) {
+    return fetch(`/api/cities/${provinceId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById('city');
+            select.innerHTML = '<option value="">Select city</option>';
+            data.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.id;
+                option.textContent = city.name;
+                select.appendChild(option);
+            });
+            select.disabled = false;
 
-    const regionProvinces = allProvinces.filter(province => province.region_id == regionId);
-    regionProvinces.forEach(province => {
-        const option = document.createElement('option');
-        option.value = province.id;
-        option.textContent = province.name;
-        select.appendChild(option);
-    });
-    select.disabled = false;
-
-    if (selectedProvince) {
-        const selected = setSelectValue(select, selectedProvince);
-        if (selected) {
-            populateCities(selected, selectedCity, selectedBarangay);
-        }
-    }
+            if (selectedCity) {
+                const selected = setSelectValue(select, selectedCity);
+                if (selected) {
+                    loadBarangays(selected, selectedBarangay);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cities:', error);
+            const select = document.getElementById('city');
+            if (select) {
+                select.innerHTML = '<option value="">Error loading cities</option>';
+            }
+        });
 }
 
-function populateCities(provinceId, selectedCity = null, selectedBarangay = null) {
-    const select = document.getElementById('city');
-    select.innerHTML = '<option value="">Select city</option>';
+function loadBarangays(cityId, selectedBarangay = null) {
+    return fetch(`/api/barangays/${cityId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById('barangay');
+            select.innerHTML = '<option value="">Select barangay</option>';
+            data.forEach(barangay => {
+                const option = document.createElement('option');
+                option.value = barangay.id;
+                option.textContent = barangay.name;
+                select.appendChild(option);
+            });
+            select.disabled = false;
 
-    const provinceCities = allCities.filter(city => city.province_id == provinceId);
-    provinceCities.forEach(city => {
-        const option = document.createElement('option');
-        option.value = city.id;
-        option.textContent = city.name;
-        select.appendChild(option);
-    });
-    select.disabled = false;
-
-    if (selectedCity) {
-        const selected = setSelectValue(select, selectedCity);
-        if (selected) {
-            populateBarangays(selected, selectedBarangay);
-        }
-    }
-}
-
-function populateBarangays(cityId, selectedBarangay = null) {
-    const select = document.getElementById('barangay');
-    select.innerHTML = '<option value="">Select barangay</option>';
-
-    const cityBarangays = allBarangays.filter(barangay => barangay.city_id == cityId);
-    cityBarangays.forEach(barangay => {
-        const option = document.createElement('option');
-        option.value = barangay.id;
-        option.textContent = barangay.name;
-        select.appendChild(option);
-    });
-    select.disabled = false;
-
-    if (selectedBarangay) {
-        setSelectValue(select, selectedBarangay);
-    }
+            if (selectedBarangay) {
+                setSelectValue(select, selectedBarangay);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading barangays:', error);
+            const select = document.getElementById('barangay');
+            if (select) {
+                select.innerHTML = '<option value="">Error loading barangays</option>';
+            }
+        });
 }
