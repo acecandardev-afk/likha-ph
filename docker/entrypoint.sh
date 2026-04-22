@@ -49,7 +49,11 @@ php artisan view:cache >/dev/null 2>&1 || true
 
 # Run migrations on startup (recommended for Render) with a timeout to avoid hanging if DB is unavailable.
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
-  timeout 30s php artisan migrate --force --no-interaction >/dev/null 2>&1 || true
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 30s php artisan migrate --force --no-interaction >/dev/null 2>&1 || true
+  else
+    php artisan migrate --force --no-interaction >/dev/null 2>&1 || true
+  fi
 fi
 
 exec "$@"
