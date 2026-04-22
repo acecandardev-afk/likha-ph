@@ -11,9 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Add missing enum values for Postgres compatibility
-        DB::statement("ALTER TYPE orders_status_enum ADD VALUE 'confirmed'");
-        DB::statement("ALTER TYPE orders_status_enum ADD VALUE 'completed'");
-        DB::statement("ALTER TYPE orders_status_enum ADD VALUE 'cancelled'");
+        DB::statement("ALTER TYPE orders_status_enum ADD VALUE IF NOT EXISTS 'confirmed'");
+        DB::statement("ALTER TYPE orders_status_enum ADD VALUE IF NOT EXISTS 'completed'");
+        DB::statement("ALTER TYPE orders_status_enum ADD VALUE IF NOT EXISTS 'cancelled'");
     }
 
     /**
