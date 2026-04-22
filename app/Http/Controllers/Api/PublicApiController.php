@@ -79,6 +79,13 @@ class PublicApiController extends Controller
         });
     }
 
+    public function allProvinces()
+    {
+        return cache()->remember('all_provinces', 3600, function () {
+            return Province::select('id', 'name', 'code', 'region_id')->orderBy('name')->get();
+        });
+    }
+
     public function provinces(Region $region)
     {
         return cache()->remember("provinces.{$region->id}", 3600, function () use ($region) {
@@ -86,10 +93,24 @@ class PublicApiController extends Controller
         });
     }
 
+    public function allCities()
+    {
+        return cache()->remember('all_cities', 3600, function () {
+            return City::select('id', 'name', 'code', 'province_id')->orderBy('name')->get();
+        });
+    }
+
     public function cities(Province $province)
     {
         return cache()->remember("cities.{$province->id}", 3600, function () use ($province) {
             return $province->cities()->select('id', 'name', 'code')->orderBy('name')->get();
+        });
+    }
+
+    public function allBarangays()
+    {
+        return cache()->remember('all_barangays', 3600, function () {
+            return Barangay::select('id', 'name', 'code', 'city_id')->orderBy('name')->get();
         });
     }
 

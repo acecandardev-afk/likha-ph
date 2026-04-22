@@ -11,7 +11,10 @@ Route::controller(PublicApiController::class)->group(function () {
     Route::get('/artisans', 'artisans');
     Route::get('/artisans/{artisan}', 'showArtisan')->whereNumber('artisan');
     Route::get('/regions', 'regions');
+    Route::get('/provinces', 'allProvinces');
     Route::get('/provinces/{region}', 'provinces');
+    Route::get('/cities', 'allCities');
     Route::get('/cities/{province}', 'cities');
+    Route::get('/barangays', 'allBarangays');
     Route::get('/barangays/{city}', 'barangays');
 });

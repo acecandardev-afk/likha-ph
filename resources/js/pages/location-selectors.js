@@ -1,3 +1,9 @@
+// Global variables to store location data
+let allRegions = [];
+let allProvinces = [];
+let allCities = [];
+let allBarangays = [];
+
 function initLocationSelectors(options) {
     const countrySelect = document.getElementById('country');
     const regionSelect = document.getElementById('region');
@@ -28,7 +34,7 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            loadProvinces(this.value, options.savedProvince, options.savedCity, options.savedBarangay);
+            populateProvinces(this.value, options.savedProvince, options.savedCity, options.savedBarangay);
         }
     });
 
@@ -39,7 +45,7 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            loadCities(this.value, options.savedCity, options.savedBarangay);
+            populateCities(this.value, options.savedCity, options.savedBarangay);
         }
     });
 
@@ -48,15 +54,17 @@ function initLocationSelectors(options) {
         barangaySelect.disabled = true;
 
         if (this.value) {
-            loadBarangays(this.value, options.savedBarangay);
+            populateBarangays(this.value, options.savedBarangay);
         }
     });
 
-    loadRegions().then(() => {
+    // Load all location data upfront
+    loadAllLocationData().then(() => {
+        populateRegions();
         if (options.savedRegion) {
             const selectedRegion = setSelectValue(regionSelect, options.savedRegion);
             if (selectedRegion) {
-                loadProvinces(selectedRegion, options.savedProvince, options.savedCity, options.savedBarangay);
+                populateProvinces(selectedRegion, options.savedProvince, options.savedCity, options.savedBarangay);
             }
         }
     });
@@ -86,87 +94,82 @@ function resetSelect(select, placeholder) {
     select.innerHTML = `<option value="">${placeholder}</option>`;
 }
 
-function loadRegions() {
-    return fetch('/api/regions')
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('region');
-            select.innerHTML = '<option value="">Select region</option>';
-            data.forEach(region => {
-                const option = document.createElement('option');
-                option.value = region.id;
-                option.textContent = region.name;
-                select.appendChild(option);
-            });
-        })
-        .catch(error => console.error('Error loading regions:', error));
+function loadAllLocationData() {
+    return Promise.all([
+        fetch('/api/regions').then(response => response.json()).then(data => allRegions = data),
+        fetch('/api/provinces').then(response => response.json()).then(data => allProvinces = data),
+        fetch('/api/cities').then(response => response.json()).then(data => allCities = data),
+        fetch('/api/barangays').then(response => response.json()).then(data => allBarangays = data)
+    ]).catch(error => console.error('Error loading location data:', error));
 }
 
-function loadProvinces(regionId, selectedProvince = null, selectedCity = null, selectedBarangay = null) {
-    return fetch(`/api/provinces/${regionId}`)
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('province');
-            select.innerHTML = '<option value="">Select province</option>';
-            data.forEach(province => {
-                const option = document.createElement('option');
-                option.value = province.id;
-                option.textContent = province.name;
-                select.appendChild(option);
-            });
-            select.disabled = false;
-
-            if (selectedProvince) {
-                const selected = setSelectValue(select, selectedProvince);
-                if (selected) {
-                    loadCities(selected, selectedCity, selectedBarangay);
-                }
-            }
-        })
-        .catch(error => console.error('Error loading provinces:', error));
+function populateRegions() {
+    const select = document.getElementById('region');
+    select.innerHTML = '<option value="">Select region</option>';
+    allRegions.forEach(region => {
+        const option = document.createElement('option');
+        option.value = region.id;
+        option.textContent = region.name;
+        select.appendChild(option);
+    });
 }
 
-function loadCities(provinceId, selectedCity = null, selectedBarangay = null) {
-    return fetch(`/api/cities/${provinceId}`)
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('city');
-            select.innerHTML = '<option value="">Select city</option>';
-            data.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city.id;
-                option.textContent = city.name;
-                select.appendChild(option);
-            });
-            select.disabled = false;
+function populateProvinces(regionId, selectedProvince = null, selectedCity = null, selectedBarangay = null) {
+    const select = document.getElementById('province');
+    select.innerHTML = '<option value="">Select province</option>';
 
-            if (selectedCity) {
-                const selected = setSelectValue(select, selectedCity);
-                if (selected) {
-                    loadBarangays(selected, selectedBarangay);
-                }
-            }
-        })
-        .catch(error => console.error('Error loading cities:', error));
+    const regionProvinces = allProvinces.filter(province => province.region_id == regionId);
+    regionProvinces.forEach(province => {
+        const option = document.createElement('option');
+        option.value = province.id;
+        option.textContent = province.name;
+        select.appendChild(option);
+    });
+    select.disabled = false;
+
+    if (selectedProvince) {
+        const selected = setSelectValue(select, selectedProvince);
+        if (selected) {
+            populateCities(selected, selectedCity, selectedBarangay);
+        }
+    }
 }
 
-function loadBarangays(cityId, selectedBarangay = null) {
-    return fetch(`/api/barangays/${cityId}`)
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('barangay');
-            select.innerHTML = '<option value="">Select barangay</option>';
-            data.forEach(barangay => {
-                const option = document.createElement('option');
-                option.value = barangay.id;
-                option.textContent = barangay.name;
-                select.appendChild(option);
-            });
-            select.disabled = false;
+function populateCities(provinceId, selectedCity = null, selectedBarangay = null) {
+    const select = document.getElementById('city');
+    select.innerHTML = '<option value="">Select city</option>';
 
-            if (selectedBarangay) {
-                setSelectValue(select, selectedBarangay);
-            }
-        })
-        .catch(error => console.error('Error loading barangays:', error));
+    const provinceCities = allCities.filter(city => city.province_id == provinceId);
+    provinceCities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city.id;
+        option.textContent = city.name;
+        select.appendChild(option);
+    });
+    select.disabled = false;
+
+    if (selectedCity) {
+        const selected = setSelectValue(select, selectedCity);
+        if (selected) {
+            populateBarangays(selected, selectedBarangay);
+        }
+    }
+}
+
+function populateBarangays(cityId, selectedBarangay = null) {
+    const select = document.getElementById('barangay');
+    select.innerHTML = '<option value="">Select barangay</option>';
+
+    const cityBarangays = allBarangays.filter(barangay => barangay.city_id == cityId);
+    cityBarangays.forEach(barangay => {
+        const option = document.createElement('option');
+        option.value = barangay.id;
+        option.textContent = barangay.name;
+        select.appendChild(option);
+    });
+    select.disabled = false;
+
+    if (selectedBarangay) {
+        setSelectValue(select, selectedBarangay);
+    }
 }
