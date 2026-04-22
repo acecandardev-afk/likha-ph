@@ -133,7 +133,7 @@ function loadCities(provinceId, selectedCity = null, selectedBarangay = null) {
             const select = document.getElementById('city');
             select.innerHTML = '<option value="">Select city</option>';
             data.forEach(city => {
-                const option = document.createElement('option';
+                const option = document.createElement('option');
                 option.value = city.id;
                 option.textContent = city.name;
                 select.appendChild(option);
@@ -157,7 +157,7 @@ function loadBarangays(cityId, selectedBarangay = null) {
             const select = document.getElementById('barangay');
             select.innerHTML = '<option value="">Select barangay</option>';
             data.forEach(barangay => {
-                const option = document.createElement('option';
+                const option = document.createElement('option');
                 option.value = barangay.id;
                 option.textContent = barangay.name;
                 select.appendChild(option);
