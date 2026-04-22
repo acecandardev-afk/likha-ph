@@ -27,6 +27,13 @@ if [ -n "${RENDER_EXTERNAL_URL:-}" ]; then
   fi
 fi
 
+# Render provides a dynamic PORT environment variable for Docker web services.
+# Update Apache config at runtime so it listens on the correct port.
+if [ -n "${PORT:-}" ]; then
+  sed -ri "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
+  sed -ri "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/g" /etc/apache2/sites-available/*.conf
+fi
+
 php artisan storage:link >/dev/null 2>&1 || true
 
 # Run package discovery (composer scripts are disabled during image build).
