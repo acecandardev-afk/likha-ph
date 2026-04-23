@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\Artisan;
 
 use App\Models\ArtisanProfile;
+use App\Services\ImageUploadService;
 use App\Support\Guihulngan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 class ProfileController extends ArtisanController
 {
+    public function __construct(
+        protected ImageUploadService $imageUploadService
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Show artisan profile edit form.
      */
@@ -53,25 +58,14 @@ class ProfileController extends ArtisanController
 
         // Handle profile image upload
         if ($request->hasFile('profile_image')) {
-            $artisansDir = storage_path('app/public/artisans');
-            if (!File::isDirectory($artisansDir)) {
-                File::makeDirectory($artisansDir, 0755, true);
-            }
-
-            $filename = uniqid('artisan_' . $artisan->id . '_') . '.jpg';
-
-            $image = Image::read($request->file('profile_image'));
-            $image->scale(width: 400);
-            $image->toJpeg(quality: 85)->save(
-                $artisansDir . '/' . $filename
-            );
-
-            // Delete old image
             if ($profile && $profile->profile_image) {
-                Storage::disk('artisans')->delete($profile->profile_image);
+                $this->imageUploadService->deleteArtisanImage($profile->profile_image);
             }
 
-            $validated['profile_image'] = $filename;
+            $validated['profile_image'] = $this->imageUploadService->uploadArtisanImage(
+                $request->file('profile_image'),
+                $artisan->id
+            );
         }
 
         // Create or update profile
@@ -101,6 +95,10 @@ class ProfileController extends ArtisanController
         }
 
         $this->authorize('update', $profile);
+
+        if ($profile->profile_image) {
+            $this->imageUploadService->deleteArtisanImage($profile->profile_image);
+        }
 
         $profile->update(['profile_image' => null]);
 

@@ -34,6 +34,10 @@ if [ -n "${PORT:-}" ]; then
   sed -ri "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/g" /etc/apache2/sites-available/*.conf
 fi
 
+# A real "public/storage" directory (not a symlink) breaks /storage/* URLs. Remove it, then link.
+if [ -e public/storage ] && [ ! -L public/storage ]; then
+  rm -rf public/storage
+fi
 php artisan storage:link >/dev/null 2>&1 || true
 
 # Run package discovery (composer scripts are disabled during image build).

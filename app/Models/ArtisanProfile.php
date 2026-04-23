@@ -34,11 +34,11 @@ class ArtisanProfile extends Model
     // Accessors
     public function getProfileImageUrlAttribute(): ?string
     {
-        if (!$this->profile_image) {
+        if (! $this->profile_image) {
             return null;
         }
 
-        return '/storage/artisans/'.ltrim($this->profile_image, '/');
+        return Storage::disk('artisans')->url(ltrim($this->profile_image, '/'));
     }
 
     public function getIdPhotoUrlAttribute(): ?string
@@ -47,7 +47,7 @@ class ArtisanProfile extends Model
             return null;
         }
 
-        return '/storage/'.ltrim($this->id_photo, '/');
+        return Storage::disk('public')->url(ltrim($this->id_photo, '/'));
     }
 
     public function getFullLocationAttribute(): string

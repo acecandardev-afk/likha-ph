@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Requests\CancelOrderRequest;
 use App\Models\Order;
+use App\Services\ImageUploadService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
-use Intervention\Image\Laravel\Facades\Image;
 
 class OrderController extends CustomerController
 {
+    public function __construct(
+        protected ImageUploadService $imageUploadService
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Display customer's orders.
      */
@@ -66,17 +71,9 @@ class OrderController extends CustomerController
             return back()->withErrors(['error' => 'Payment proof cannot be uploaded at this time.']);
         }
 
-        $paymentsDir = storage_path('app/public/payments');
-        if (!File::isDirectory($paymentsDir)) {
-            File::makeDirectory($paymentsDir, 0755, true);
-        }
-
-        $filename = uniqid('payment_' . $order->id . '_') . '.jpg';
-
-        $image = Image::read($request->file('proof_image'));
-        $image->scale(width: 800);
-        $image->toJpeg(quality: 85)->save(
-            $paymentsDir . '/' . $filename
+        $filename = $this->imageUploadService->uploadPaymentProof(
+            $request->file('proof_image'),
+            $order->id
         );
 
         $payment->update([

@@ -10,12 +10,42 @@ use Intervention\Image\Laravel\Facades\Image;
 class ImageUploadService
 {
     /**
-     * Ensure a storage directory exists (for products, artisans, payments).
+     * Write processed JPEG to the given disk. Uses Storage so uploads can target S3/R2 in production.
      */
+    public function putJpegToDisk(
+        string $disk,
+        string $filename,
+        $image,
+        int $quality = 85
+    ): void {
+        if ($this->isLocalDisk($disk) && is_string($root = (string) config("filesystems.disks.{$disk}.root", '')) && $root !== '') {
+            if (! File::isDirectory($root)) {
+                File::makeDirectory($root, 0755, true);
+            }
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'likha_img_');
+        try {
+            $image->toJpeg(quality: $quality)->save($tmp);
+            $content = (string) file_get_contents($tmp);
+            $options = ['visibility' => 'public'];
+            Storage::disk($disk)->put($filename, $content, $options);
+        } finally {
+            if (is_string($tmp) && file_exists($tmp)) {
+                @unlink($tmp);
+            }
+        }
+    }
+
+    private function isLocalDisk(string $disk): bool
+    {
+        return (string) config("filesystems.disks.{$disk}.driver", 'local') === 'local';
+    }
+
     private function ensureStorageDir(string $dir): void
     {
-        $path = storage_path('app/public/' . $dir);
-        if (!File::isDirectory($path)) {
+        $path = storage_path('app/public/'.$dir);
+        if (! File::isDirectory($path)) {
             File::makeDirectory($path, 0755, true);
         }
     }
@@ -25,25 +55,21 @@ class ImageUploadService
      */
     public function uploadProductImage(UploadedFile $file, int $productId): string
     {
-        $this->ensureStorageDir('products');
+        if ($this->isLocalDisk('products')) {
+            $this->ensureStorageDir('products');
+        }
 
-        $filename = $this->generateFilename('product_' . $productId);
+        $filename = $this->generateFilename('product_'.$productId);
 
         $image = Image::read($file);
 
-        // Main image (800px wide)
         $image->scale(width: 800);
-        $image->toJpeg(quality: 85)->save(
-            storage_path('app/public/products/' . $filename)
-        );
+        $this->putJpegToDisk('products', $filename, $image, 85);
 
-        // Thumbnail (200px wide)
-        $thumbnailFilename = 'thumb_' . $filename;
+        $thumbnailFilename = 'thumb_'.$filename;
         $thumbnail = Image::read($file);
         $thumbnail->scale(width: 200);
-        $thumbnail->toJpeg(quality: 80)->save(
-            storage_path('app/public/products/' . $thumbnailFilename)
-        );
+        $this->putJpegToDisk('products', $thumbnailFilename, $thumbnail, 80);
 
         return $filename;
     }
@@ -53,17 +79,16 @@ class ImageUploadService
      */
     public function uploadArtisanImage(UploadedFile $file, int $userId): string
     {
-        $this->ensureStorageDir('artisans');
+        if ($this->isLocalDisk('artisans')) {
+            $this->ensureStorageDir('artisans');
+        }
 
-        $filename = $this->generateFilename('artisan_' . $userId);
+        $filename = $this->generateFilename('artisan_'.$userId);
 
         $image = Image::read($file);
 
-        // Square crop and resize to 400x400
         $image->cover(400, 400);
-        $image->toJpeg(quality: 85)->save(
-            storage_path('app/public/artisans/' . $filename)
-        );
+        $this->putJpegToDisk('artisans', $filename, $image, 85);
 
         return $filename;
     }
@@ -73,17 +98,16 @@ class ImageUploadService
      */
     public function uploadPaymentProof(UploadedFile $file, int $orderId): string
     {
-        $this->ensureStorageDir('payments');
+        if ($this->isLocalDisk('payments')) {
+            $this->ensureStorageDir('payments');
+        }
 
-        $filename = $this->generateFilename('payment_' . $orderId);
+        $filename = $this->generateFilename('payment_'.$orderId);
 
         $image = Image::read($file);
 
-        // Resize to max 800px wide
         $image->scale(width: 800);
-        $image->toJpeg(quality: 85)->save(
-            storage_path('app/public/payments/' . $filename)
-        );
+        $this->putJpegToDisk('payments', $filename, $image, 85);
 
         return $filename;
     }
@@ -94,9 +118,8 @@ class ImageUploadService
     public function deleteProductImage(string $filename): bool
     {
         $deleted = Storage::disk('products')->delete($filename);
-        
-        // Delete thumbnail if exists
-        $thumbnailFilename = 'thumb_' . $filename;
+
+        $thumbnailFilename = 'thumb_'.$filename;
         if (Storage::disk('products')->exists($thumbnailFilename)) {
             Storage::disk('products')->delete($thumbnailFilename);
         }
@@ -133,8 +156,8 @@ class ImageUploadService
      */
     public function getProductThumbnailUrl(string $filename): string
     {
-        $thumbnailFilename = 'thumb_' . $filename;
-        
+        $thumbnailFilename = 'thumb_'.$filename;
+
         if (Storage::disk('products')->exists($thumbnailFilename)) {
             return Storage::disk('products')->url($thumbnailFilename);
         }
@@ -163,7 +186,7 @@ class ImageUploadService
      */
     private function generateFilename(string $prefix): string
     {
-        return $prefix . '_' . uniqid() . '_' . time() . '.jpg';
+        return $prefix.'_'.uniqid().'_'.time().'.jpg';
     }
 
     /**
@@ -173,21 +196,17 @@ class ImageUploadService
     {
         $errors = [];
 
-        // Check file type
-        if (!in_array($file->extension(), ['jpg', 'jpeg', 'png'])) {
+        if (! in_array($file->extension(), ['jpg', 'jpeg', 'png'])) {
             $errors[] = 'Image must be JPG, JPEG, or PNG format.';
         }
 
-        // Check file size
         if ($file->getSize() > ($maxSizeKb * 1024)) {
             $errors[] = "Image must be less than {$maxSizeKb}KB.";
         }
 
-        // Check if it's actually an image
         try {
             $image = Image::read($file);
-            
-            // Check minimum dimensions (optional)
+
             if ($image->width() < 400 || $image->height() < 400) {
                 $errors[] = 'Image must be at least 400x400 pixels.';
             }

@@ -5,7 +5,12 @@
 @section('content')
 <div class="container py-2 py-md-3">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
-        <h1 class="h2 fw-semibold mb-0">My products</h1>
+        <div>
+            <h1 class="h2 fw-semibold mb-0">My products</h1>
+            @if(filled($shopName ?? null))
+                <p class="text-body-secondary small mb-0 mt-1">{{ $shopName }}</p>
+            @endif
+        </div>
         <a href="{{ route('artisan.products.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Add product
         </a>
@@ -41,8 +46,11 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            @if($product->primaryImage)
-                                                <img src="{{ $product->primaryImage->image_url }}" alt="" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
+                                            @php
+                                                $rowThumb = $product->primaryImage ?? $product->images->sortBy('sort_order')->first();
+                                            @endphp
+                                            @if($rowThumb)
+                                                <img src="{{ $rowThumb->image_url }}" alt="" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
                                             @else
                                                 <div class="rounded bg-light d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
                                                     <i class="bi bi-image text-muted"></i>

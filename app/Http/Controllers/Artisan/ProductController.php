@@ -29,8 +29,10 @@ class ProductController extends ArtisanController
     public function index(\Illuminate\Http\Request $request)
     {
         $artisan = $this->getArtisan();
+        $artisan->load('artisanProfile');
+        $shopName = $artisan->artisanProfile?->workshop_name;
 
-        $query = $artisan->products()->with('category', 'images');
+        $query = $artisan->products()->with('category', 'images', 'primaryImage');
 
         // Filter by approval status
         if ($request->has('status')) {
@@ -39,7 +41,7 @@ class ProductController extends ArtisanController
 
         $products = $query->latest()->paginate(20);
 
-        return view('artisan.products.index', compact('products'));
+        return view('artisan.products.index', compact('products', 'shopName'));
     }
 
     /**

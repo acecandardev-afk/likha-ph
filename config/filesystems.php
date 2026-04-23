@@ -1,5 +1,26 @@
 <?php
 
+$mediaUseS3 = env('MEDIA_DRIVER', 'local') === 's3' && ! empty(env('AWS_BUCKET'));
+$mediaPrefix = trim((string) env('MEDIA_S3_PATH_PREFIX', ''), '/');
+$objectRoot = function (string $dir) use ($mediaPrefix) {
+    $dir = trim($dir, '/');
+    if ($mediaPrefix === '') {
+        return $dir;
+    }
+    return $mediaPrefix.'/'.$dir;
+};
+
+$mediaS3Base = [
+    'driver' => 's3',
+    'key' => env('AWS_ACCESS_KEY_ID'),
+    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+    'bucket' => env('AWS_BUCKET'),
+    'url' => env('AWS_URL'),
+    'endpoint' => env('AWS_ENDPOINT'),
+    'use_path_style_endpoint' => (bool) env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+];
+
 return [
 
     /*
@@ -60,32 +81,48 @@ return [
             'report' => false,
         ],
 
-        // Custom disk for product images
-        'products' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public/products'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/products',
-            'visibility' => 'public',
-            'throw' => false,
-        ],
+        // Custom disk for product images (local) or S3 / R2 when MEDIA_DRIVER=s3
+        'products' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('products'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/products'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/products',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
 
-        // Artisan profile images
-        'artisans' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public/artisans'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/artisans',
-            'visibility' => 'public',
-            'throw' => false,
-        ],
+        'artisans' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('artisans'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/artisans'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/artisans',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
 
-        // Payment proofs (kept public disk but can be tightened later)
-        'payments' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public/payments'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/payments',
-            'visibility' => 'public',
-            'throw' => false,
-        ],
+        'payments' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('payments'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/payments'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/payments',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
     ],
 
     /*
