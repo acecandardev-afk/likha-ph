@@ -30,7 +30,7 @@ class ProductImage extends Model
     // Accessors
     public function getImageUrlAttribute(): string
     {
-        return '/storage/products/' . ltrim($this->image_path, '/');
+        return '/storage/products/'.ltrim($this->image_path, '/');
     }
 
     // Mutators

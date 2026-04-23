@@ -10,6 +10,40 @@ use Illuminate\Support\Facades\Cache;
 
 class AddressService
 {
+    public const CACHE_KEY_BOOTSTRAP = 'ph.address.client_bootstrap_v1';
+
+    /**
+     * Full hierarchy for inline JS: one payload per page, no waterfall of /api/region/... requests.
+     */
+    public function getClientBootstrap(): array
+    {
+        return Cache::remember(self::CACHE_KEY_BOOTSTRAP, 3600, function () {
+            return [
+                'regions' => Region::query()
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'code'])
+                    ->all(),
+                'provinces' => Province::query()
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'code', 'region_id'])
+                    ->all(),
+                'cities' => City::query()
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'code', 'province_id'])
+                    ->all(),
+                'barangays' => Barangay::query()
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'code', 'city_id'])
+                    ->all(),
+            ];
+        });
+    }
+
+    public static function forgetClientBootstrapCache(): void
+    {
+        Cache::forget(self::CACHE_KEY_BOOTSTRAP);
+    }
+
     public function getRegions()
     {
         return Cache::remember('regions', 3600, function () {
@@ -59,6 +93,6 @@ class AddressService
         Cache::forget('provinces');
         Cache::forget('cities');
         Cache::forget('barangays');
-        // Also clear specific caches if needed, but for simplicity, clear all
+        self::forgetClientBootstrapCache();
     }
 }

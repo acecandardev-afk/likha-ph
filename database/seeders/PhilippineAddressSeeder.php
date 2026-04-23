@@ -8,6 +8,8 @@ use App\Models\Region;
 use App\Models\Province;
 use App\Models\City;
 use App\Models\Barangay;
+use App\Services\AddressService;
+use Illuminate\Support\Facades\Cache;
 
 class PhilippineAddressSeeder extends Seeder
 {
@@ -63,5 +65,32 @@ class PhilippineAddressSeeder extends Seeder
         foreach ($barangays as $name => $code) {
             Barangay::updateOrCreate(['code' => $code], ['name' => $name, 'city_id' => $city->id]);
         }
+
+        // Add more regions for completeness
+        $regions = [
+            ['code' => '01', 'name' => 'Ilocos Region'],
+            ['code' => '02', 'name' => 'Cagayan Valley'],
+            ['code' => '03', 'name' => 'Central Luzon'],
+            ['code' => '04', 'name' => 'CALABARZON'],
+            ['code' => '05', 'name' => 'Bicol Region'],
+            ['code' => '06', 'name' => 'Western Visayas'],
+            ['code' => '08', 'name' => 'Eastern Visayas'],
+            ['code' => '09', 'name' => 'Zamboanga Peninsula'],
+            ['code' => '10', 'name' => 'Northern Mindanao'],
+            ['code' => '11', 'name' => 'Davao Region'],
+            ['code' => '12', 'name' => 'SOCCSKSARGEN'],
+            ['code' => '13', 'name' => 'National Capital Region'],
+            ['code' => '14', 'name' => 'Cordillera Administrative Region'],
+            ['code' => '15', 'name' => 'Autonomous Region in Muslim Mindanao'],
+            ['code' => '16', 'name' => 'Caraga'],
+            ['code' => '17', 'name' => 'MIMAROPA Region'],
+        ];
+
+        foreach ($regions as $reg) {
+            Region::updateOrCreate(['code' => $reg['code']], ['name' => $reg['name']]);
+        }
+
+        AddressService::forgetClientBootstrapCache();
+        Cache::forget('regions');
     }
 }

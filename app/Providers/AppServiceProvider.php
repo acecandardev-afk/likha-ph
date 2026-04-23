@@ -6,9 +6,11 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\CartService;
 use App\Services\OrderService;
 use App\Services\ImageUploadService;
+use App\Services\AddressService;
 use App\Services\PaymentService;
 use App\Services\NotificationService;
 use App\Services\StockService;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(NotificationService::class)
             );
         });
+
+        $this->app->singleton(AddressService::class);
     }
 
     /**
@@ -48,6 +52,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer(
+            [
+                'auth.apply-artisan',
+                'auth.register-artisan',
+                'account.edit',
+                'customer.checkout.index',
+            ],
+            function ($view) {
+                $view->with('phAddressBootstrap', app(AddressService::class)->getClientBootstrap());
+            }
+        );
     }
 }

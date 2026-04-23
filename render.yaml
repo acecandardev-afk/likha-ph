@@ -29,6 +29,8 @@ services:
         value: public
       - key: RUN_MIGRATIONS
         value: "1"
+      - key: RUN_ADDRESS_SEEDER
+        value: "1"
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST

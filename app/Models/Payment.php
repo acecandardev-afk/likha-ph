@@ -60,7 +60,7 @@ class Payment extends Model
             return null;
         }
 
-        return '/storage/payments/' . ltrim($this->proof_image, '/');
+        return '/storage/payments/'.ltrim($this->proof_image, '/');
     }
 
     // Helpers

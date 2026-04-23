@@ -206,185 +206,20 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Load regions on page load
-    loadRegions();
-
-    // Event listeners for cascading dropdowns
-    document.getElementById('region').addEventListener('change', function() {
-        const regionId = this.value;
-        if (regionId) {
-            resetSelect('province');
-            resetSelect('city');
-            resetSelect('barangay');
-            loadProvinces(regionId);
-        } else {
-            resetSelect('province', true);
-            resetSelect('city', true);
-            resetSelect('barangay', true);
+    initCheckoutAddressForm({
+        bootstrap: @json($phAddressBootstrap),
+        useSavedButtonId: 'useSavedAddress',
+        streetFieldId: 'street_address',
+        phoneFieldId: 'phone',
+        savedForButton: {
+            region: @json(auth()->user()->region ?? ''),
+            province: @json(auth()->user()->province ?? ''),
+            city: @json(auth()->user()->city ?? ''),
+            barangay: @json(auth()->user()->barangay ?? ''),
+            street: @json(auth()->user()->street_address ?? ''),
+            phone: @json(auth()->user()->phone ?? '')
         }
     });
-
-    document.getElementById('province').addEventListener('change', function() {
-        const provinceId = this.value;
-        if (provinceId) {
-            resetSelect('city');
-            resetSelect('barangay');
-            loadCities(provinceId);
-        } else {
-            resetSelect('city', true);
-            resetSelect('barangay', true);
-        }
-    });
-
-    document.getElementById('city').addEventListener('change', function() {
-        const cityId = this.value;
-        if (cityId) {
-            resetSelect('barangay');
-            loadBarangays(cityId);
-        } else {
-            resetSelect('barangay', true);
-        }
-    });
-
-    // Use saved address functionality
-    const useSavedBtn = document.getElementById('useSavedAddress');
-    const savedRegion = @json(auth()->user()->region ?? '');
-    const savedProvince = @json(auth()->user()->province ?? '');
-    const savedCity = @json(auth()->user()->city ?? '');
-    const savedBarangay = @json(auth()->user()->barangay ?? '');
-    const savedStreetAddress = @json(auth()->user()->street_address ?? '');
-    const savedPhone = @json(auth()->user()->phone ?? '');
-
-    if (useSavedBtn) {
-        useSavedBtn.addEventListener('click', function() {
-            populateSavedAddress();
-            document.getElementById('street_address').value = savedStreetAddress;
-            document.getElementById('phone').value = savedPhone;
-        });
-    }
-
-    function selectOptionByText(select, text) {
-        if (!text) {
-            return null;
-        }
-
-        const normalized = text.toString().trim().toLowerCase();
-        const option = Array.from(select.options).find(opt => opt.textContent.trim().toLowerCase() === normalized);
-
-        if (option) {
-            select.value = option.value;
-            return option.value;
-        }
-
-        return null;
-    }
-
-    function populateSavedAddress() {
-        const regionSelect = document.getElementById('region');
-        const provinceSelect = document.getElementById('province');
-        const citySelect = document.getElementById('city');
-        const barangaySelect = document.getElementById('barangay');
-
-        if (savedRegion) {
-            const regionId = selectOptionByText(regionSelect, savedRegion);
-            if (regionId) {
-                loadProvinces(regionId, savedProvince);
-            }
-        }
-    }
-
-    function loadRegions() {
-        return fetch('/api/regions')
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('region');
-                select.innerHTML = '<option value="">Select region</option>';
-                data.forEach(region => {
-                    const option = document.createElement('option');
-                    option.value = region.id;
-                    option.textContent = region.name;
-                    select.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error loading regions:', error));
-    }
-
-    function loadProvinces(regionId, selectedProvince = null) {
-        return fetch(`/api/provinces/${regionId}`)
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('province');
-                select.innerHTML = '<option value="">Select province</option>';
-                data.forEach(province => {
-                    const option = document.createElement('option');
-                    option.value = province.id;
-                    option.textContent = province.name;
-                    select.appendChild(option);
-                });
-                select.disabled = false;
-
-                if (selectedProvince) {
-                    const provinceId = selectOptionByText(select, selectedProvince);
-                    if (provinceId) {
-                        loadCities(provinceId, savedCity);
-                    }
-                }
-            })
-            .catch(error => console.error('Error loading provinces:', error));
-    }
-
-    function loadCities(provinceId, selectedCity = null) {
-        return fetch(`/api/cities/${provinceId}`)
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('city');
-                select.innerHTML = '<option value="">Select city</option>';
-                data.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city.id;
-                    option.textContent = city.name;
-                    select.appendChild(option);
-                });
-                select.disabled = false;
-
-                if (selectedCity) {
-                    const cityId = selectOptionByText(select, selectedCity);
-                    if (cityId) {
-                        loadBarangays(cityId, savedBarangay);
-                    }
-                }
-            })
-            .catch(error => console.error('Error loading cities:', error));
-    }
-
-    function loadBarangays(cityId, selectedBarangay = null) {
-        return fetch(`/api/barangays/${cityId}`)
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('barangay');
-                select.innerHTML = '<option value="">Select barangay</option>';
-                data.forEach(barangay => {
-                    const option = document.createElement('option');
-                    option.value = barangay.id;
-                    option.textContent = barangay.name;
-                    select.appendChild(option);
-                });
-                select.disabled = false;
-
-                if (selectedBarangay) {
-                    selectOptionByText(select, selectedBarangay);
-                }
-            })
-            .catch(error => console.error('Error loading barangays:', error));
-    }
-
-    function resetSelect(selectId, disable = false) {
-        const select = document.getElementById(selectId);
-        select.innerHTML = `<option value="">Select ${selectId}</option>`;
-        if (disable) {
-            select.disabled = true;
-        }
-    }
 });
 </script>
 @endpush

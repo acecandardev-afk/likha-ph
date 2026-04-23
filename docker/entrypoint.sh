@@ -63,5 +63,10 @@ if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
   fi
 fi
 
+if [ "${RUN_ADDRESS_SEEDER:-1}" = "1" ]; then
+  php artisan db:seed --class="Database\\Seeders\\PhilippineAddressSeeder" --force --no-interaction >/dev/null 2>&1 || true
+  php artisan cache:clear >/dev/null 2>&1 || true
+fi
+
 exec "$@"
 

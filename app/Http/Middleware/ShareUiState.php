@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,6 +20,11 @@ class ShareUiState
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $root = $request->getSchemeAndHttpHost().rtrim($request->getBasePath(), '/');
+        if ($root !== '') {
+            URL::forceRootUrl($root);
+        }
+
         $userId = $request->user()?->id;
 
         $cartCount = 0;

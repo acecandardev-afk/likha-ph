@@ -38,7 +38,7 @@ class ArtisanProfile extends Model
             return null;
         }
 
-        return '/storage/artisans/' . ltrim($this->profile_image, '/');
+        return '/storage/artisans/'.ltrim($this->profile_image, '/');
     }
 
     public function getIdPhotoUrlAttribute(): ?string
@@ -47,7 +47,7 @@ class ArtisanProfile extends Model
             return null;
         }
 
-        return '/storage/' . ltrim($this->id_photo, '/');
+        return '/storage/'.ltrim($this->id_photo, '/');
     }
 
     public function getFullLocationAttribute(): string

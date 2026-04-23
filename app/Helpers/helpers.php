@@ -95,10 +95,10 @@ if (!function_exists('storage_url')) {
         $path = ltrim($path, '/');
 
         return match ($disk) {
-            'products' => '/storage/products/' . $path,
-            'artisans' => '/storage/artisans/' . $path,
-            'payments' => '/storage/payments/' . $path,
-            'public' => '/storage/' . $path,
+            'products' => '/storage/products/'.$path,
+            'artisans' => '/storage/artisans/'.$path,
+            'payments' => '/storage/payments/'.$path,
+            'public' => '/storage/'.$path,
             default => Storage::disk($disk)->url($path),
         };
     }
