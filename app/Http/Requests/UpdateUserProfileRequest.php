@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Support\SignupEmailValidation;
 
 class UpdateUserProfileRequest extends FormRequest
 {
@@ -27,13 +27,7 @@ class UpdateUserProfileRequest extends FormRequest
                 'min:2',
                 'max:255',
             ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($this->user()->id),
-            ],
+            'email' => SignupEmailValidation::profileEmailRules($this->user()->id),
             'phone' => [
                 'required',
                 'string',

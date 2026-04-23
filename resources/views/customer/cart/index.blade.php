@@ -34,7 +34,7 @@
                                 <div class="row align-items-center g-2 p-3 border-bottom">
                                     <div class="col-4 col-md-2">
                                         @if($item->product->primaryImage)
-                                            <img src="{{ $item->product->primaryImage->image_url }}" alt="{{ $item->product->name }}" class="img-fluid rounded">
+                                            <img src="{{ $item->product->primaryImage->image_url }}" alt="{{ $item->product->name }}" class="img-fluid rounded" loading="lazy" decoding="async">
                                         @else
                                             <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 70px;">
                                                 <i class="bi bi-image text-muted"></i>

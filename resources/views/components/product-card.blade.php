@@ -3,7 +3,7 @@
 <div class="card h-100 product-card product-card--sub shadow-soft-hover">
     <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
         @if($product->primaryImage)
-            <img src="{{ $product->primaryImage->image_url }}" class="card-img-top product-card-img" alt="{{ $product->name }}">
+            <img src="{{ $product->primaryImage->image_url }}" class="card-img-top product-card-img" alt="{{ $product->name }}" loading="lazy" decoding="async">
         @else
             <div class="card-img-top product-card-img product-card-placeholder d-flex align-items-center justify-content-center">
                 <span class="text-muted small">No image</span>

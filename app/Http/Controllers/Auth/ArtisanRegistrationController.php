@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Log;
 use App\Support\Guihulngan;
+use App\Support\SignupEmailValidation;
 
 class ArtisanRegistrationController extends Controller
 {
@@ -37,12 +38,14 @@ class ArtisanRegistrationController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => SignupEmailValidation::registrationEmailRules(),
             'password' => ['required', 'confirmed', Password::defaults()],
             'workshop_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'barangay' => Guihulngan::barangayRules(true),
             'id_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+        ], [
+            'email.unique' => 'This email address is already registered.',
         ]);
 
         $user = User::create([

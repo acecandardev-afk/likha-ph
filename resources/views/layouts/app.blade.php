@@ -11,6 +11,7 @@
     <link rel="apple-touch-icon" href="{{ asset('likha-ph-logo.png') }}">
 
     <link rel="dns-prefetch" href="//fonts.bunny.net">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
     <link href="https://fonts.bunny.net/css?family=DM+Sans:400,500,600,700|Playfair+Display:600,700,800|Nunito:400,600&display=swap" rel="stylesheet">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])

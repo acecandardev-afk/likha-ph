@@ -29,7 +29,7 @@
                     <a href="{{ route('artisans.show', $artisan) }}" class="artisan-card artisan-card-sub card h-100 text-decoration-none border-0 shadow-sm shadow-soft-hover">
                         <div class="artisan-card-image-wrapper position-relative overflow-hidden">
                             @if($artisan->artisanProfile && $artisan->artisanProfile->profile_image_url)
-                                <img src="{{ $artisan->artisanProfile->profile_image_url }}" class="artisan-card-img card-img-top" alt="{{ $artisan->artisanProfile->workshop_name }}">
+                                <img src="{{ $artisan->artisanProfile->profile_image_url }}" class="artisan-card-img card-img-top" alt="{{ $artisan->artisanProfile->workshop_name }}" loading="lazy" decoding="async">
                             @else
                                 <div class="artisan-card-placeholder card-img-top d-flex align-items-center justify-content-center">
                                     <i class="bi bi-person-badge text-white opacity-75 artisan-placeholder-icon"></i>

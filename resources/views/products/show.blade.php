@@ -18,7 +18,7 @@
                 <div class="carousel-inner">
                     @foreach($product->images as $index => $image)
                         <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                            <img src="{{ $image->image_url }}" class="d-block w-100 product-carousel-image" alt="{{ $product->name }}">
+                            <img src="{{ $image->image_url }}" class="d-block w-100 product-carousel-image" alt="{{ $product->name }}"@if($index === 0) loading="eager" fetchpriority="high" decoding="async" @else loading="lazy" decoding="async" @endif>
                         </div>
                     @endforeach
                 </div>
