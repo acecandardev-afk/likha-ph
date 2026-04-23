@@ -184,8 +184,9 @@ class OrderService
      */
     public function cancelOrder(Order $order): Order
     {
-        if (!$order->canBeCancelled()) {
-            throw new \Exception("Order cannot be cancelled at this time.");
+        $isAdmin = auth()->user()?->isAdmin() ?? false;
+        if (! $isAdmin && ! $order->canBeCancelled()) {
+            throw new \Exception('Order cannot be cancelled at this time.');
         }
 
         DB::transaction(function () use ($order) {

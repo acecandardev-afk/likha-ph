@@ -60,12 +60,12 @@ class OrderPolicy
      */
     public function cancel(User $user, Order $order): bool
     {
-        // Buyer can cancel their pending/confirmed orders (works for customers and artisans who placed orders)
+        // Buyer: only while still pending (see Order::canBeCancelled)
         if ($order->customer_id === $user->id) {
             return $order->canBeCancelled();
         }
 
-        // Admin can cancel any order
+        // Admin: support cancellations in any state
         return $user->isAdmin();
     }
 

@@ -3,6 +3,19 @@
 @section('title', 'My orders')
 
 @section('content')
+@php
+    $statusFilter = $statusFilter ?? request('status', 'all');
+    $orderStatusFilters = [
+        'all' => 'All',
+        'pending' => 'Pending',
+        'confirmed' => 'Confirmed',
+        'shipped' => 'Shipped',
+        'on_delivery' => 'On delivery',
+        'delivered' => 'Delivered',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
+    ];
+@endphp
 <div class="container py-2 py-md-3">
     <x-profile-header-nav active="my-orders" />
     <nav aria-label="Breadcrumb" class="mb-3">
@@ -11,11 +24,29 @@
             <li class="breadcrumb-item active" aria-current="page">My orders</li>
         </ol>
     </nav>
-    <h2 class="h4 fw-semibold mb-4">My orders</h2>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+        <h2 class="h4 fw-semibold mb-0">My orders</h2>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label small text-muted mb-2">Filter by status</label>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach($orderStatusFilters as $value => $label)
+                <a
+                    href="{{ route('customer.orders.index', ['status' => $value]) }}"
+                    class="btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-outline-secondary' }}"
+                >{{ $label }}</a>
+            @endforeach
+        </div>
+    </div>
 
     @if($orders->isEmpty())
         <div class="alert alert-info">
-            You don’t have any orders yet. <a href="{{ route('products.index') }}" class="alert-link">Start shopping</a> to place your first order.
+            @if($statusFilter !== 'all')
+                No orders with this status. <a href="{{ route('customer.orders.index') }}" class="alert-link">Show all orders</a>
+            @else
+                You don’t have any orders yet. <a href="{{ route('products.index') }}" class="alert-link">Start shopping</a> to place your first order.
+            @endif
         </div>
     @else
         <div class="table-responsive">

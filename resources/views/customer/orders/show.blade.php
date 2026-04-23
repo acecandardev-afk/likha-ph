@@ -87,6 +87,20 @@
                             </form>
                         </div>
                     @endif
+                    @can('cancel', $order)
+                        <div class="mt-3 pt-3 border-top">
+                            <form method="POST" action="{{ route('customer.orders.cancel', $order) }}" class="d-inline" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel order
+                                </button>
+                            </form>
+                            @unless(auth()->user()?->isAdmin())
+                                <p class="text-muted small mb-0 mt-2">You can cancel only while the order is still pending.</p>
+                            @endunless
+                        </div>
+                    @endcan
                 </div>
             </div>
 

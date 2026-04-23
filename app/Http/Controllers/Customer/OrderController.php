@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Http\Requests\CancelOrderRequest;
 use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
 class OrderController extends CustomerController
@@ -26,9 +26,10 @@ class OrderController extends CustomerController
             $query->where('status', $request->status);
         }
 
-        $orders = $query->latest()->paginate(20);
+        $orders = $query->latest()->paginate(20)->withQueryString();
+        $statusFilter = $request->input('status', 'all');
 
-        return view('customer.orders.index', compact('orders'));
+        return view('customer.orders.index', compact('orders', 'statusFilter'));
     }
 
     /**
@@ -100,5 +101,21 @@ class OrderController extends CustomerController
         $order->update(['status' => 'delivered']);
 
         return back()->with('success', 'Order marked as received. Thank you for your feedback!');
+    }
+
+    /**
+     * Cancel order (customer: pending only; admin: any state — see policy and OrderService).
+     */
+    public function cancel(CancelOrderRequest $request, Order $order, OrderService $orderService)
+    {
+        try {
+            $orderService->cancelOrder($order->fresh());
+        } catch (\Throwable $e) {
+            return back()->withErrors(['order' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('customer.orders.index')
+            ->with('success', 'Order has been cancelled.');
     }
 }

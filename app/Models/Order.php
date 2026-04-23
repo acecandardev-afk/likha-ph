@@ -163,9 +163,12 @@ class Order extends Model
         return $this->status === 'cancelled';
     }
 
+    /**
+     * Buyers may only cancel while the order is still pending (not shipped or beyond).
+     */
     public function canBeCancelled(): bool
     {
-        return $this->isPending() || $this->isShipped();
+        return $this->isPending();
     }
 
     public function canBeReceived(): bool

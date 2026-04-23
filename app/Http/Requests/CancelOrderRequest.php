@@ -47,9 +47,13 @@ class CancelOrderRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $order = $this->route('order');
-            
-            if (!$order->canBeCancelled()) {
-                $validator->errors()->add('order', 'This order cannot be cancelled at this time.');
+
+            if ($this->user()?->isAdmin()) {
+                return;
+            }
+
+            if (! $order->canBeCancelled()) {
+                $validator->errors()->add('order', 'This order cannot be cancelled once it has shipped. Only pending orders can be cancelled.');
             }
         });
     }
