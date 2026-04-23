@@ -8,26 +8,52 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Note: We do not use $table->enum()->change() here — Doctrine/dbal generates SQL that
+     * PostgreSQL rejects. orders.status is already a string; allowed values are enforced in app code.
      */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('country')->default('Philippines')->after('address');
-            $table->string('region')->nullable()->after('country');
-            $table->string('province')->nullable()->after('region');
-            $table->string('city')->nullable()->after('province');
-            $table->string('barangay')->nullable()->after('city');
-            $table->text('street_address')->nullable()->after('barangay');
+            if (! Schema::hasColumn('users', 'country')) {
+                $table->string('country')->default('Philippines')->after('address');
+            }
+            if (! Schema::hasColumn('users', 'region')) {
+                $table->string('region')->nullable()->after('country');
+            }
+            if (! Schema::hasColumn('users', 'province')) {
+                $table->string('province')->nullable()->after('region');
+            }
+            if (! Schema::hasColumn('users', 'city')) {
+                $table->string('city')->nullable()->after('province');
+            }
+            if (! Schema::hasColumn('users', 'barangay')) {
+                $table->string('barangay')->nullable()->after('city');
+            }
+            if (! Schema::hasColumn('users', 'street_address')) {
+                $table->text('street_address')->nullable()->after('barangay');
+            }
         });
 
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('country')->default('Philippines')->after('shipping_phone');
-            $table->string('region')->nullable()->after('country');
-            $table->string('province')->nullable()->after('region');
-            $table->string('city')->nullable()->after('province');
-            $table->string('barangay')->nullable()->after('city');
-            $table->text('street_address')->nullable()->after('barangay');
-            $table->enum('status', ['pending', 'confirmed', 'shipped', 'on_delivery', 'received', 'delivered', 'completed', 'cancelled'])->default('pending')->change();
+            if (! Schema::hasColumn('orders', 'country')) {
+                $table->string('country')->default('Philippines')->after('shipping_phone');
+            }
+            if (! Schema::hasColumn('orders', 'region')) {
+                $table->string('region')->nullable()->after('country');
+            }
+            if (! Schema::hasColumn('orders', 'province')) {
+                $table->string('province')->nullable()->after('region');
+            }
+            if (! Schema::hasColumn('orders', 'city')) {
+                $table->string('city')->nullable()->after('province');
+            }
+            if (! Schema::hasColumn('orders', 'barangay')) {
+                $table->string('barangay')->nullable()->after('city');
+            }
+            if (! Schema::hasColumn('orders', 'street_address')) {
+                $table->text('street_address')->nullable()->after('barangay');
+            }
         });
     }
 
@@ -37,12 +63,23 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['country', 'region', 'province', 'city', 'barangay', 'street_address']);
+            $uDrop = array_filter(
+                ['country', 'region', 'province', 'city', 'barangay', 'street_address'],
+                fn ($c) => Schema::hasColumn('users', $c)
+            );
+            if ($uDrop !== []) {
+                $table->dropColumn($uDrop);
+            }
         });
 
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['country', 'region', 'province', 'city', 'barangay', 'street_address']);
-            $table->string('status')->default('pending')->change();
+            $toDrop = array_filter(
+                ['country', 'region', 'province', 'city', 'barangay', 'street_address'],
+                fn ($c) => Schema::hasColumn('orders', $c)
+            );
+            if ($toDrop !== []) {
+                $table->dropColumn($toDrop);
+            }
         });
     }
 };
