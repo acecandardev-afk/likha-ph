@@ -14,6 +14,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::public()
+            ->visibleToShopper($request->user())
             ->with(['artisan.artisanProfile', 'category', 'primaryImage']);
 
         // Filter by category (case-insensitive: "a" and "A" match the same)
@@ -60,8 +61,14 @@ class ProductController extends Controller
     /**
      * Show product details.
      */
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
+        if ($request->user()?->isArtisan() && $product->isOwnedBy($request->user())) {
+            return redirect()
+                ->route('artisan.products.show', $product)
+                ->with('info', 'This is your listing. Customers see it in the shop; you manage it here.');
+        }
+
         $this->authorize('view', $product);
 
         $product->load([
@@ -72,6 +79,7 @@ class ProductController extends Controller
         ]);
 
         $relatedProducts = Product::public()
+            ->visibleToShopper($request->user())
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->with('images')

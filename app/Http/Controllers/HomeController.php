@@ -20,6 +20,7 @@ class HomeController extends Controller
         }
 
         $featuredProducts = Product::public()
+            ->visibleToShopper($request->user())
             ->with(['artisan.artisanProfile', 'category', 'images', 'primaryImage'])
             ->latest()
             ->take(8)

@@ -139,6 +139,10 @@ class CartService
         $errors = [];
 
         foreach ($cartItems as $item) {
+            if ($user->isArtisan() && $item->product->artisan_id === $user->id) {
+                $errors[] = "Remove your own product '{$item->product->name}' from the cart. You cannot purchase it.";
+            }
+
             // Check if product is still available
             if (!$item->product->isAvailable()) {
                 $errors[] = "Product '{$item->product->name}' is no longer available.";

@@ -111,6 +111,25 @@ class Product extends Model
             ->where('stock', '>', 0);
     }
 
+    /**
+     * On the public marketplace, artisans must not see their own listings (shop, home, profile).
+     */
+    public function scopeVisibleToShopper($query, ?User $viewer = null)
+    {
+        if ($viewer?->isArtisan()) {
+            $query->where('artisan_id', '!=', $viewer->id);
+        }
+
+        return $query;
+    }
+
+    public function isOwnedBy(User|int $user): bool
+    {
+        $id = $user instanceof User ? $user->id : $user;
+
+        return (int) $this->artisan_id === (int) $id;
+    }
+
     // Helpers
     public function isApproved(): bool
     {

@@ -72,7 +72,11 @@
             <div class="artisan-empty-products text-center py-5 px-3 rounded-3">
                 <i class="bi bi-box-seam display-4 text-muted mb-3 d-block"></i>
                 <h3 class="h5 fw-semibold mb-2">No products yet</h3>
-                <p class="text-body-secondary mb-0">This artisan doesn’t have any public products at the moment. Check back later.</p>
+                @if(!empty($isOwnProfile) && $isOwnProfile && auth()->user()?->isArtisan())
+                    <p class="text-body-secondary mb-3">Your published listings are hidden on your public profile. Customers can still see them in the shop; manage them under <a href="{{ route('artisan.products.index') }}">My products</a>.</p>
+                @else
+                    <p class="text-body-secondary mb-0">This artisan doesn’t have any public products at the moment. Check back later.</p>
+                @endif
             </div>
         @else
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">

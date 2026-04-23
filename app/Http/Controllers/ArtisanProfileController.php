@@ -36,12 +36,16 @@ class ArtisanProfileController extends Controller
 
         $artisan->load('artisanProfile');
 
+        $viewer = auth()->user();
         $products = $artisan->products()
             ->public()
+            ->visibleToShopper($viewer)
             ->with('images', 'category')
             ->latest()
             ->paginate(12);
 
-        return view('artisans.show', compact('artisan', 'products'));
+        $isOwnProfile = $viewer && (int) $viewer->id === (int) $artisan->id;
+
+        return view('artisans.show', compact('artisan', 'products', 'isOwnProfile'));
     }
 }

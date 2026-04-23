@@ -34,6 +34,12 @@ class CartController extends CustomerController
      */
     public function add(Request $request, Product $product)
     {
+        if ($request->user()->isArtisan() && $product->isOwnedBy($request->user())) {
+            return redirect()
+                ->route('home')
+                ->with('error', 'You cannot purchase your own products.');
+        }
+
         if (!$product->isAvailable()) {
             // Even on error, send the customer to the cart so they
             // clearly see the problem instead of just reloading the page.

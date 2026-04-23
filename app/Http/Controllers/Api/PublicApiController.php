@@ -18,13 +18,18 @@ class PublicApiController extends Controller
     {
         return Product::query()
             ->public()
+            ->visibleToShopper($request->user())
             ->with(['category:id,name,slug', 'artisan:id,name'])
             ->select(['id', 'artisan_id', 'category_id', 'name', 'description', 'price', 'stock', 'created_at'])
             ->paginate($request->integer('per_page', 15));
     }
 
-    public function showProduct(Product $product)
+    public function showProduct(Request $request, Product $product)
     {
+        if ($request->user()?->isArtisan() && $product->isOwnedBy($request->user())) {
+            abort(404);
+        }
+
         abort_unless($product->isApproved(), 404);
 
         $product->load([
@@ -57,17 +62,17 @@ class PublicApiController extends Controller
             ->paginate($request->integer('per_page', 15), ['id', 'name']);
     }
 
-    public function showArtisan(User $artisan)
+    public function showArtisan(Request $request, User $artisan)
     {
         abort_unless($artisan->isArtisan(), 404);
 
         $artisan->load([
             'artisanProfile:user_id,workshop_name,story,city,barangay,profile_image',
-            'products' => fn ($q) => $q->public()->latest()->limit(24),
+            'products' => fn ($q) => $q->public()->visibleToShopper($request->user())->latest()->limit(24),
             'products.images:id,product_id,image_path,is_primary',
         ]);
 
-        $artisan->loadCount(['products' => fn ($q) => $q->public()]);
+        $artisan->loadCount(['products' => fn ($q) => $q->public()->visibleToShopper($request->user())]);
 
         return $artisan;
     }
