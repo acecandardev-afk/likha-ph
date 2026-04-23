@@ -9,14 +9,28 @@ use Illuminate\Validation\Rules\Email;
 class SignupEmailValidation
 {
     /**
+     * RFC-based email rule; spoofing + MX checks require PHP intl (Egulias throws otherwise).
+     */
+    private static function emailRule(): Email
+    {
+        $email = (new Email)->rfcCompliant();
+
+        if (extension_loaded('intl')) {
+            $email->preventSpoofing();
+            if (config('signup.validate_mx', true)) {
+                $email->validateMxRecord();
+            }
+        }
+
+        return $email;
+    }
+
+    /**
      * Rules for the email field on new registration (unique against users.email).
      */
     public static function registrationEmailRules(): array
     {
-        $email = (new Email)->rfcCompliant()->preventSpoofing();
-        if (config('signup.validate_mx', true)) {
-            $email->validateMxRecord();
-        }
+        $email = self::emailRule();
 
         return [
             'required',
@@ -33,10 +47,7 @@ class SignupEmailValidation
      */
     public static function profileEmailRules(int $userId): array
     {
-        $email = (new Email)->rfcCompliant()->preventSpoofing();
-        if (config('signup.validate_mx', true)) {
-            $email->validateMxRecord();
-        }
+        $email = self::emailRule();
 
         return [
             'required',

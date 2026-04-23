@@ -7,9 +7,10 @@ return [
     | MX (DNS) validation for sign-up email domains
     |--------------------------------------------------------------------------
     |
-    | When true, the email domain must have valid DNS/MX records. Requires the
-    | PHP intl extension. Set to false in environments with no DNS (e.g. some
-    | CI) or if you see false rejections for valid mail providers.
+    | When true (and PHP intl is loaded), the email domain must have valid
+    | DNS/MX records. Spoofing checks also require intl; without intl, signup
+    | falls back to RFC validation only. Set to false if you see false
+    | rejections or have no outbound DNS from the app server.
     |
     */
 
