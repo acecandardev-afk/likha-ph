@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class ArtisanProfile extends Model
@@ -38,7 +39,7 @@ class ArtisanProfile extends Model
             return null;
         }
 
-        return Storage::disk('artisans')->url(ltrim($this->profile_image, '/'));
+        return PublicMediaUrl::url('artisans', $this->profile_image);
     }
 
     public function getIdPhotoUrlAttribute(): ?string
@@ -47,7 +48,7 @@ class ArtisanProfile extends Model
             return null;
         }
 
-        return Storage::disk('public')->url(ltrim($this->id_photo, '/'));
+        return PublicMediaUrl::url('public', $this->id_photo);
     }
 
     public function getFullLocationAttribute(): string

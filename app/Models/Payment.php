@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class Payment extends Model
@@ -60,7 +61,7 @@ class Payment extends Model
             return null;
         }
 
-        return Storage::disk('payments')->url(ltrim($this->proof_image, '/'));
+        return PublicMediaUrl::url('payments', $this->proof_image);
     }
 
     // Helpers

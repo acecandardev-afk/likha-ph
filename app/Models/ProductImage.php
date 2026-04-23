@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
@@ -30,7 +31,7 @@ class ProductImage extends Model
     // Accessors
     public function getImageUrlAttribute(): string
     {
-        return Storage::disk('products')->url(ltrim($this->image_path, '/'));
+        return PublicMediaUrl::url('products', $this->image_path);
     }
 
     // Mutators

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
+use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -148,7 +149,7 @@ class ImageUploadService
      */
     public function getProductImageUrl(string $filename): string
     {
-        return Storage::disk('products')->url($filename);
+        return PublicMediaUrl::url('products', $filename);
     }
 
     /**
@@ -159,7 +160,7 @@ class ImageUploadService
         $thumbnailFilename = 'thumb_'.$filename;
 
         if (Storage::disk('products')->exists($thumbnailFilename)) {
-            return Storage::disk('products')->url($thumbnailFilename);
+            return PublicMediaUrl::url('products', $thumbnailFilename);
         }
 
         return $this->getProductImageUrl($filename);
@@ -170,7 +171,7 @@ class ImageUploadService
      */
     public function getArtisanImageUrl(string $filename): string
     {
-        return Storage::disk('artisans')->url($filename);
+        return PublicMediaUrl::url('artisans', $filename);
     }
 
     /**
@@ -178,7 +179,7 @@ class ImageUploadService
      */
     public function getPaymentProofUrl(string $filename): string
     {
-        return Storage::disk('payments')->url($filename);
+        return PublicMediaUrl::url('payments', $filename);
     }
 
     /**
