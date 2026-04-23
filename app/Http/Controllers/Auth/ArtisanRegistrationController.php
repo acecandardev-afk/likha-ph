@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\ArtisanProfile;
+use App\Models\Barangay;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -36,17 +37,25 @@ class ArtisanRegistrationController extends Controller
             'barangay' => $request->input('barangay'),
         ]);
 
+        if (! Guihulngan::deliveryCity()) {
+            return back()
+                ->withInput()
+                ->withErrors(['barangay' => 'Address data is not available. Please try again later.']);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => SignupEmailValidation::registrationEmailRules(),
             'password' => ['required', 'confirmed', Password::defaults()],
             'workshop_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'barangay' => Guihulngan::barangayRules(true),
+            'barangay' => Guihulngan::artisanBarangayIdRules(),
             'id_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
         ], [
             'email.unique' => 'This email address is already registered.',
         ]);
+
+        $barangayName = Barangay::query()->findOrFail($validated['barangay'])->name;
 
         $user = User::create([
             'name' => $validated['name'],
@@ -63,7 +72,7 @@ class ArtisanRegistrationController extends Controller
             'user_id' => $user->id,
             'workshop_name' => $validated['workshop_name'],
             'city' => config('guihulngan.city_name'),
-            'barangay' => $validated['barangay'] ?? null,
+            'barangay' => $barangayName,
             'id_photo' => $idPath,
         ]);
 
@@ -110,13 +119,21 @@ class ArtisanRegistrationController extends Controller
                 ->with('success', 'You are already an artisan. Redirecting to your dashboard.');
         }
 
+        if (! Guihulngan::deliveryCity()) {
+            return back()
+                ->withInput()
+                ->withErrors(['barangay' => 'Address data is not available. Please try again later.']);
+        }
+
         $validated = $request->validate([
             'workshop_name' => ['required', 'string', 'max:255'],
-            'barangay' => Guihulngan::barangayRules(true),
+            'barangay' => Guihulngan::artisanBarangayIdRules(),
             'id_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
         ], [
             'workshop_name.required' => 'Please enter your workshop / business name.',
         ]);
+
+        $barangayName = Barangay::query()->findOrFail($validated['barangay'])->name;
 
         $user->update([
             'role' => 'artisan',
@@ -134,7 +151,7 @@ class ArtisanRegistrationController extends Controller
             [
                 'workshop_name' => $validated['workshop_name'],
                 'city' => config('guihulngan.city_name'),
-                'barangay' => $validated['barangay'] ?? null,
+                'barangay' => $barangayName,
                 'id_photo' => $idPath,
             ]
         );

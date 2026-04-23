@@ -6,7 +6,6 @@ use App\Models\Barangay;
 use App\Models\Order;
 use App\Support\Guihulngan;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CheckoutRequest extends FormRequest
 {
@@ -101,11 +100,7 @@ class CheckoutRequest extends FormRequest
             'region' => ['required', 'integer', 'exists:regions,id'],
             'province' => ['required', 'integer', 'exists:provinces,id'],
             'city' => ['required', 'integer', 'exists:cities,id'],
-            'barangay' => [
-                'required',
-                'integer',
-                Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', (int) $this->input('city'))),
-            ],
+            'barangay' => Guihulngan::artisanBarangayIdRules(),
             'street_address' => ['nullable', 'string', 'max:500'],
             'phone' => [
                 'required',

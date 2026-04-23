@@ -44,4 +44,43 @@ class Guihulngan
             ? ['required', 'string', $in]
             : ['nullable', 'string', $in];
     }
+
+    /**
+     * Rules when the form posts a barangay **id** from the address cascade (register/apply artisan).
+     * Profile still stores the barangay **name** string.
+     *
+     * @return list<\Closure|\Illuminate\Contracts\Validation\ValidationRule|string>
+     */
+    public static function artisanBarangayIdRules(): array
+    {
+        $city = self::deliveryCity();
+        if (! $city) {
+            return ['required', 'integer', 'exists:barangays,id'];
+        }
+
+        return [
+            'required',
+            'integer',
+            Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', $city->id)),
+        ];
+    }
+
+    /**
+     * Same as artisan barangay id rule, but barangay may be omitted (e.g. account / partial address).
+     *
+     * @return list<\Closure|\Illuminate\Contracts\Validation\ValidationRule|string>
+     */
+    public static function guihulnganBarangayIdRulesOptional(): array
+    {
+        $city = self::deliveryCity();
+        if (! $city) {
+            return ['nullable', 'integer', 'exists:barangays,id'];
+        }
+
+        return [
+            'nullable',
+            'integer',
+            Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', $city->id)),
+        ];
+    }
 }

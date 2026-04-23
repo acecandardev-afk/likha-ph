@@ -19,17 +19,72 @@ class AccountController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        return view('account.edit', compact('user'));
+        $deliveryCity = Guihulngan::deliveryCity();
+        if (! $deliveryCity) {
+            return view('account.edit', [
+                'user' => $user,
+                'addressUnavailable' => true,
+            ]);
+        }
+
+        $deliveryCity->loadMissing('province.region');
+        $barangays = $deliveryCity->barangays()->orderBy('name')->get(['id', 'name', 'code']);
+        $delivery = [
+            'region_id' => $deliveryCity->province->region_id,
+            'province_id' => $deliveryCity->province_id,
+            'city_id' => $deliveryCity->id,
+            'region_name' => $deliveryCity->province->region->name,
+            'province_name' => $deliveryCity->province->name,
+            'city_name' => $deliveryCity->name,
+        ];
+
+        $selectedBarangayId = old('barangay');
+        if ($selectedBarangayId === null) {
+            $u = $user->barangay;
+            if ($u !== null && $u !== '') {
+                if (is_numeric($u) && $barangays->contains('id', (int) $u)) {
+                    $selectedBarangayId = (int) $u;
+                } else {
+                    $selectedBarangayId = $barangays->firstWhere('name', (string) $u)?->id;
+                }
+            }
+        } elseif (is_string($selectedBarangayId)) {
+            $selectedBarangayId = is_numeric($selectedBarangayId)
+                ? (int) $selectedBarangayId
+                : $barangays->firstWhere('name', $selectedBarangayId)?->id;
+        }
+
+        return view('account.edit', compact(
+            'user',
+            'delivery',
+            'barangays',
+            'selectedBarangayId'
+        ));
     }
 
     public function update(Request $request)
     {
+        $city = Guihulngan::deliveryCity();
+        if (! $city) {
+            $validated = $request->validate([
+                'country' => 'required|string|in:Philippines',
+                'street_address' => 'nullable|string|max:500',
+                'phone' => [
+                    'nullable',
+                    'string',
+                    'regex:/^(09\d{9}|\+63\d{10})$/',
+                    'max:13'
+                ],
+            ]);
+
+            $request->user()->update($validated);
+
+            return back()->with('success', 'Contact details updated. Full address will be available once location data is configured.');
+        }
+
         $validated = $request->validate([
             'country' => 'required|string|in:Philippines',
-            'region' => 'nullable|integer|exists:regions,id',
-            'province' => 'nullable|integer|exists:provinces,id',
-            'city' => 'nullable|integer|exists:cities,id',
-            'barangay' => 'nullable|integer|exists:barangays,id',
+            'barangay' => Guihulngan::guihulnganBarangayIdRulesOptional(),
             'street_address' => 'nullable|string|max:500',
             'phone' => [
                 'nullable',
@@ -38,6 +93,11 @@ class AccountController extends Controller
                 'max:13'
             ],
         ]);
+
+        $city->loadMissing('province.region');
+        $validated['region'] = (int) $city->province->region_id;
+        $validated['province'] = (int) $city->province_id;
+        $validated['city'] = (int) $city->id;
 
         $request->user()->update($this->resolveLocationNames($validated));
 
