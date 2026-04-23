@@ -84,6 +84,18 @@ class OrderPolicy
     }
 
     /**
+     * Determine if the user can approve the order.
+     */
+    public function approve(User $user, Order $order): bool
+    {
+        if ($user->isArtisan() && $order->artisan_id === $user->id) {
+            return $order->canBeApproved();
+        }
+
+        return $user->isAdmin();
+    }
+
+    /**
      * Determine if the user can view order messages.
      */
     public function viewMessages(User $user, Order $order): bool

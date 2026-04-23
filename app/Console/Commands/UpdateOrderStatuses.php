@@ -32,16 +32,17 @@ class UpdateOrderStatuses extends Command
 
         $this->info($dryRun ? 'DRY RUN: Simulating order status updates' : 'Updating order statuses...');
 
-        // Update pending orders to shipped after 1 hour
-        $pendingOrders = Order::where('status', 'pending')
-            ->where('created_at', '<=', $now->copy()->subHour())
+        // Update approved orders to shipped after 5 minutes
+        $approvedOrders = Order::where('status', 'approved')
+            ->whereNotNull('approved_at')
+            ->where('approved_at', '<=', $now->copy()->subMinutes(5))
             ->get();
 
-        $this->info("Found {$pendingOrders->count()} pending orders older than 1 hour");
+        $this->info("Found {$approvedOrders->count()} approved orders ready to ship");
 
-        foreach ($pendingOrders as $order) {
+        foreach ($approvedOrders as $order) {
             if ($dryRun) {
-                $this->line("Would update order {$order->order_number} from pending to shipped");
+                $this->line("Would update order {$order->order_number} from approved to shipped");
             } else {
                 $order->update(['status' => 'shipped']);
                 Log::info("Order {$order->order_number} status updated to shipped");

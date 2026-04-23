@@ -55,7 +55,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const orderId = {{ $order->id }};
+    const orderKey = @json($order->order_number);
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('message');
     const messagesContainer = document.getElementById('messagesContainer');
@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let pollingInterval;
 
     // Load initial messages
+    loadAllMessages();
     loadMessages();
 
     // Start polling for new messages every 2 seconds
@@ -79,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
 
-        fetch(`/orders/${orderId}/messages`, {
+        fetch(`/orders/${encodeURIComponent(orderKey)}/messages`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadMessages() {
         const sinceParam = lastRefreshTime.toISOString();
 
-        fetch(`/orders/${orderId}/messages/fetch?since=${encodeURIComponent(sinceParam)}`)
+        fetch(`/orders/${encodeURIComponent(orderKey)}/messages/fetch?since=${encodeURIComponent(sinceParam)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.messages && data.messages.length > 0) {
@@ -130,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadAllMessages() {
-        fetch(`/orders/${orderId}/messages/fetch`)
+        fetch(`/orders/${encodeURIComponent(orderKey)}/messages/fetch`)
             .then(response => response.json())
             .then(data => {
                 renderMessages(data.messages);

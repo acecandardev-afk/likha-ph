@@ -27,12 +27,14 @@ class Order extends Model
         'shipping_address',
         'shipping_barangay',
         'shipping_phone',
+        'approved_at',
     ];
 
     protected $casts = [
         'subtotal' => 'decimal:2',
         'platform_fee' => 'decimal:2',
         'total' => 'decimal:2',
+        'approved_at' => 'datetime',
     ];
 
     // Relationships
@@ -97,6 +99,11 @@ class Order extends Model
         return $query->where('status', 'shipped');
     }
 
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
     public function scopeOnDelivery($query)
     {
         return $query->where('status', 'on_delivery');
@@ -131,6 +138,11 @@ class Order extends Model
     public function isShipped(): bool
     {
         return $this->status === 'shipped';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
     }
 
     public function isOnDelivery(): bool
@@ -174,6 +186,11 @@ class Order extends Model
     public function canBeReceived(): bool
     {
         return $this->isOnDelivery();
+    }
+
+    public function canBeApproved(): bool
+    {
+        return $this->isPending();
     }
 
     public function canBeCompleted(): bool

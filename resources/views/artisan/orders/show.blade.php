@@ -131,6 +131,13 @@
                 <button type="submit" class="btn btn-success w-100">Mark as completed</button>
             </form>
             @endif
+            @if($order->canBeApproved())
+            <form action="{{ route('artisan.orders.approve', $order) }}" method="POST" class="mt-2">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn btn-primary w-100">Approve order</button>
+            </form>
+            @endif
         </div>
     </div>
 </div>

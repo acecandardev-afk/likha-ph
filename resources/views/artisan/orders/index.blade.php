@@ -37,6 +37,13 @@
                                     <td><x-status-badge :status="$order->status" type="order" /></td>
                                     <td>₱{{ number_format($order->total, 2) }}</td>
                                     <td class="text-end">
+                                        @if($order->canBeApproved())
+                                            <form action="{{ route('artisan.orders.approve', $order) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-success">Approve order</button>
+                                            </form>
+                                        @endif
                                         <a href="{{ route('artisan.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">View details</a>
                                     </td>
                                 </tr>

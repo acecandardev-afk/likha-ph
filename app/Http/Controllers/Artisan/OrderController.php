@@ -45,6 +45,25 @@ class OrderController extends ArtisanController
     }
 
     /**
+     * Approve a pending order.
+     */
+    public function approve(Order $order)
+    {
+        $this->authorize('approve', $order);
+
+        if (! $order->canBeApproved()) {
+            return back()->withErrors(['error' => 'Order cannot be approved at this time.']);
+        }
+
+        $order->update([
+            'status' => 'approved',
+            'approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Order approved. It will be marked as shipped after 5 minutes.');
+    }
+
+    /**
      * Mark order as completed.
      */
     public function complete(Order $order)

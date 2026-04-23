@@ -168,6 +168,7 @@ Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->gro
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [ArtisanOrderController::class, 'index'])->name('index');
         Route::get('/{order}', [ArtisanOrderController::class, 'show'])->name('show');
+        Route::patch('/{order}/approve', [ArtisanOrderController::class, 'approve'])->name('approve');
         Route::patch('/{order}/complete', [ArtisanOrderController::class, 'complete'])->name('complete');
     });
 

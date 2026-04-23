@@ -8,6 +8,7 @@
     $orderStatusFilters = [
         'all' => 'All',
         'pending' => 'Pending',
+        'approved' => 'Approved',
         'confirmed' => 'Confirmed',
         'shipped' => 'Shipped',
         'on_delivery' => 'On delivery',

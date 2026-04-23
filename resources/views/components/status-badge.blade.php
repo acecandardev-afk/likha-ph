@@ -4,6 +4,7 @@
     $statusConfig = [
         'order' => [
             'pending' => ['class' => 'warning', 'icon' => 'clock', 'text' => 'Pending'],
+            'approved' => ['class' => 'primary', 'icon' => 'check-circle', 'text' => 'Approved'],
             'confirmed' => ['class' => 'info', 'icon' => 'check', 'text' => 'Confirmed'],
             'shipped' => ['class' => 'info', 'icon' => 'truck', 'text' => 'Shipped'],
             'on_delivery' => ['class' => 'primary', 'icon' => 'truck', 'text' => 'On Delivery'],
