@@ -25,6 +25,8 @@ class DashboardController extends ArtisanController
             'shipped_orders' => $artisan->artisanOrders()->shipped()->count(),
             'on_delivery_orders' => $artisan->artisanOrders()->onDelivery()->count(),
             'delivered_orders' => $artisan->artisanOrders()->delivered()->count(),
+            'confirmed_orders' => $artisan->artisanOrders()->confirmed()->count(),
+            'completed_orders' => $artisan->artisanOrders()->completed()->count(),
             'total_revenue' => $artisan->artisanOrders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
             'monthly_revenue' => $artisan->artisanOrders()
                 ->whereIn('status', ['delivered', 'completed'])

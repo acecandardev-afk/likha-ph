@@ -55,7 +55,7 @@
             <div class="card stat-card h-100 bg-primary bg-opacity-10 border-primary">
                 <div class="card-body p-3 p-md-4">
                     <p class="text-muted small fw-medium mb-1">Confirmed orders</p>
-                    <h2 class="h3 mb-1 text-primary">{{ $stats['confirmed_orders'] }}</h2>
+                    <h2 class="h3 mb-1 text-primary">{{ $stats['confirmed_orders'] ?? 0 }}</h2>
                     <small class="text-muted">In progress with verified payments</small>
                 </div>
             </div>
@@ -135,14 +135,14 @@
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="text-muted small fw-medium mb-1">Confirmed</div>
-                            <div class="fw-semibold fs-4 text-primary">{{ $stats['confirmed_orders'] }}</div>
+                            <div class="fw-semibold fs-4 text-primary">{{ $stats['confirmed_orders'] ?? 0 }}</div>
                             <div class="progress mt-2" style="height: 10px;">
                                 <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $confirmedPct }}%" aria-valuenow="{{ $confirmedPct }}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="text-muted small fw-medium mb-1">Completed</div>
-                            <div class="fw-semibold fs-4 text-success">{{ $stats['completed_orders'] }}</div>
+                            <div class="fw-semibold fs-4 text-success">{{ $stats['completed_orders'] ?? 0 }}</div>
                             <div class="progress mt-2" style="height: 10px;">
                                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ $completedPct }}%" aria-valuenow="{{ $completedPct }}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
