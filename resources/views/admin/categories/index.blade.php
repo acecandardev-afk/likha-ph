@@ -72,13 +72,28 @@
                                 </td>
                                 <td class="text-end">
                                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal-{{ $category->id }}">Edit</button>
-                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this category? Products must be moved first.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" @if($category->products_count > 0) disabled title="Cannot delete: has products" @endif>Delete</button>
-                                    </form>
+                                    @if($category->products_count > 0)
+                                        <span class="btn btn-sm btn-outline-danger disabled" title="Cannot delete: has products" tabindex="-1" role="button" aria-disabled="true">Delete</span>
+                                    @else
+                                        <form id="form-delete-category-{{ $category->id }}" action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalDeleteCategory-{{ $category->id }}">Delete</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
+                            @if($category->products_count === 0)
+                                <x-confirm-form-modal
+                                    :id="'modalDeleteCategory-'.$category->id"
+                                    :form-id="'form-delete-category-'.$category->id"
+                                    title="Delete this category?"
+                                    message="This permanently removes the category. Reassign or remove products that use it before deleting, or the delete may be rejected."
+                                    submit-label="Delete category"
+                                    submit-variant="danger"
+                                    cancel-label="Back"
+                                />
+                            @endif
                             {{-- Edit modal for this category --}}
                             <div class="modal fade" id="editCategoryModal-{{ $category->id }}" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">

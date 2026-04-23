@@ -58,14 +58,25 @@
                                                 <button type="submit" class="btn btn-sm btn-success">Activate</button>
                                             </form>
                                         @else
-                                            <form action="{{ route('admin.users.suspend', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Suspend this customer?');">
+                                            <form id="form-suspend-user-{{ $user->id }}" action="{{ route('admin.users.suspend', $user) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-warning">Suspend</button>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalSuspendUser-{{ $user->id }}">Suspend</button>
                                             </form>
                                         @endif
                                     </td>
                                 </tr>
+                                @if($user->status !== 'suspended')
+                                    <x-confirm-form-modal
+                                        :id="'modalSuspendUser-'.$user->id"
+                                        :form-id="'form-suspend-user-'.$user->id"
+                                        title="Suspend this customer?"
+                                        message="They will not be able to sign in or place new orders. You can activate the account again at any time."
+                                        submit-label="Suspend customer"
+                                        submit-variant="warning"
+                                        cancel-label="Back"
+                                    />
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

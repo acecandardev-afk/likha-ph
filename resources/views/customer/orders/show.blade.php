@@ -78,10 +78,10 @@
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
                     @if($order->isOnDelivery())
                         <div class="mt-3">
-                            <form method="POST" action="{{ route('customer.orders.mark-received', $order) }}" class="d-inline">
+                            <form id="form-customer-order-mark-received" method="POST" action="{{ route('customer.orders.mark-received', $order) }}" class="d-inline">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you have received this order?')">
+                                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalMarkReceivedOrder">
                                     <i class="bi bi-check-circle me-1"></i> I have received the item
                                 </button>
                             </form>
@@ -89,10 +89,10 @@
                     @endif
                     @can('cancel', $order)
                         <div class="mt-3 pt-3 border-top">
-                            <form method="POST" action="{{ route('customer.orders.cancel', $order) }}" class="d-inline" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
+                            <form id="form-customer-order-cancel" method="POST" action="{{ route('customer.orders.cancel', $order) }}" class="d-inline">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalCancelOrder">
                                     <i class="bi bi-x-circle me-1"></i> Cancel order
                                 </button>
                             </form>
@@ -137,5 +137,28 @@
             </div>
         </div>
     </div>
+
+    @if($order->isOnDelivery())
+        <x-confirm-form-modal
+            id="modalMarkReceivedOrder"
+            form-id="form-customer-order-mark-received"
+            title="Confirm you received the order"
+            message="Only confirm after the items are in your hands. This updates the order and helps sellers get paid on time."
+            submit-label="Yes, I received the items"
+            submit-variant="success"
+            cancel-label="Not yet"
+        />
+    @endif
+    @can('cancel', $order)
+        <x-confirm-form-modal
+            id="modalCancelOrder"
+            form-id="form-customer-order-cancel"
+            title="Cancel this order?"
+            message="The order will be cancelled. This cannot be undone. If you already paid, follow up in Messages or with support if needed."
+            submit-label="Yes, cancel this order"
+            submit-variant="danger"
+            cancel-label="Keep order"
+        />
+    @endcan
 </div>
 @endsection
