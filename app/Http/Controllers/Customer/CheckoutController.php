@@ -9,6 +9,7 @@ use App\Models\Province;
 use App\Models\Region;
 use App\Services\CartService;
 use App\Services\OrderService;
+use App\Support\Guihulngan;
 
 class CheckoutController extends CustomerController
 {
@@ -36,7 +37,41 @@ class CheckoutController extends CustomerController
                 ->withErrors($errors);
         }
 
-        return view('customer.checkout.index', compact('summary'));
+        $deliveryCity = Guihulngan::deliveryCity();
+        if (! $deliveryCity) {
+            return redirect()->route('customer.cart.index')
+                ->withErrors(['error' => 'Delivery location is not available. Please try again later.']);
+        }
+
+        $deliveryCity->loadMissing('province.region');
+        $barangays = $deliveryCity->barangays()->orderBy('name')->get(['id', 'name', 'code']);
+
+        $delivery = [
+            'region_id' => $deliveryCity->province->region_id,
+            'province_id' => $deliveryCity->province_id,
+            'city_id' => $deliveryCity->id,
+            'region_name' => $deliveryCity->province->region->name,
+            'province_name' => $deliveryCity->province->name,
+            'city_name' => $deliveryCity->name,
+        ];
+
+        $selectedBarangayId = old('barangay');
+        if ($selectedBarangayId === null) {
+            $u = $customer->barangay;
+            if ($u !== null && $u !== '') {
+                if (is_numeric($u) && $barangays->contains('id', (int) $u)) {
+                    $selectedBarangayId = (int) $u;
+                } else {
+                    $selectedBarangayId = $barangays->firstWhere('name', (string) $u)?->id;
+                }
+            }
+        } elseif (is_string($selectedBarangayId)) {
+            $selectedBarangayId = is_numeric($selectedBarangayId)
+                ? (int) $selectedBarangayId
+                : $barangays->firstWhere('name', $selectedBarangayId)?->id;
+        }
+
+        return view('customer.checkout.index', compact('summary', 'delivery', 'barangays', 'selectedBarangayId'));
     }
 
     public function store(CheckoutRequest $request)

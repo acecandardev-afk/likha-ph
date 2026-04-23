@@ -19,6 +19,8 @@ class DashboardController extends CustomerController
             'shipped_orders' => $customer->orders()->shipped()->count(),
             'on_delivery_orders' => $customer->orders()->onDelivery()->count(),
             'delivered_orders' => $customer->orders()->delivered()->count(),
+            'confirmed_orders' => $customer->orders()->confirmed()->count(),
+            'completed_orders' => $customer->orders()->completed()->count(),
             'total_spent' => $customer->orders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
         ];
 

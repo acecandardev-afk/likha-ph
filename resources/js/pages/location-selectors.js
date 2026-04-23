@@ -567,3 +567,43 @@ export function initCheckoutAddressForm(options) {
         );
     }
 }
+
+/**
+ * Guihulngan-only checkout: city/region/province are fixed server-side; only barangay is chosen.
+ */
+export function initGuihulnganCheckoutForm(options) {
+    const {
+        useSavedButtonId,
+        barangaySelectId = 'barangay',
+        streetFieldId = 'street_address',
+        phoneFieldId = 'phone',
+        saved = {},
+    } = options;
+
+    const barangaySelect = document.getElementById(barangaySelectId);
+    if (!barangaySelect) {
+        return;
+    }
+
+    const btn = useSavedButtonId ? document.getElementById(useSavedButtonId) : null;
+    if (btn) {
+        btn.addEventListener('click', function () {
+            const s = saved;
+            const streetEl = streetFieldId
+                ? document.getElementById(streetFieldId)
+                : null;
+            const phoneEl = phoneFieldId
+                ? document.getElementById(phoneFieldId)
+                : null;
+            if (streetEl && s.street !== undefined) {
+                streetEl.value = s.street || '';
+            }
+            if (phoneEl && s.phone !== undefined) {
+                phoneEl.value = s.phone || '';
+            }
+            if (s.barangay !== undefined && s.barangay !== null && s.barangay !== '') {
+                setSelectValue(barangaySelect, s.barangay);
+            }
+        });
+    }
+}

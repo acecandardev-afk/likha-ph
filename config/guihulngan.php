@@ -5,6 +5,13 @@
  * Alphabetically sorted for select lists.
  */
 return [
+
+    /**
+     * PSGC city code for `cities` table (seeder: City::updateOrCreate(['code' => ...]).
+     * Delivery is always this city; checkout shows only its barangays.
+     */
+    'city_code' => '074611',
+
     'city_name' => 'Guihulngan City',
     'province' => 'Negros Oriental',
 

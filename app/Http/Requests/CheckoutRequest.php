@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Barangay;
 use App\Models\Order;
+use App\Support\Guihulngan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +24,16 @@ class CheckoutRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $city = Guihulngan::deliveryCity();
+        if ($city) {
+            $city->loadMissing('province.region');
+            $this->merge([
+                'region' => (int) $city->province->region_id,
+                'province' => (int) $city->province_id,
+                'city' => (int) $city->id,
+            ]);
+        }
+
         $raw = $this->input('barangay');
         if ($raw === null || $raw === '') {
             return;
@@ -34,9 +45,9 @@ class CheckoutRequest extends FormRequest
         }
         if (is_numeric($b)) {
             $this->merge(['barangay' => (int) $b]);
-        } elseif (is_numeric($this->input('city'))) {
+        } elseif ($city) {
             $id = Barangay::query()
-                ->where('city_id', (int) $this->input('city'))
+                ->where('city_id', (int) $city->id)
                 ->where('name', $b)
                 ->value('id');
             if ($id) {

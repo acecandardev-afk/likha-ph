@@ -27,7 +27,7 @@
             <div class="card stat-card h-100 border-success">
                 <div class="card-body p-3 p-md-4">
                     <p class="text-muted small fw-medium mb-1">Completed orders</p>
-                    <h2 class="h3 mb-0">{{ $stats['completed_orders'] }}</h2>
+                    <h2 class="h3 mb-0">{{ $stats['completed_orders'] ?? 0 }}</h2>
                 </div>
             </div>
         </div>
@@ -158,7 +158,13 @@
                                     <td>{{ $order->items->count() }} item(s)</td>
                                     <td>₱{{ number_format($order->total, 0) }}</td>
                                     <td><x-status-badge :status="$order->status" type="order" /></td>
-                                    <td><x-status-badge :status="$order->payment->verification_status" type="payment" /></td>
+                                    <td>
+                                        @if($order->payment)
+                                            <x-status-badge :status="$order->payment->verification_status" type="payment" />
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $order->created_at?->format('M d, Y') ?? '' }}</td>
                                     <td class="text-end">
                                         <a href="{{ route('customer.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">View</a>

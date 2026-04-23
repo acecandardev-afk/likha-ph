@@ -57,7 +57,6 @@ class AppServiceProvider extends ServiceProvider
                 'auth.apply-artisan',
                 'auth.register-artisan',
                 'account.edit',
-                'customer.checkout.index',
             ],
             function ($view) {
                 $view->with('phAddressBootstrap', app(AddressService::class)->getClientBootstrap());
