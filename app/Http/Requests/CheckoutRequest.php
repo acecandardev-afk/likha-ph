@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Barangay;
 use App\Models\Order;
-use App\Support\Guihulngan;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CheckoutRequest extends FormRequest
 {
@@ -17,6 +18,69 @@ class CheckoutRequest extends FormRequest
     }
 
     /**
+     * Account settings store barangay as a name string. Cascade selects may also
+     * post a name in edge cases. Resolve to a barangay id under the selected city.
+     */
+    protected function prepareForValidation(): void
+    {
+        $raw = $this->input('barangay');
+        if ($raw === null || $raw === '') {
+            return;
+        }
+
+        $b = is_string($raw) ? trim($raw) : (is_numeric($raw) ? (string) $raw : '');
+        if ($b === '') {
+            return;
+        }
+        if (is_numeric($b)) {
+            $this->merge(['barangay' => (int) $b]);
+        } elseif (is_numeric($this->input('city'))) {
+            $id = Barangay::query()
+                ->where('city_id', (int) $this->input('city'))
+                ->where('name', $b)
+                ->value('id');
+            if ($id) {
+                $this->merge(['barangay' => (int) $id]);
+            }
+        }
+
+        $this->reconcileBarangayToCity();
+    }
+
+    /**
+     * If barangay id does not belong to the posted city, try same barangay name
+     * under that city (stale id / reseeded data from UI vs DB).
+     */
+    protected function reconcileBarangayToCity(): void
+    {
+        $rawCity = $this->input('city');
+        $rawBar = $this->input('barangay');
+        if (! is_numeric($rawCity) || ! is_numeric($rawBar)) {
+            return;
+        }
+
+        $cid = (int) $rawCity;
+        $bid = (int) $rawBar;
+
+        if (Barangay::query()->where('id', $bid)->where('city_id', $cid)->exists()) {
+            return;
+        }
+
+        $name = Barangay::query()->whereKey($bid)->value('name');
+        if (! $name) {
+            return;
+        }
+
+        $fixed = Barangay::query()
+            ->where('city_id', $cid)
+            ->where('name', $name)
+            ->value('id');
+        if ($fixed) {
+            $this->merge(['barangay' => (int) $fixed]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
@@ -26,7 +90,11 @@ class CheckoutRequest extends FormRequest
             'region' => ['required', 'integer', 'exists:regions,id'],
             'province' => ['required', 'integer', 'exists:provinces,id'],
             'city' => ['required', 'integer', 'exists:cities,id'],
-            'barangay' => ['required', 'integer', 'exists:barangays,id'],
+            'barangay' => [
+                'required',
+                'integer',
+                Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', (int) $this->input('city'))),
+            ],
             'street_address' => ['nullable', 'string', 'max:500'],
             'phone' => [
                 'required',

@@ -65,10 +65,16 @@
                                 <input type="hidden" name="country" value="Philippines">
                             </div>
 
+                            {{-- Submitted values: hidden (always posted). Visually disabled <select> is not. --}}
+                            <input type="hidden" name="region" id="co_region" value="{{ old('region') }}">
+                            <input type="hidden" name="province" id="co_province" value="{{ old('province') }}">
+                            <input type="hidden" name="city" id="co_city" value="{{ old('city') }}">
+                            <input type="hidden" name="barangay" id="co_barangay" value="{{ old('barangay') }}">
+
                             <!-- Region -->
                             <div class="mb-3">
                                 <label for="region" class="form-label">Region <span class="text-danger">*</span></label>
-                                <select name="region" id="region" class="form-select @error('region') is-invalid @enderror" required>
+                                <select id="region" class="form-select @error('region') is-invalid @enderror" required>
                                     <option value="">Select region</option>
                                 </select>
                                 @error('region')
@@ -79,7 +85,7 @@
                             <!-- Province -->
                             <div class="mb-3">
                                 <label for="province" class="form-label">Province <span class="text-danger">*</span></label>
-                                <select name="province" id="province" class="form-select @error('province') is-invalid @enderror" required disabled>
+                                <select id="province" class="form-select @error('province') is-invalid @enderror" required disabled>
                                     <option value="">Select province</option>
                                 </select>
                                 @error('province')
@@ -90,7 +96,7 @@
                             <!-- City -->
                             <div class="mb-3">
                                 <label for="city" class="form-label">City <span class="text-danger">*</span></label>
-                                <select name="city" id="city" class="form-select @error('city') is-invalid @enderror" required disabled>
+                                <select id="city" class="form-select @error('city') is-invalid @enderror" required disabled>
                                     <option value="">Select city</option>
                                 </select>
                                 @error('city')
@@ -101,7 +107,7 @@
                             <!-- Barangay -->
                             <div class="mb-3">
                                 <label for="barangay" class="form-label">Barangay <span class="text-danger">*</span></label>
-                                <select name="barangay" id="barangay" class="form-select @error('barangay') is-invalid @enderror" required disabled>
+                                <select id="barangay" class="form-select @error('barangay') is-invalid @enderror" required disabled>
                                     <option value="">Select barangay</option>
                                 </select>
                                 @error('barangay')

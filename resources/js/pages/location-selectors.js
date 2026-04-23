@@ -296,10 +296,23 @@ export function initLocationSelectors(options) {
                 console.error('Error loading regions:', e);
             });
     }
+
+    const locForm = barangaySelect.closest('form');
+    if (locForm) {
+        locForm.addEventListener('submit', function () {
+            [regionSelect, provinceSelect, citySelect, barangaySelect].forEach((el) => {
+                if (el) {
+                    el.disabled = false;
+                }
+            });
+        });
+    }
 }
 
 /**
  * Checkout: optional "use saved" + same cascade (bootstrap preferred).
+ * Location POST values live in hidden inputs (#co_*) so disabled <select> never
+ * omits region/city/barangay from the request; selects are display-only.
  */
 export function initCheckoutAddressForm(options) {
     const {
@@ -310,11 +323,40 @@ export function initCheckoutAddressForm(options) {
     const provinceSelect = document.getElementById('province');
     const citySelect = document.getElementById('city');
     const barangaySelect = document.getElementById('barangay');
+    const hRegion = document.getElementById('co_region');
+    const hProvince = document.getElementById('co_province');
+    const hCity = document.getElementById('co_city');
+    const hBarangay = document.getElementById('co_barangay');
     if (!regionSelect || !provinceSelect || !citySelect || !barangaySelect) {
+        return;
+    }
+    if (!hRegion || !hProvince || !hCity || !hBarangay) {
         return;
     }
 
     const mem = hasBootstrapData(bootstrap) ? bootstrap : null;
+
+    function syncCoAddressToHidden() {
+        hRegion.value = regionSelect.value || '';
+        hProvince.value = provinceSelect.value || '';
+        hCity.value = citySelect.value || '';
+        hBarangay.value = barangaySelect.value || '';
+    }
+
+    function runRestoreFromOldOrHidden() {
+        const v = hRegion.value;
+        if (!v) {
+            return;
+        }
+        const regionId = setSelectValue(regionSelect, v);
+        if (!regionId) {
+            return;
+        }
+        const p = hProvince.value || null;
+        const c = hCity.value || null;
+        const b = hBarangay.value || null;
+        loadProvinces(regionId, p, c, b);
+    }
 
     function loadProvinces(regionId, afterProvince, afterCity, afterBarangay) {
         if (mem) {
@@ -328,7 +370,11 @@ export function initCheckoutAddressForm(options) {
                 const sel = setSelectValue(provinceSelect, afterProvince);
                 if (sel) {
                     loadCities(sel, afterCity, afterBarangay);
+                } else {
+                    syncCoAddressToHidden();
                 }
+            } else {
+                syncCoAddressToHidden();
             }
             return;
         }
@@ -340,7 +386,11 @@ export function initCheckoutAddressForm(options) {
                     const sel = setSelectValue(provinceSelect, afterProvince);
                     if (sel) {
                         loadCities(sel, afterCity, afterBarangay);
+                    } else {
+                        syncCoAddressToHidden();
                     }
+                } else {
+                    syncCoAddressToHidden();
                 }
             })
             .catch((e) => console.error('Error loading provinces:', e));
@@ -358,7 +408,11 @@ export function initCheckoutAddressForm(options) {
                 const sel = setSelectValue(citySelect, afterCity);
                 if (sel) {
                     loadBarangays(sel, afterBarangay);
+                } else {
+                    syncCoAddressToHidden();
                 }
+            } else {
+                syncCoAddressToHidden();
             }
             return;
         }
@@ -370,7 +424,11 @@ export function initCheckoutAddressForm(options) {
                     const sel = setSelectValue(citySelect, afterCity);
                     if (sel) {
                         loadBarangays(sel, afterBarangay);
+                    } else {
+                        syncCoAddressToHidden();
                     }
+                } else {
+                    syncCoAddressToHidden();
                 }
             })
             .catch((e) => console.error('Error loading cities:', e));
@@ -387,6 +445,7 @@ export function initCheckoutAddressForm(options) {
             if (afterBarangay) {
                 setSelectValue(barangaySelect, afterBarangay);
             }
+            syncCoAddressToHidden();
             return;
         }
         loadBarangaysFromApi(cityId)
@@ -396,6 +455,7 @@ export function initCheckoutAddressForm(options) {
                 if (afterBarangay) {
                     setSelectValue(barangaySelect, afterBarangay);
                 }
+                syncCoAddressToHidden();
             })
             .catch((e) => console.error('Error loading barangays:', e));
     }
@@ -427,6 +487,7 @@ export function initCheckoutAddressForm(options) {
         } else {
             resetCascading('all');
         }
+        syncCoAddressToHidden();
     });
 
     provinceSelect.addEventListener('change', function () {
@@ -437,6 +498,7 @@ export function initCheckoutAddressForm(options) {
         } else {
             resetCascading('province');
         }
+        syncCoAddressToHidden();
     });
 
     citySelect.addEventListener('change', function () {
@@ -447,14 +509,19 @@ export function initCheckoutAddressForm(options) {
         } else {
             resetCascading('city');
         }
+        syncCoAddressToHidden();
     });
+
+    barangaySelect.addEventListener('change', syncCoAddressToHidden);
 
     if (mem) {
         fillOptions(regionSelect, mem.regions, 'name', 'id', 'Select region');
+        runRestoreFromOldOrHidden();
     } else {
         loadRegionsFromApi()
             .then((data) => {
                 fillOptions(regionSelect, data, 'name', 'id', 'Select region');
+                runRestoreFromOldOrHidden();
             })
             .catch((e) => console.error('Error loading regions:', e));
     }
@@ -487,5 +554,16 @@ export function initCheckoutAddressForm(options) {
                 loadProvinces(regionId, s.province, s.city, s.barangay);
             }
         });
+    }
+
+    const form = barangaySelect.closest('form');
+    if (form) {
+        form.addEventListener(
+            'submit',
+            function () {
+                syncCoAddressToHidden();
+            },
+            true
+        );
     }
 }
