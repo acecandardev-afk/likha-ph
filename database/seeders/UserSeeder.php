@@ -11,23 +11,11 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Create Admin User
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@guihulngan-handicrafts.local'],
-            [
-                'name' => 'System Administrator',
-                'password' => Hash::make('Admin@2026'),
-                'role' => 'admin',
-                'phone' => '+63 912 345 6789',
-                'address' => 'Guihulngan City Hall, Guihulngan City',
-                'status' => 'active',
-                'email_verified_at' => now(),
-            ]
-        );
+        $this->call(AdminSeeder::class);
 
-        $this->command->info('✓ Admin user created: admin@guihulngan-handicrafts.local / Admin@2026');
+        $this->command->info('✓ Run AdminSeeder for credentials (or SEED_ADMIN_* in .env).');
 
-        // 2. Create Sample Artisans
+        // 1. Create Sample Artisans
         $artisans = [
             [
                 'user' => [
@@ -157,6 +145,6 @@ class UserSeeder extends Seeder
 
         $this->command->info('');
         $this->command->warn('Default password for all test users: password');
-        $this->command->warn('Admin password: Admin@2026');
+        $this->command->warn('Admin uses SEED_ADMIN_PASSWORD in .env (default Admin@2026) — see AdminSeeder.');
     }
 }

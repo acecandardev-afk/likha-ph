@@ -9,6 +9,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Support\ProductNotificationUrl;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -254,5 +256,46 @@ class NotificationService
         foreach ($adminIds as $id) {
             $this->notifyUser((int) $id, $type, $title, $body, $actionUrl);
         }
+    }
+
+    /**
+     * Remove in-app notifications whose action URL points at a deleted product (avoids 404s from stale links).
+     */
+    public function removeNotificationsForDeletedProduct(int $productId): void
+    {
+        if ($productId < 1) {
+            return;
+        }
+
+        $likeProducts = '%/products/'.$productId.'%';
+        $likeArtisan = '%/artisan/products/'.$productId.'%';
+
+        $affectedUserIds = [];
+
+        $candidates = UserNotification::query()
+            ->whereNotNull('action_url')
+            ->where(function ($q) use ($likeProducts, $likeArtisan) {
+                $q->where('action_url', 'like', $likeProducts)
+                    ->orWhere('action_url', 'like', $likeArtisan);
+            })
+            ->get();
+
+        foreach ($candidates as $notification) {
+            if (! ProductNotificationUrl::referencesProductId($notification->action_url, $productId)) {
+                continue;
+            }
+            $affectedUserIds[] = (int) $notification->user_id;
+            $notification->delete();
+        }
+
+        foreach (array_unique($affectedUserIds) as $userId) {
+            $this->forgetNotificationUiCacheFor((int) $userId);
+        }
+    }
+
+    protected function forgetNotificationUiCacheFor(int $userId): void
+    {
+        Cache::forget("ui:unreadNotificationsCount:{$userId}");
+        Cache::forget("ui:applicationBanner:{$userId}");
     }
 }

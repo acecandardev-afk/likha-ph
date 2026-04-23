@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
@@ -21,6 +23,24 @@ class Product extends Model
         'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Product $product) {
+            $cartUserIds = Cart::query()
+                ->where('product_id', $product->id)
+                ->pluck('user_id')
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->all();
+
+            app(NotificationService::class)->removeNotificationsForDeletedProduct($product->id);
+
+            foreach ($cartUserIds as $uid) {
+                Cache::forget("ui:cartCount:{$uid}");
+            }
+        });
+    }
 
     // Relationships
     public function artisan()
