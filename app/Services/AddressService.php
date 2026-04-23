@@ -10,33 +10,45 @@ use Illuminate\Support\Facades\Cache;
 
 class AddressService
 {
-    public const CACHE_KEY_BOOTSTRAP = 'ph.address.client_bootstrap_v1';
+    public const CACHE_KEY_BOOTSTRAP = 'ph.address.client_bootstrap_v2';
 
     /**
      * Full hierarchy for inline JS: one payload per page, no waterfall of /api/region/... requests.
+     * Plain arrays only (never cache Eloquent models — file/cache serialization can 500 in production).
      */
     public function getClientBootstrap(): array
     {
-        return Cache::remember(self::CACHE_KEY_BOOTSTRAP, 3600, function () {
+        try {
+            return Cache::remember(self::CACHE_KEY_BOOTSTRAP, 3600, function () {
+                return [
+                    'regions' => Region::query()
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'code'])
+                        ->toArray(),
+                    'provinces' => Province::query()
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'code', 'region_id'])
+                        ->toArray(),
+                    'cities' => City::query()
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'code', 'province_id'])
+                        ->toArray(),
+                    'barangays' => Barangay::query()
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'code', 'city_id'])
+                        ->toArray(),
+                ];
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
             return [
-                'regions' => Region::query()
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'code'])
-                    ->all(),
-                'provinces' => Province::query()
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'code', 'region_id'])
-                    ->all(),
-                'cities' => City::query()
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'code', 'province_id'])
-                    ->all(),
-                'barangays' => Barangay::query()
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'code', 'city_id'])
-                    ->all(),
+                'regions' => [],
+                'provinces' => [],
+                'cities' => [],
+                'barangays' => [],
             ];
-        });
+        }
     }
 
     public static function forgetClientBootstrapCache(): void
