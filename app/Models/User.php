@@ -85,6 +85,26 @@ class User extends Authenticatable
         return $this->hasMany(UserNotification::class, 'user_id');
     }
 
+    public function region()
+    {
+        return $this->belongsTo(Region::class, 'region', 'name');
+    }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province', 'name');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city', 'name');
+    }
+
+    public function barangay()
+    {
+        return $this->belongsTo(Barangay::class, 'barangay', 'name');
+    }
+
     // Scopes
     public function scopeArtisans($query)
     {

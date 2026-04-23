@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
+            PhilippineAddressSeeder::class,
             // OrderSeeder::class, // Optional: uncomment for test orders
         ]);
     }
