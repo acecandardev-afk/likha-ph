@@ -8,6 +8,9 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Review;
+use App\Models\Rider;
+use App\Services\DeliveryService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class DashboardController extends AdminController
@@ -17,16 +20,22 @@ class DashboardController extends AdminController
      */
     public function index()
     {
-        $stats = [
-            'pending_products' => Product::pending()->count(),
-            'pending_payments' => Payment::pending()->count(),
-            'total_artisans' => User::artisans()->count(),
-            'total_customers' => User::customers()->count(),
-            'total_orders' => Order::count(),
-            'pending_orders' => Order::pending()->count(),
-            'total_revenue' => Order::confirmed()->sum('total'),
-            'unapproved_reviews' => Review::where('is_approved', false)->count(),
-        ];
+        $stats = Cache::remember('dashboard:admin:stats', 60, function () {
+            return [
+                'pending_products' => Product::pending()->count(),
+                'pending_payments' => Payment::pending()->count(),
+                'total_artisans' => User::artisans()->count(),
+                'total_customers' => User::customers()->count(),
+                'total_orders' => Order::count(),
+                'pending_orders' => Order::pending()->count(),
+                'total_revenue' => Order::confirmed()->sum('total'),
+                'unapproved_reviews' => Review::where('is_approved', false)->count(),
+                'total_riders' => Rider::count(),
+                'available_riders' => Rider::where('status', Rider::STATUS_AVAILABLE)->count(),
+                'pending_delivery_assignment' => Order::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)->count(),
+                'completed_deliveries' => Order::where('delivery_status', DeliveryService::STATUS_DELIVERED)->count(),
+            ];
+        });
 
         // Recent activity
         $recentProducts = Product::pending()

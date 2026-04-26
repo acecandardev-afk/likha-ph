@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Subscription-style marketplace UI — hero, reveal, shop, offcanvas auth
 // Uses variables from app.scss import order
 
@@ -104,7 +106,10 @@
   width: 100%;
   display: block;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: #f8fafc;
+  max-height: 520px;
 }
 
 .lk-min-hero__placeholder {
@@ -520,7 +525,7 @@
 // ——— Artisans listing ———
 .artisans-page--sub .artisans-hero-sub {
   border-radius: 1.25rem;
-  background: linear-gradient(135deg, $neo-black 0%, lighten($neo-black, 8%) 45%, $brand-primary-dark 100%);
+  background: linear-gradient(135deg, $neo-black 0%, color.adjust($neo-black, $lightness: 8%) 45%, $brand-primary-dark 100%);
   color: #fff;
   padding: 2.5rem 1.5rem;
   text-align: center;
@@ -585,7 +590,7 @@
 
   .artisan-card-placeholder {
     height: 240px;
-    background: linear-gradient(145deg, lighten($brand-primary, 18%) 0%, $brand-primary 100%);
+    background: linear-gradient(145deg, color.adjust($brand-primary, $lightness: 18%) 0%, $brand-primary 100%);
   }
 }
 

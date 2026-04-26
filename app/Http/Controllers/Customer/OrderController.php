@@ -24,7 +24,7 @@ class OrderController extends CustomerController
         $customer = $this->getCustomer();
 
         $query = $customer->orders()
-            ->with(['artisan.artisanProfile', 'items.product', 'payment']);
+            ->with(['artisan.artisanProfile', 'items.product', 'payment', 'rider']);
 
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
@@ -48,10 +48,27 @@ class OrderController extends CustomerController
             'artisan.artisanProfile',
             'items.product.images',
             'payment',
-            'messages.sender'
+            'messages.sender',
+            'rider'
         ]);
 
         return view('customer.orders.show', compact('order'));
+    }
+
+    /**
+     * Show customer delivery tracking timeline.
+     */
+    public function tracking(Order $order)
+    {
+        $this->authorize('view', $order);
+
+        $order->load([
+            'artisan.artisanProfile',
+            'rider',
+            'deliveryHistory.actor',
+        ]);
+
+        return view('customer.orders.tracking', compact('order'));
     }
 
     /**

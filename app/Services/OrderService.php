@@ -16,7 +16,8 @@ class OrderService
     public function __construct(
         protected StockService $stockService,
         protected CartService $cartService,
-        protected NotificationService $notificationService
+        protected NotificationService $notificationService,
+        protected DeliveryService $deliveryService
     ) {}
 
     /**
@@ -156,6 +157,16 @@ class OrderService
             'amount' => $order->total,
             'verification_status' => $verificationStatus,
         ]);
+
+        // Initial delivery state waits for assignment. For COD (already verified),
+        // assignment is attempted immediately after order creation.
+        $order->update([
+            'delivery_status' => DeliveryService::STATUS_PENDING_ASSIGNMENT,
+        ]);
+
+        if ($verificationStatus === 'verified') {
+            $this->deliveryService->assignRandomAvailableRider($order->fresh(['payment', 'rider']));
+        }
 
         return $order->fresh(['items', 'payment', 'artisan']);
     }

@@ -10,11 +10,11 @@
         <div class="container-fluid px-3 px-lg-5">
             <div class="lk-min-hero__inner">
                 <div class="lk-min-hero__copy">
-                    <h1 id="home-hero-heading" class="lk-min-hero__title">Handmade products from local artisans</h1>
-                    <p class="lk-min-hero__text">Browse products, view artisan profiles, and place your order easily.</p>
+                    <h1 id="home-hero-heading" class="lk-min-hero__title">Handmade products from local makers</h1>
+                    <p class="lk-min-hero__text">Shop trusted products, chat with sellers, and track your delivery in one place.</p>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-dark" href="{{ route('products.index') }}">View all products</a>
-                        <a class="btn btn-outline-dark" href="{{ route('artisans.index') }}">View artisans</a>
+                        <a class="btn btn-dark" href="{{ route('products.index') }}">Shop now</a>
+                        <a class="btn btn-outline-dark" href="{{ route('artisans.index') }}">Meet artisans</a>
                     </div>
                 </div>
                 <div class="lk-min-hero__media">
@@ -99,9 +99,9 @@
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-md-between gap-3 mb-4 mb-lg-4">
                 <div>
                     <h2 id="home-featured-heading" class="home-section-title home-section-title--serif mb-1">Featured products</h2>
-                    <p class="text-muted mb-0 small">Latest approved products.</p>
+                    <p class="text-muted mb-0 small">Newest approved items from our sellers.</p>
                 </div>
-                <a href="{{ route('products.index') }}" class="btn btn-outline-dark btn-sm px-4">View all</a>
+                <a href="{{ route('products.index') }}" class="btn btn-outline-dark btn-sm px-4">See all products</a>
             </div>
 
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 g-lg-4 align-items-stretch">
@@ -158,9 +158,9 @@
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-md-between gap-3 mb-4 mb-lg-4">
                 <div>
                     <h2 id="home-artisans-heading" class="home-section-title home-section-title--serif mb-1">Artisans</h2>
-                    <p class="text-muted mb-0 small">People behind the products.</p>
+                    <p class="text-muted mb-0 small">Get to know the people behind each product.</p>
                 </div>
-                <a href="{{ route('artisans.index') }}" class="btn btn-outline-dark btn-sm px-4">See all</a>
+                <a href="{{ route('artisans.index') }}" class="btn btn-outline-dark btn-sm px-4">See all artisans</a>
             </div>
 
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 g-lg-4 align-items-stretch">

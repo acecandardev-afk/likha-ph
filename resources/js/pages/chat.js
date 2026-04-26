@@ -32,7 +32,7 @@ function initChatFlow(config) {
         document.querySelector('meta[name="csrf-token"]')?.content ||
         document.querySelector(`#${config.formId} input[name="_token"]`)?.value;
     let pollInterval = null;
-    let lastCount = 0;
+    let lastMessageId = 0;
 
     function loadMessages(showLoading = true) {
         if (showLoading) {
@@ -41,21 +41,32 @@ function initChatFlow(config) {
             empty.classList.add('d-none');
         }
 
-        fetch(config.baseUrl, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+        const fetchUrl = showLoading || lastMessageId === 0
+            ? config.baseUrl
+            : `${config.baseUrl}?since_id=${encodeURIComponent(lastMessageId)}`;
+
+        fetch(fetchUrl, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.json())
             .then(data => {
                 loading.classList.add('d-none');
                 const messages = data.messages || [];
-                if (showLoading || messages.length !== lastCount) {
-                    lastCount = messages.length;
+                if (showLoading) {
                     container.querySelectorAll('.chat-msg').forEach(el => el.remove());
-                    if (messages.length > 0) {
+                }
+
+                if (messages.length > 0) {
+                    empty.classList.add('d-none');
+
+                    if (showLoading) {
                         messages.forEach(msg => container.insertBefore(renderMessage(msg), loading));
-                        empty.classList.add('d-none');
                     } else {
-                        empty.classList.remove('d-none');
+                        messages.forEach(msg => container.appendChild(renderMessage(msg)));
                     }
+
+                    lastMessageId = Number(data.last_id || messages[messages.length - 1]?.id || lastMessageId);
                     container.scrollTop = container.scrollHeight;
+                } else if (showLoading) {
+                    empty.classList.remove('d-none');
                 }
             })
             .catch(() => {
@@ -65,6 +76,13 @@ function initChatFlow(config) {
                     empty.classList.remove('d-none');
                 }
             });
+    }
+
+    function appendMessage(msg) {
+        empty.classList.add('d-none');
+        container.appendChild(renderMessage(msg));
+        lastMessageId = Math.max(lastMessageId, Number(msg.id || 0));
+        container.scrollTop = container.scrollHeight;
     }
 
     function startPolling() {
@@ -98,9 +116,7 @@ function initChatFlow(config) {
             .then(r => r.json())
             .then(data => {
                 if (data.message) {
-                    empty.classList.add('d-none');
-                    container.appendChild(renderMessage(data.message));
-                    container.scrollTop = container.scrollHeight;
+                    appendMessage(data.message);
                 }
                 input.value = '';
             })

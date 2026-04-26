@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Barangay;
 use App\Models\Order;
-use App\Support\Guihulngan;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CheckoutRequest extends FormRequest
@@ -23,16 +23,6 @@ class CheckoutRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $city = Guihulngan::deliveryCity();
-        if ($city) {
-            $city->loadMissing('province.region');
-            $this->merge([
-                'region' => (int) $city->province->region_id,
-                'province' => (int) $city->province_id,
-                'city' => (int) $city->id,
-            ]);
-        }
-
         $raw = $this->input('barangay');
         if ($raw === null || $raw === '') {
             return;
@@ -44,9 +34,9 @@ class CheckoutRequest extends FormRequest
         }
         if (is_numeric($b)) {
             $this->merge(['barangay' => (int) $b]);
-        } elseif ($city) {
+        } elseif (is_numeric($this->input('city'))) {
             $id = Barangay::query()
-                ->where('city_id', (int) $city->id)
+                ->where('city_id', (int) $this->input('city'))
                 ->where('name', $b)
                 ->value('id');
             if ($id) {
@@ -98,9 +88,21 @@ class CheckoutRequest extends FormRequest
         return [
             'country' => ['required', 'string', 'in:Philippines'],
             'region' => ['required', 'integer', 'exists:regions,id'],
-            'province' => ['required', 'integer', 'exists:provinces,id'],
-            'city' => ['required', 'integer', 'exists:cities,id'],
-            'barangay' => Guihulngan::artisanBarangayIdRules(),
+            'province' => [
+                'required',
+                'integer',
+                Rule::exists('provinces', 'id')->where(fn ($q) => $q->where('region_id', (int) $this->input('region'))),
+            ],
+            'city' => [
+                'required',
+                'integer',
+                Rule::exists('cities', 'id')->where(fn ($q) => $q->where('province_id', (int) $this->input('province'))),
+            ],
+            'barangay' => [
+                'required',
+                'integer',
+                Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', (int) $this->input('city'))),
+            ],
             'street_address' => ['nullable', 'string', 'max:500'],
             'phone' => [
                 'required',

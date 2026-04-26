@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Neo-brutalist / editorial landing (serif headlines, offset shadows, cream + orange + yellow)
 .home-storefront--neo {
   background: $body-bg;
@@ -28,7 +30,7 @@
     background 0.15s ease;
 
   &:hover {
-    background: lighten($neo-black, 6%);
+    background: color.adjust($neo-black, $lightness: 6%);
     color: #fff !important;
     transform: translate(2px, 2px);
     box-shadow: 4px 4px 0 $brand-primary;
@@ -72,7 +74,7 @@
   box-shadow: 5px 5px 0 $brand-primary;
 
   &:hover {
-    background: lighten($neo-yellow, 6%);
+    background: color.adjust($neo-yellow, $lightness: 6%);
     color: $neo-black !important;
   }
 }
@@ -133,7 +135,7 @@
   bottom: 4%;
   height: 46%;
   min-height: 0.55em;
-  background: linear-gradient(102deg, $neo-yellow 0%, lighten($neo-yellow, 10%) 48%, $neo-yellow 100%);
+  background: linear-gradient(102deg, $neo-yellow 0%, color.adjust($neo-yellow, $lightness: 10%) 48%, $neo-yellow 100%);
   border: 2px solid $neo-black;
   border-radius: 3px 6px 2px 5px;
   transform: rotate(-2.5deg) skewX(-3deg);
@@ -240,7 +242,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  background: linear-gradient(145deg, lighten($neo-yellow, 18%) 0%, $surface 100%);
+  background: linear-gradient(145deg, color.adjust($neo-yellow, $lightness: 18%) 0%, $surface 100%);
   min-height: 360px;
   aspect-ratio: 4 / 5;
 }

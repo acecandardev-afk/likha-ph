@@ -101,7 +101,7 @@
                             <i class="bi bi-box-seam me-1"></i> My products
                         </a>
                         <a href="{{ route('artisan.orders.index') }}" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-receipt me-1"></i> Orders
+                            <i class="bi bi-receipt me-1"></i> Incoming orders
                         </a>
                         <a href="{{ route('artisan.profile.edit') }}" class="btn btn-outline-dark w-100">
                             <i class="bi bi-person-circle me-1"></i> Profile

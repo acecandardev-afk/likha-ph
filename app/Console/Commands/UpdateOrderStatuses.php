@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
+use App\Services\DeliveryService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class UpdateOrderStatuses extends Command
 {
@@ -20,7 +20,13 @@ class UpdateOrderStatuses extends Command
      *
      * @var string
      */
-    protected $description = 'Automatically update order statuses based on time elapsed';
+    protected $description = 'Assign pending deliveries to available riders';
+
+    public function __construct(
+        protected DeliveryService $deliveryService
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -28,49 +34,34 @@ class UpdateOrderStatuses extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        $now = now();
+        $this->info($dryRun ? 'DRY RUN: Simulating delivery assignment checks' : 'Checking pending delivery assignments...');
 
-        $this->info($dryRun ? 'DRY RUN: Simulating order status updates' : 'Updating order statuses...');
+        // Keep only assignment automation. Delivery progress itself is rider/admin-driven.
+        $pendingCount = Order::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)
+            ->whereHas('payment', fn ($q) => $q->where('verification_status', 'verified'))
+            ->count();
 
-        // Update approved orders to shipped after 5 minutes
-        $approvedOrders = Order::where('status', 'approved')
-            ->whereNotNull('approved_at')
-            ->where('approved_at', '<=', $now->copy()->subMinutes(5))
-            ->get();
+        $this->info("Found {$pendingCount} orders pending rider assignment");
 
-        $this->info("Found {$approvedOrders->count()} approved orders ready to ship");
-
-        foreach ($approvedOrders as $order) {
-            if ($dryRun) {
-                $this->line("Would update order {$order->order_number} from approved to shipped");
-            } else {
-                $order->update(['status' => 'shipped']);
-                Log::info("Order {$order->order_number} status updated to shipped");
-            }
-        }
-
-        // Update shipped orders to on_delivery after 1-5 hours total (4 more hours)
-        $shippedOrders = Order::where('status', 'shipped')
-            ->where('created_at', '<=', $now->copy()->subHours(5))
-            ->get();
-
-        $this->info("Found {$shippedOrders->count()} shipped orders older than 5 hours");
-
-        foreach ($shippedOrders as $order) {
-            if ($dryRun) {
-                $this->line("Would update order {$order->order_number} from shipped to on_delivery");
-            } else {
-                $order->update(['status' => 'on_delivery']);
-                Log::info("Order {$order->order_number} status updated to on_delivery");
-            }
-        }
+        Order::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)
+            ->whereHas('payment', fn ($q) => $q->where('verification_status', 'verified'))
+            ->chunkById(100, function ($orders) use ($dryRun) {
+                foreach ($orders as $order) {
+                    /** @var \App\Models\Order $order */
+                    if ($dryRun) {
+                        $this->line("Would attempt rider assignment for order {$order->order_number}");
+                    } else {
+                        $this->deliveryService->assignRandomAvailableRider($order);
+                    }
+                }
+            });
 
         if (!$dryRun) {
-            $this->info('Order status updates completed successfully.');
+            $this->info('Delivery assignment checks completed successfully.');
         } else {
             $this->info('Dry run completed. No changes were made.');
         }
 
-        return Command::SUCCESS;
+        return \Symfony\Component\Console\Command\Command::SUCCESS;
     }
 }

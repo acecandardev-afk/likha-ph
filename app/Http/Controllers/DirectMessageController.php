@@ -57,8 +57,18 @@ class DirectMessageController extends Controller
                 : redirect()->route('chats.index');
         }
 
-        $messages = DirectMessage::between(auth()->id(), $user->id)
+        $query = DirectMessage::between(auth()->id(), $user->id);
+
+        if (request()->filled('since_id')) {
+            $query->where('id', '>', (int) request('since_id'));
+        } else {
+            // Initial load: fetch latest 50 only to avoid full-thread payloads.
+            $query->latest('id')->take(50);
+        }
+
+        $messages = $query
             ->get()
+            ->sortBy('id')
             ->map(fn ($m) => [
                 'id' => $m->id,
                 'message' => $m->message,
@@ -69,7 +79,10 @@ class DirectMessageController extends Controller
             ]);
 
         if (request()->wantsJson()) {
-            return response()->json(['messages' => $messages]);
+            return response()->json([
+                'messages' => $messages,
+                'last_id' => $messages->last()['id'] ?? (int) request('since_id', 0),
+            ]);
         }
 
         $otherName = $user->artisanProfile->workshop_name ?? $user->name;

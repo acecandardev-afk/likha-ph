@@ -7,8 +7,9 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsArtisan;
 use App\Http\Middleware\EnsureUserIsCustomer;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\EnsureUserIsRider;
 use App\Http\Middleware\ShareUiState;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,17 +24,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // correctly detects HTTPS and generates secure URLs (e.g. /logout).
         $middleware->trustProxies(
             at: '*',
-            headers: Request::HEADER_X_FORWARDED_FOR
-                | Request::HEADER_X_FORWARDED_HOST
-                | Request::HEADER_X_FORWARDED_PORT
-                | Request::HEADER_X_FORWARDED_PROTO
-                | Request::HEADER_X_FORWARDED_AWS_ELB
+            headers: SymfonyRequest::HEADER_X_FORWARDED_FOR
+                | SymfonyRequest::HEADER_X_FORWARDED_HOST
+                | SymfonyRequest::HEADER_X_FORWARDED_PORT
+                | SymfonyRequest::HEADER_X_FORWARDED_PROTO
+                | SymfonyRequest::HEADER_X_FORWARDED_AWS_ELB
         );
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'artisan' => EnsureUserIsArtisan::class,
             'customer' => EnsureUserIsCustomer::class,
+            'rider' => EnsureUserIsRider::class,
             'active' => EnsureUserIsActive::class,
         ]);
 
@@ -66,7 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Providers\AuthServiceProvider::class,
     ])
     ->withSchedule(function ($schedule) {
-        $schedule->command('orders:update-statuses')->everyMinute();
+        $schedule->command('orders:update-statuses')->everyMinute()->withoutOverlapping();
     })->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

@@ -6,8 +6,8 @@ use App\Models\Barangay;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\Region;
-use App\Support\Guihulngan;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AccountController extends Controller
 {
@@ -19,72 +19,49 @@ class AccountController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        $deliveryCity = Guihulngan::deliveryCity();
-        if (! $deliveryCity) {
-            return view('account.edit', [
-                'user' => $user,
-                'addressUnavailable' => true,
-            ]);
+        $selectedRegionId = old('region');
+        if ($selectedRegionId === null && ! empty($user->region)) {
+            $selectedRegionId = Region::query()->where('name', $user->region)->value('id');
         }
 
-        $deliveryCity->loadMissing('province.region');
-        $barangays = $deliveryCity->barangays()->orderBy('name')->get(['id', 'name', 'code']);
-        $delivery = [
-            'region_id' => $deliveryCity->province->region_id,
-            'province_id' => $deliveryCity->province_id,
-            'city_id' => $deliveryCity->id,
-            'region_name' => $deliveryCity->province->region->name,
-            'province_name' => $deliveryCity->province->name,
-            'city_name' => $deliveryCity->name,
-        ];
+        $selectedProvinceId = old('province');
+        if ($selectedProvinceId === null && ! empty($user->province)) {
+            $selectedProvinceId = Province::query()->where('name', $user->province)->value('id');
+        }
+
+        $selectedCityId = old('city');
+        if ($selectedCityId === null && ! empty($user->city)) {
+            $selectedCityId = City::query()->where('name', $user->city)->value('id');
+        }
 
         $selectedBarangayId = old('barangay');
-        if ($selectedBarangayId === null) {
-            $u = $user->barangay;
-            if ($u !== null && $u !== '') {
-                if (is_numeric($u) && $barangays->contains('id', (int) $u)) {
-                    $selectedBarangayId = (int) $u;
-                } else {
-                    $selectedBarangayId = $barangays->firstWhere('name', (string) $u)?->id;
-                }
-            }
-        } elseif (is_string($selectedBarangayId)) {
-            $selectedBarangayId = is_numeric($selectedBarangayId)
-                ? (int) $selectedBarangayId
-                : $barangays->firstWhere('name', $selectedBarangayId)?->id;
+        if ($selectedBarangayId === null && ! empty($user->barangay)) {
+            $selectedBarangayId = Barangay::query()->where('name', $user->barangay)->value('id');
         }
 
-        return view('account.edit', compact(
-            'user',
-            'delivery',
-            'barangays',
-            'selectedBarangayId'
-        ));
+        return view('account.edit', compact('user', 'selectedRegionId', 'selectedProvinceId', 'selectedCityId', 'selectedBarangayId'));
     }
 
     public function update(Request $request)
     {
-        $city = Guihulngan::deliveryCity();
-        if (! $city) {
-            $validated = $request->validate([
-                'country' => 'required|string|in:Philippines',
-                'street_address' => 'nullable|string|max:500',
-                'phone' => [
-                    'nullable',
-                    'string',
-                    'regex:/^(09\d{9}|\+63\d{10})$/',
-                    'max:13'
-                ],
-            ]);
-
-            $request->user()->update($validated);
-
-            return back()->with('success', 'Contact details updated. Full address will be available once location data is configured.');
-        }
-
         $validated = $request->validate([
             'country' => 'required|string|in:Philippines',
-            'barangay' => Guihulngan::guihulnganBarangayIdRulesOptional(),
+            'region' => ['required', 'integer', 'exists:regions,id'],
+            'province' => [
+                'required',
+                'integer',
+                Rule::exists('provinces', 'id')->where(fn ($q) => $q->where('region_id', (int) $request->input('region'))),
+            ],
+            'city' => [
+                'required',
+                'integer',
+                Rule::exists('cities', 'id')->where(fn ($q) => $q->where('province_id', (int) $request->input('province'))),
+            ],
+            'barangay' => [
+                'required',
+                'integer',
+                Rule::exists('barangays', 'id')->where(fn ($q) => $q->where('city_id', (int) $request->input('city'))),
+            ],
             'street_address' => 'nullable|string|max:500',
             'phone' => [
                 'nullable',
@@ -93,11 +70,6 @@ class AccountController extends Controller
                 'max:13'
             ],
         ]);
-
-        $city->loadMissing('province.region');
-        $validated['region'] = (int) $city->province->region_id;
-        $validated['province'] = (int) $city->province_id;
-        $validated['city'] = (int) $city->id;
 
         $request->user()->update($this->resolveLocationNames($validated));
 

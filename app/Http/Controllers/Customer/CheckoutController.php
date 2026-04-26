@@ -9,7 +9,6 @@ use App\Models\Province;
 use App\Models\Region;
 use App\Services\CartService;
 use App\Services\OrderService;
-use App\Support\Guihulngan;
 
 class CheckoutController extends CustomerController
 {
@@ -37,41 +36,33 @@ class CheckoutController extends CustomerController
                 ->withErrors($errors);
         }
 
-        $deliveryCity = Guihulngan::deliveryCity();
-        if (! $deliveryCity) {
-            return redirect()->route('customer.cart.index')
-                ->withErrors(['error' => 'Delivery location is not available. Please try again later.']);
+        $selectedRegionId = old('region');
+        if ($selectedRegionId === null && ! empty($customer->region)) {
+            $selectedRegionId = Region::query()->where('name', $customer->region)->value('id');
         }
 
-        $deliveryCity->loadMissing('province.region');
-        $barangays = $deliveryCity->barangays()->orderBy('name')->get(['id', 'name', 'code']);
+        $selectedProvinceId = old('province');
+        if ($selectedProvinceId === null && ! empty($customer->province)) {
+            $selectedProvinceId = Province::query()->where('name', $customer->province)->value('id');
+        }
 
-        $delivery = [
-            'region_id' => $deliveryCity->province->region_id,
-            'province_id' => $deliveryCity->province_id,
-            'city_id' => $deliveryCity->id,
-            'region_name' => $deliveryCity->province->region->name,
-            'province_name' => $deliveryCity->province->name,
-            'city_name' => $deliveryCity->name,
-        ];
+        $selectedCityId = old('city');
+        if ($selectedCityId === null && ! empty($customer->city)) {
+            $selectedCityId = City::query()->where('name', $customer->city)->value('id');
+        }
 
         $selectedBarangayId = old('barangay');
-        if ($selectedBarangayId === null) {
-            $u = $customer->barangay;
-            if ($u !== null && $u !== '') {
-                if (is_numeric($u) && $barangays->contains('id', (int) $u)) {
-                    $selectedBarangayId = (int) $u;
-                } else {
-                    $selectedBarangayId = $barangays->firstWhere('name', (string) $u)?->id;
-                }
-            }
-        } elseif (is_string($selectedBarangayId)) {
-            $selectedBarangayId = is_numeric($selectedBarangayId)
-                ? (int) $selectedBarangayId
-                : $barangays->firstWhere('name', $selectedBarangayId)?->id;
+        if ($selectedBarangayId === null && ! empty($customer->barangay)) {
+            $selectedBarangayId = Barangay::query()->where('name', $customer->barangay)->value('id');
         }
 
-        return view('customer.checkout.index', compact('summary', 'delivery', 'barangays', 'selectedBarangayId'));
+        return view('customer.checkout.index', compact(
+            'summary',
+            'selectedRegionId',
+            'selectedProvinceId',
+            'selectedCityId',
+            'selectedBarangayId'
+        ));
     }
 
     public function store(CheckoutRequest $request)

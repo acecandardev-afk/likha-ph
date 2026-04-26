@@ -123,6 +123,20 @@ return [
                 'visibility' => 'public',
                 'throw' => false,
             ],
+
+        'delivery_proofs' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('delivery-proofs'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/delivery-proofs'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/delivery-proofs',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
     ],
 
     /*

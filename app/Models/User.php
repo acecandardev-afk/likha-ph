@@ -70,6 +70,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class, 'artisan_id');
     }
 
+    public function riderProfile()
+    {
+        return $this->hasOne(Rider::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class, 'customer_id');
@@ -116,6 +121,11 @@ class User extends Authenticatable
         return $query->where('role', 'customer');
     }
 
+    public function scopeRiders($query)
+    {
+        return $query->where('role', 'rider');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -139,6 +149,11 @@ class User extends Authenticatable
         // so freshly-registered accounts behave as shoppers unless
         // promoted to admin/artisan.
         return $this->role === 'customer' || $this->role === null;
+    }
+
+    public function isRider(): bool
+    {
+        return $this->role === 'rider';
     }
 
     public function isSuspended(): bool

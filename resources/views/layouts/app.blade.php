@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Likha PH') }} – @yield('title', 'Home')</title>
-
-    <link rel="icon" href="{{ asset('likha-ph-logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('likha-ph-logo.png') }}">
+    <title>@yield('title', 'Home')</title>
 
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
@@ -17,7 +14,7 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="likha-app">
+<body class="likha-app {{ auth()->check() && auth()->user()->isAdmin() ? 'admin-has-sidebar' : '' }}">
     <div id="app">
         @include('layouts.navigation')
         @auth

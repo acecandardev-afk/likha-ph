@@ -60,12 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('message');
     const messagesContainer = document.getElementById('messagesContainer');
     const sendBtn = document.getElementById('sendBtn');
-    let lastRefreshTime = new Date();
+    let lastMessageId = 0;
     let pollingInterval;
 
     // Load initial messages
     loadAllMessages();
-    loadMessages();
 
     // Start polling for new messages every 2 seconds
     pollingInterval = setInterval(loadMessages, 2000);
@@ -93,7 +92,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 messageInput.value = '';
-                lastRefreshTime = new Date();
+                if (data.message) {
+                    appendMessage(data.message);
+                }
                 loadMessages();
             } else {
                 alert('Error sending message');
@@ -110,21 +111,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function loadMessages() {
-        const sinceParam = lastRefreshTime.toISOString();
-
-        fetch(`/orders/${encodeURIComponent(orderKey)}/messages/fetch?since=${encodeURIComponent(sinceParam)}`)
+        fetch(`/orders/${encodeURIComponent(orderKey)}/messages/fetch?since_id=${encodeURIComponent(lastMessageId)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.messages && data.messages.length > 0) {
-                    // Only update if there are new messages
-                    const hasNewMessages = data.messages.some(msg => msg.id > (window.lastMessageId || 0));
-                    
-                    if (hasNewMessages) {
-                        loadAllMessages();
-                        window.lastMessageId = Math.max(...data.messages.map(m => m.id));
-                    }
-
-                    lastRefreshTime = new Date();
+                    appendMessages(data.messages);
                 }
             })
             .catch(error => console.error('Error fetching messages:', error));
@@ -135,6 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 renderMessages(data.messages);
+                if ((data.messages || []).length > 0) {
+                    lastMessageId = Math.max(...data.messages.map(m => Number(m.id || 0)));
+                }
                 // Auto-scroll to bottom
                 setTimeout(() => {
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -152,22 +146,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         messages.forEach(msg => {
-            const div = document.createElement('div');
-            div.className = 'mb-3 pb-3 border-bottom';
-            
-            const alignment = msg.is_own ? 'text-end' : '';
-            const bgColor = msg.is_own ? 'bg-primary bg-opacity-10' : '';
-
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start gap-2 ${alignment}">
-                    <span class="fw-medium small">${escapeHtml(msg.sender_name)}</span>
-                    <span class="text-muted small">${msg.created_at}</span>
-                </div>
-                <div class="mt-1 ${bgColor} p-2 rounded">${escapeHtml(msg.message)}</div>
-            `;
-
-            messagesContainer.appendChild(div);
+            messagesContainer.appendChild(buildMessageNode(msg));
         });
+    }
+
+    function buildMessageNode(msg) {
+        const div = document.createElement('div');
+        div.className = 'mb-3 pb-3 border-bottom';
+
+        const alignment = msg.is_own ? 'text-end' : '';
+        const bgColor = msg.is_own ? 'bg-primary bg-opacity-10' : '';
+
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start gap-2 ${alignment}">
+                <span class="fw-medium small">${escapeHtml(msg.sender_name)}</span>
+                <span class="text-muted small">${msg.created_at}</span>
+            </div>
+            <div class="mt-1 ${bgColor} p-2 rounded">${escapeHtml(msg.message)}</div>
+        `;
+
+        return div;
+    }
+
+    function appendMessage(msg) {
+        messagesContainer.appendChild(buildMessageNode(msg));
+        lastMessageId = Math.max(lastMessageId, Number(msg.id || 0));
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function appendMessages(messages) {
+        if (!messages || messages.length === 0) {
+            return;
+        }
+
+        if (messagesContainer.textContent.includes('No messages yet')) {
+            messagesContainer.innerHTML = '';
+        }
+
+        messages.forEach(appendMessage);
     }
 
     function escapeHtml(text) {

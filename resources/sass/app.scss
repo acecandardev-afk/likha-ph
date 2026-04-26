@@ -378,10 +378,12 @@ h2, .h2 { color: $brand-dark; }
 
 .product-card-img,
 .product-card-placeholder {
-  height: 200px;
-  object-fit: cover;
+  height: 190px;
+  object-fit: contain;
+  object-position: center;
+  background: #f8fafc;
   transition: transform 0.4s ease;
-  @media (max-width: 575.98px) { height: 180px; }
+  @media (max-width: 575.98px) { height: 170px; }
 }
 
 .product-card:hover .product-card-img {

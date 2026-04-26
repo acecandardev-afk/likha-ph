@@ -65,33 +65,45 @@
                                 <input type="hidden" name="country" value="Philippines">
                             </div>
 
-                            {{-- Delivery is fixed: Guihulngan City only; region/province/city are server-set. --}}
-                            <input type="hidden" name="region" value="{{ $delivery['region_id'] }}">
-                            <input type="hidden" name="province" value="{{ $delivery['province_id'] }}">
-                            <input type="hidden" name="city" value="{{ $delivery['city_id'] }}">
+                            <input type="hidden" id="co_region" name="region" value="{{ old('region', $selectedRegionId ?? '') }}">
+                            <input type="hidden" id="co_province" name="province" value="{{ old('province', $selectedProvinceId ?? '') }}">
+                            <input type="hidden" id="co_city" name="city" value="{{ old('city', $selectedCityId ?? '') }}">
+                            <input type="hidden" id="co_barangay" name="barangay" value="{{ old('barangay', $selectedBarangayId ?? '') }}">
 
                             <div class="mb-3">
-                                <label class="form-label">Region <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" value="{{ $delivery['region_name'] }}" readonly tabindex="-1">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Province <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" value="{{ $delivery['province_name'] }}" readonly tabindex="-1">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">City / municipality <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" value="{{ $delivery['city_name'] }}" readonly tabindex="-1">
-                                <small class="text-muted">Delivery is available within {{ $delivery['city_name'] }} only.</small>
+                                <label for="region" class="form-label">Region <span class="text-danger">*</span></label>
+                                <select id="region" class="form-select @error('region') is-invalid @enderror" required>
+                                    <option value="">Select region</option>
+                                </select>
+                                @error('region')
+                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror
                             </div>
 
-                            <!-- Barangay (33 options for Guihulngan) -->
+                            <div class="mb-3">
+                                <label for="province" class="form-label">Province <span class="text-danger">*</span></label>
+                                <select id="province" class="form-select @error('province') is-invalid @enderror" required disabled>
+                                    <option value="">Select province</option>
+                                </select>
+                                @error('province')
+                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="city" class="form-label">City / municipality <span class="text-danger">*</span></label>
+                                <select id="city" class="form-select @error('city') is-invalid @enderror" required disabled>
+                                    <option value="">Select city</option>
+                                </select>
+                                @error('city')
+                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
+
                             <div class="mb-3">
                                 <label for="barangay" class="form-label">Barangay <span class="text-danger">*</span></label>
-                                <select name="barangay" id="barangay" class="form-select @error('barangay') is-invalid @enderror" required>
+                                <select id="barangay" class="form-select @error('barangay') is-invalid @enderror" required disabled>
                                     <option value="">Select barangay</option>
-                                    @foreach($barangays as $b)
-                                        <option value="{{ $b->id }}" @selected((string) $selectedBarangayId === (string) $b->id)>{{ $b->name }}</option>
-                                    @endforeach
                                 </select>
                                 @error('barangay')
                                     <span class="invalid-feedback d-block">{{ $message }}</span>
@@ -195,12 +207,15 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    initGuihulnganCheckoutForm({
+    initCheckoutAddressForm({
+        bootstrap: @json($phAddressBootstrap ?? null),
         useSavedButtonId: 'useSavedAddress',
-        barangaySelectId: 'barangay',
         streetFieldId: 'street_address',
         phoneFieldId: 'phone',
-        saved: {
+        savedForButton: {
+            region: @json($selectedRegionId ?? null),
+            province: @json($selectedProvinceId ?? null),
+            city: @json($selectedCityId ?? null),
             barangay: @json(auth()->user()->barangay ?? ''),
             street: @json(auth()->user()->street_address ?? ''),
             phone: @json(auth()->user()->phone ?? '')

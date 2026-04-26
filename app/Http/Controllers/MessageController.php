@@ -60,7 +60,13 @@ class MessageController extends Controller
         // Return JSON if AJAX request
         if ($request->wantsJson()) {
             return response()->json([
-                'message' => $message,
+                'message' => [
+                    'id' => $message->id,
+                    'sender_name' => $message->sender->name,
+                    'message' => $message->message,
+                    'created_at' => $message->created_at->format('M d, Y H:i'),
+                    'is_own' => true,
+                ],
                 'success' => true,
             ]);
         }
@@ -77,19 +83,25 @@ class MessageController extends Controller
 
         $query = $order->messages()->with('sender');
 
-        // Get messages since a certain timestamp (for real-time polling)
-        if ($request->has('since')) {
-            $since = $request->input('since');
-            $query->where('created_at', '>', $since);
+        // Incremental polling by message id (preferred) or timestamp fallback.
+        if ($request->filled('since_id')) {
+            $query->where('id', '>', (int) $request->input('since_id'));
+        } elseif ($request->has('since')) {
+            $query->where('created_at', '>', $request->input('since'));
         }
 
         $messages = $query->orderBy('created_at')->get();
 
-        // Mark messages as read
-        $order->messages()
+        // Mark new incoming messages as read only when there are unread foreign messages in this batch.
+        $foreignMessageIds = $messages
             ->where('sender_id', '!=', auth()->id())
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->pluck('id');
+        if ($foreignMessageIds->isNotEmpty()) {
+            $order->messages()
+                ->whereIn('id', $foreignMessageIds)
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+        }
 
         return response()->json([
             'messages' => $messages->map(function ($message) {

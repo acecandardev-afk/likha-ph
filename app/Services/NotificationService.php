@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Rider;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Support\ProductNotificationUrl;
@@ -232,6 +233,46 @@ class NotificationService
             Str::limit((string) $message->message, 120),
             route('chat.index', $sender)
         );
+    }
+
+    public function notifyDeliveryAssigned(Order $order, Rider $rider): void
+    {
+        $order->loadMissing(['customer', 'artisan']);
+        $num = $order->order_number;
+        $riderName = $rider->full_name ?: 'Assigned rider';
+
+        $this->notifyAdmins(
+            'delivery_assigned_admin',
+            'Rider assigned automatically',
+            "Order {$num} was assigned to {$riderName}.",
+            route('admin.deliveries.index')
+        );
+
+        $this->notifyUser(
+            $order->customer_id,
+            'delivery_assigned_customer',
+            'Rider assigned to your order',
+            "Order {$num} is now assigned to {$riderName}.",
+            route('customer.orders.tracking', $order)
+        );
+
+        $this->notifyUser(
+            $order->artisan_id,
+            'delivery_assigned_artisan',
+            'Rider assigned',
+            "Order {$num} is now assigned to {$riderName}.",
+            route('artisan.orders.show', $order)
+        );
+
+        if ($rider->user_id) {
+            $this->notifyUser(
+                (int) $rider->user_id,
+                'delivery_assigned_rider',
+                'New delivery assignment',
+                "You have a new assignment for order {$num}.",
+                route('rider.deliveries.show', $order)
+            );
+        }
     }
 
     protected function notifyUser(int $userId, string $type, string $title, ?string $body, ?string $actionUrl = null): void

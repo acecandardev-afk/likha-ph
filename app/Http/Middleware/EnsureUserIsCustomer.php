@@ -21,6 +21,10 @@ class EnsureUserIsCustomer
                 ->with('error', 'Please log in to access your cart.');
         }
 
+        if ($request->user()->isRider()) {
+            abort(403, 'Rider accounts cannot access customer ordering pages.');
+        }
+
         return $next($request);
     }
 }

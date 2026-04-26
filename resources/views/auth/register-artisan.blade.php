@@ -229,6 +229,20 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+/* Page-specific spacing fix so footer is not too close to the artisan form tip/curve. */
+.auth-page--artisan.auth-ecommerce-landing {
+    margin-bottom: 0 !important;
+    padding-bottom: 5rem !important;
+}
+
+.auth-page--artisan.auth-ecommerce-landing + .site-footer.site-footer--sub {
+    margin-top: 1.75rem;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {

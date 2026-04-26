@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Payment;
 use App\Models\Order;
+use App\Services\DeliveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PaymentVerificationController extends AdminController
 {
+    public function __construct(
+        protected DeliveryService $deliveryService
+    ) {
+        parent::__construct();
+    }
+
     /**
      * Display pending payment verifications.
      */
@@ -51,8 +58,12 @@ class PaymentVerificationController extends AdminController
 
             $payment->order->update([
                 'status' => 'confirmed',
+                'delivery_status' => DeliveryService::STATUS_PENDING_ASSIGNMENT,
             ]);
         });
+
+        // Auto-assign available rider after payment verification.
+        $this->deliveryService->assignRandomAvailableRider($payment->order->fresh(['payment', 'rider']));
 
         return redirect()
             ->route('admin.payments.pending')

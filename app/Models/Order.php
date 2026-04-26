@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Support\PublicMediaUrl;
+use Illuminate\Support\Facades\Storage;
 
 class Order extends Model
 {
@@ -28,6 +30,11 @@ class Order extends Model
         'shipping_barangay',
         'shipping_phone',
         'approved_at',
+        'rider_id',
+        'delivery_status',
+        'delivery_assigned_at',
+        'delivery_completed_at',
+        'delivery_proof_image',
     ];
 
     protected $casts = [
@@ -35,6 +42,8 @@ class Order extends Model
         'platform_fee' => 'decimal:2',
         'total' => 'decimal:2',
         'approved_at' => 'datetime',
+        'delivery_assigned_at' => 'datetime',
+        'delivery_completed_at' => 'datetime',
     ];
 
     // Relationships
@@ -56,6 +65,16 @@ class Order extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function rider()
+    {
+        return $this->belongsTo(Rider::class);
+    }
+
+    public function deliveryHistory()
+    {
+        return $this->hasMany(OrderDeliveryHistory::class)->orderBy('status_at');
     }
 
     public function messages()
@@ -119,6 +138,11 @@ class Order extends Model
         return $query->where('status', 'delivered');
     }
 
+    public function scopePendingDelivery($query)
+    {
+        return $query->where('delivery_status', 'pending_assignment');
+    }
+
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
@@ -175,6 +199,11 @@ class Order extends Model
         return $this->status === 'cancelled';
     }
 
+    public function isDeliveryCompleted(): bool
+    {
+        return $this->delivery_status === 'delivered';
+    }
+
     /**
      * Buyers may only cancel while the order is still pending (not shipped or beyond).
      */
@@ -198,6 +227,29 @@ class Order extends Model
         return $this->isConfirmed() && $this->payment?->isVerified();
     }
 
+    public function deliveryStatusLabel(): string
+    {
+        return match ($this->delivery_status) {
+            'order_confirmed' => 'Order Confirmed',
+            'preparing_package' => 'Preparing Package',
+            'package_picked_up' => 'Package Picked Up',
+            'arrived_sort_center' => 'Package Arrived at Sort Center',
+            'out_for_delivery' => 'Out for Delivery',
+            'delivered' => 'Delivered',
+            'pending_assignment' => 'Pending Delivery Assignment',
+            default => ucwords(str_replace('_', ' ', (string) $this->delivery_status)),
+        };
+    }
+
+    public function getDeliveryProofImageUrlAttribute(): ?string
+    {
+        if (! $this->delivery_proof_image) {
+            return null;
+        }
+
+        return PublicMediaUrl::url('delivery_proofs', $this->delivery_proof_image);
+    }
+
     // Generate unique order number
     protected static function boot()
     {
@@ -206,6 +258,12 @@ class Order extends Model
         static::creating(function ($order) {
             if (empty($order->order_number)) {
                 $order->order_number = 'ORD-' . strtoupper(uniqid());
+            }
+        });
+
+        static::deleting(function ($order) {
+            if ($order->delivery_proof_image) {
+                Storage::disk('delivery_proofs')->delete($order->delivery_proof_image);
             }
         });
     }

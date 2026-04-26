@@ -15,7 +15,7 @@ class OrderController extends ArtisanController
         $artisan = $this->getArtisan();
 
         $query = $artisan->artisanOrders()
-            ->with(['customer', 'items.product', 'payment']);
+            ->with(['customer', 'items.product', 'payment', 'rider']);
 
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
@@ -38,7 +38,8 @@ class OrderController extends ArtisanController
             'customer',
             'items.product.images',
             'payment',
-            'messages.sender'
+            'messages.sender',
+            'rider'
         ]);
 
         return view('artisan.orders.show', compact('order'));

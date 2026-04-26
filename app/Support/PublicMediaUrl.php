@@ -25,6 +25,7 @@ class PublicMediaUrl
                 'products' => '/storage/products/'.$path,
                 'artisans' => '/storage/artisans/'.$path,
                 'payments' => '/storage/payments/'.$path,
+                'delivery_proofs' => '/storage/delivery-proofs/'.$path,
                 'public' => '/storage/'.$path,
                 default => Storage::disk($disk)->url($path),
             };

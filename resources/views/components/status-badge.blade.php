@@ -24,6 +24,18 @@
             'approved' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved'],
             'rejected' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Rejected'],
         ],
+        'delivery' => [
+            'pending_assignment' => ['class' => 'secondary', 'icon' => 'hourglass-split', 'text' => 'Pending Assignment'],
+            'order_confirmed' => ['class' => 'info', 'icon' => 'check-circle', 'text' => 'Order Confirmed'],
+            'preparing_package' => ['class' => 'primary', 'icon' => 'box-seam', 'text' => 'Preparing Package'],
+            'package_picked_up' => ['class' => 'primary', 'icon' => 'box-arrow-up-right', 'text' => 'Package Picked Up'],
+            'arrived_sort_center' => ['class' => 'info', 'icon' => 'building', 'text' => 'Arrived at Sort Center'],
+            'out_for_delivery' => ['class' => 'warning', 'icon' => 'truck', 'text' => 'Out for Delivery'],
+            'delivered' => ['class' => 'success', 'icon' => 'check2-circle', 'text' => 'Delivered'],
+            'available' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Available'],
+            'busy' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Busy'],
+            'offline' => ['class' => 'secondary', 'icon' => 'slash-circle', 'text' => 'Offline'],
+        ],
     ];
 
     $config = $statusConfig[$type][$status] ?? ['class' => 'secondary', 'icon' => 'question', 'text' => ucfirst($status)];

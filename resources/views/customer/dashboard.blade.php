@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container py-2 py-md-3">
-    <h1 class="h2 fw-semibold mb-4">My Dashboard</h1>
+    <h1 class="h2 fw-semibold mb-4">Dashboard</h1>
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3 g-md-4 mb-4">
         <div class="col">
@@ -77,11 +77,8 @@
                         <a href="{{ route('products.index') }}" class="btn btn-outline-primary w-100">
                             <i class="bi bi-bag me-1"></i> Continue shopping
                         </a>
-                        <a href="{{ route('customer.orders.index') }}" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-receipt me-1"></i> Orders
-                        </a>
                         <a href="{{ route('account.edit') }}" class="btn btn-outline-dark w-100">
-                            <i class="bi bi-geo-alt me-1"></i> Shipping
+                            <i class="bi bi-geo-alt me-1"></i> Delivery address
                         </a>
                         @if(!auth()->user()->isArtisan())
                             <a href="{{ route('register.artisan') }}" class="btn btn-outline-dark w-100">
@@ -97,7 +94,7 @@
         <div class="col-12 col-lg-8">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 class="mb-0 fw-semibold">Most ordered artisans (recent)</h5>
+                    <h5 class="mb-0 fw-semibold">Top artisans from your recent orders</h5>
                     <small class="text-muted">From your latest orders</small>
                 </div>
                 <div class="card-body">

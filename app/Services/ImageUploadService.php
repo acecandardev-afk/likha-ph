@@ -114,6 +114,23 @@ class ImageUploadService
     }
 
     /**
+     * Upload and process delivery proof image.
+     */
+    public function uploadDeliveryProof(UploadedFile $file, int $orderId): string
+    {
+        if ($this->isLocalDisk('delivery_proofs')) {
+            $this->ensureStorageDir('delivery-proofs');
+        }
+
+        $filename = $this->generateFilename('delivery_'.$orderId);
+        $image = Image::read($file);
+        $image->scale(width: 1000);
+        $this->putJpegToDisk('delivery_proofs', $filename, $image, 85);
+
+        return $filename;
+    }
+
+    /**
      * Delete product images.
      */
     public function deleteProductImage(string $filename): bool
@@ -142,6 +159,11 @@ class ImageUploadService
     public function deletePaymentProof(string $filename): bool
     {
         return Storage::disk('payments')->delete($filename);
+    }
+
+    public function deleteDeliveryProof(string $filename): bool
+    {
+        return Storage::disk('delivery_proofs')->delete($filename);
     }
 
     /**
@@ -180,6 +202,11 @@ class ImageUploadService
     public function getPaymentProofUrl(string $filename): string
     {
         return PublicMediaUrl::url('payments', $filename);
+    }
+
+    public function getDeliveryProofUrl(string $filename): string
+    {
+        return PublicMediaUrl::url('delivery_proofs', $filename);
     }
 
     /**

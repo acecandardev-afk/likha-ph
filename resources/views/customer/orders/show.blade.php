@@ -45,7 +45,10 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-semibold">Messages</h5>
-                    <a href="{{ route('messages.index', $order) }}" class="btn btn-sm btn-outline-primary">Open messages</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('customer.orders.tracking', $order) }}" class="btn btn-sm btn-outline-secondary">Track delivery</a>
+                        <a href="{{ route('messages.index', $order) }}" class="btn btn-sm btn-outline-primary">Open messages</a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if($order->messages->isEmpty())
@@ -76,6 +79,10 @@
                     <div class="d-flex justify-content-between mb-2"><span>Total</span><span class="fw-semibold">₱{{ number_format($order->total, 2) }}</span></div>
                     <div class="d-flex justify-content-between mb-2"><span>Est. delivery</span><span>{{ $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
+                    <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
+                    @if($order->rider)
+                        <p class="small text-muted mt-2 mb-0">Rider: {{ $order->rider->full_name }} ({{ $order->rider->contact_number }})</p>
+                    @endif
                     @if($order->isOnDelivery())
                         <div class="mt-3">
                             <form id="form-customer-order-mark-received" method="POST" action="{{ route('customer.orders.mark-received', $order) }}" class="d-inline">

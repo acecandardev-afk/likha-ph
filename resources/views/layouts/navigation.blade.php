@@ -1,17 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light nav-editorial">
     <div class="container-fluid px-3 px-lg-5">
         <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2" href="{{ url('/') }}">
-            <img
-                src="{{ asset('likha-ph-logo.png') }}"
-                alt="{{ config('app.name', 'Likha PH') }} logo"
-                width="34"
-                height="34"
-                class="nav-editorial__logo-img flex-shrink-0"
-                loading="eager"
-                decoding="async"
-                style="object-fit:contain;"
-            >
-            <span class="nav-editorial__site-name">{{ config('app.name', 'Likha PH') }}</span>
+            <span class="nav-editorial__site-name">Home</span>
         </a>
         <button class="navbar-toggler nav-editorial__toggler border-0 rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -36,6 +26,21 @@
                         ? route('customer.cart.index')
                         : route('login', ['intended' => '/customer/cart']);
                 @endphp
+
+                @auth
+                    @if(auth()->user()->isAdmin())
+                        <li class="nav-item">
+                            <button
+                                type="button"
+                                class="btn btn-link nav-link nav-editorial__icon px-2 px-lg-3 text-decoration-none admin-sidebar-trigger"
+                                aria-label="Toggle admin menu"
+                                title="Admin menu"
+                            >
+                                <i class="bi bi-list fs-5"></i>
+                            </button>
+                        </li>
+                    @endif
+                @endauth
 
                 <li class="nav-item">
                     <a class="nav-link nav-editorial__icon px-2 px-lg-3 d-flex align-items-center position-relative"
@@ -83,7 +88,7 @@
                     @endif
                     @if (Route::has('register'))
                         <li class="nav-item d-none d-sm-block ms-lg-1">
-                            <a class="nav-link nav-editorial__muted small px-2" href="{{ route('register.artisan') }}">Sell</a>
+                            <a class="nav-link nav-editorial__muted small px-2" href="{{ route('register.artisan') }}">Become a seller</a>
                         </li>
                         <li class="nav-item">
                             <button type="button"
@@ -91,35 +96,37 @@
                                     data-bs-toggle="offcanvas"
                                     data-bs-target="#likhaAuthPanel"
                                     data-auth-tab="register">
-                                Sign up
+                                Create account
                             </button>
                         </li>
                     @endif
                 @else
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link nav-editorial__link dropdown-toggle px-2 px-lg-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle fs-5 me-lg-1"></i><span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
+                            <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 rounded-0">
                             @if(auth()->user()->isAdmin())
-                                <li><a class="dropdown-item py-2" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Admin Dashboard</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('admin.sales.index') }}"><i class="bi bi-receipt-cutoff me-2"></i> Sales</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('admin.deliveries.index') }}">Deliveries</a></li>
                             @elseif(auth()->user()->isArtisan())
-                                <li><a class="dropdown-item py-2" href="{{ route('artisan.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('artisan.products.index') }}"><i class="bi bi-box-seam me-2"></i> My Products</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('artisan.orders.index') }}"><i class="bi bi-receipt me-2"></i> Incoming orders</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('customer.orders.index') }}"><i class="bi bi-bag me-2"></i> My Orders</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('artisan.profile.edit') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.products.index') }}">Products</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.profile.edit') }}">Profile</a></li>
                             @elseif(auth()->user()->isCustomer())
-                                <li><a class="dropdown-item py-2" href="{{ route('customer.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('customer.orders.index') }}"><i class="bi bi-receipt me-2"></i> My Orders</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('customer.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('customer.orders.index') }}">Orders</a></li>
+                            @elseif(auth()->user()->isRider())
+                                <li><a class="dropdown-item py-2" href="{{ route('rider.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('rider.deliveries.index') }}">Deliveries</a></li>
                             @endif
-                            <li><a class="dropdown-item py-2" href="{{ route('chats.index') }}"><i class="bi bi-chat-dots me-2"></i> Chats</a></li>
-                            <li><a class="dropdown-item py-2" href="{{ route('account.edit') }}"><i class="bi bi-geo-alt me-2"></i> Shipping address</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ route('chats.index') }}">Messages</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ route('account.edit') }}">Delivery address</a></li>
                             <li><hr class="dropdown-divider my-2"></li>
                             <li>
                                 <a class="dropdown-item py-2 text-danger" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Log out
+                                    Log out
                                 </a>
                             </li>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>

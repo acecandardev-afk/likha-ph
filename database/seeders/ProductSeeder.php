@@ -8,6 +8,8 @@ use App\Models\ProductApproval;
 use App\Models\User;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -193,8 +195,15 @@ class ProductSeeder extends Seeder
                         : null,
                 ]);
 
-                // Note: No actual images created (would require image files)
-                // In production, you would upload actual product images
+                // Seed a lightweight SVG image so every sample product has a visible photo.
+                $filename = 'seed_'.$product->id.'_'.Str::slug($product->name).'.svg';
+                Storage::disk('products')->put($filename, $this->makeSeedSvg($product->name, $category->name));
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $filename,
+                    'is_primary' => true,
+                    'sort_order' => 0,
+                ]);
                 
                 $totalProducts++;
                 if ($productData['approval_status'] === 'approved') {
@@ -212,6 +221,28 @@ class ProductSeeder extends Seeder
         $this->command->info("Total products created: {$totalProducts}");
         $this->command->info("Approved: {$approvedCount}");
         $this->command->info("Pending approval: {$pendingCount}");
-        $this->command->warn('Note: Product images not seeded (requires actual image files)');
+        $this->command->info('Sample product images generated and linked.');
+    }
+
+    private function makeSeedSvg(string $name, string $category): string
+    {
+        $safeName = htmlspecialchars(Str::limit($name, 28), ENT_QUOTES, 'UTF-8');
+        $safeCategory = htmlspecialchars(Str::limit($category, 24), ENT_QUOTES, 'UTF-8');
+
+        return <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="{$safeName}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6efe6"/>
+      <stop offset="100%" stop-color="#ead8c6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect x="60" y="60" width="1080" height="780" rx="26" ry="26" fill="#ffffff" opacity="0.92"/>
+  <text x="120" y="360" font-family="DM Sans, Arial, sans-serif" font-size="68" font-weight="700" fill="#0f172a">{$safeName}</text>
+  <text x="120" y="445" font-family="DM Sans, Arial, sans-serif" font-size="36" fill="#64748b">{$safeCategory}</text>
+  <text x="120" y="760" font-family="DM Sans, Arial, sans-serif" font-size="28" fill="#94a3b8">Sample product image</text>
+</svg>
+SVG;
     }
 }

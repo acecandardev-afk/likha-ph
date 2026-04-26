@@ -23,6 +23,12 @@ class AdminSeeder extends Seeder
         $email = (string) env('SEED_ADMIN_EMAIL', 'admin@guihulngan-handicrafts.local');
         $password = (string) env('SEED_ADMIN_PASSWORD', 'Admin@2026');
 
+        // Ensure sample data keeps exactly one admin account.
+        User::query()
+            ->where('role', 'admin')
+            ->where('email', '!=', $email)
+            ->update(['role' => 'customer']);
+
         User::query()->updateOrCreate(
             ['email' => $email],
             [

@@ -76,6 +76,10 @@
                     <div class="d-flex justify-content-between mb-2"><span>Total</span><span class="fw-semibold">₱{{ number_format($order->total, 2) }}</span></div>
                     <div class="d-flex justify-content-between mb-2"><span>Est. delivery</span><span>{{ $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
+                    <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
+                    @if($order->rider)
+                        <p class="small text-muted mt-2 mb-0">Assigned rider: {{ $order->rider->full_name }} ({{ $order->rider->contact_number }})</p>
+                    @endif
                 </div>
             </div>
 
