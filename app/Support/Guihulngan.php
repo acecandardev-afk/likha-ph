@@ -18,7 +18,11 @@ class Guihulngan
     public static function deliveryCity(): ?City
     {
         return City::query()
-            ->where('code', self::cityCode())
+            ->where(function ($query) {
+                $query
+                    ->where('code', self::cityCode())
+                    ->orWhereIn('name', ['Guihulngan', 'Guihulngan City']);
+            })
             ->with(['province.region'])
             ->first();
     }

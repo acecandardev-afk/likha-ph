@@ -20,6 +20,10 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
+        // Keep address-dependent flows (artisan apply / checkout) working even when
+        // only AdminSeeder is executed on a fresh environment (e.g. Render shell).
+        $this->call(PhilippineAddressSeeder::class);
+
         $email = (string) env('SEED_ADMIN_EMAIL', 'admin@guihulngan-handicrafts.local');
         $password = (string) env('SEED_ADMIN_PASSWORD', 'Admin@2026');
 
