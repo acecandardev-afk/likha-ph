@@ -31,7 +31,7 @@
                         </div>
                     @endif
 
-                    <div id="messagesContainer" class="mb-4" style="max-height: 400px; overflow-y: auto;">
+                    <div id="messagesContainer" class="order-messages-thread mb-4 px-1" style="max-height: 400px; overflow-y: auto;">
                         <!-- Messages will be loaded here via AJAX -->
                     </div>
 
@@ -51,6 +51,55 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    .order-messages-thread .order-msg-row {
+        display: flex;
+        width: 100%;
+    }
+    .order-messages-thread .order-msg-row--own {
+        justify-content: flex-end;
+    }
+    .order-messages-thread .order-msg-row--other {
+        justify-content: flex-start;
+    }
+    .order-messages-thread .order-msg-stack {
+        max-width: min(85%, 22rem);
+        min-width: 0;
+    }
+    .order-messages-thread .order-msg-bubble {
+        border-radius: 1rem;
+        padding: 0.5rem 0.75rem;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        line-height: 1.4;
+        font-size: 0.9375rem;
+    }
+    .order-messages-thread .order-msg-bubble--own {
+        background: #1877f2;
+        color: #fff;
+    }
+    .order-messages-thread .order-msg-bubble--other {
+        background: #fff;
+        color: #050505;
+        border: 1px solid #e4e6eb;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+    }
+    .order-messages-thread .order-msg-meta {
+        font-size: 0.7rem;
+        color: #65676b;
+        margin-top: 0.2rem;
+    }
+    .order-messages-thread .order-msg-meta--own {
+        text-align: right;
+    }
+    .order-messages-thread .order-msg-sender-line {
+        font-size: 0.8rem;
+        margin-bottom: 0.15rem;
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -145,31 +194,52 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        messages.forEach(msg => {
-            messagesContainer.appendChild(buildMessageNode(msg));
+        messages.forEach((msg, i) => {
+            const prev = i > 0 ? messages[i - 1] : null;
+            messagesContainer.appendChild(buildMessageNode(msg, prev));
         });
     }
 
-    function buildMessageNode(msg) {
-        const div = document.createElement('div');
-        div.className = 'mb-3 pb-3 border-bottom';
+    function buildMessageNode(msg, prevMsg) {
+        const sameSender = prevMsg && Boolean(prevMsg.is_own) === Boolean(msg.is_own);
+        const row = document.createElement('div');
+        row.className = 'order-msg-row ' + (msg.is_own ? 'order-msg-row--own' : 'order-msg-row--other');
+        row.dataset.own = msg.is_own ? '1' : '0';
+        row.classList.add(sameSender ? 'mt-1' : 'mt-3');
+        if (!prevMsg) {
+            row.classList.remove('mt-3');
+            row.classList.add('mt-0');
+        }
 
-        const alignment = msg.is_own ? 'text-end' : '';
-        const bgColor = msg.is_own ? 'bg-primary bg-opacity-10' : '';
+        const stack = document.createElement('div');
+        stack.className = 'order-msg-stack';
 
-        div.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start gap-2 ${alignment}">
-                <span class="fw-medium small">${escapeHtml(msg.sender_name)}</span>
-                <span class="text-muted small">${msg.created_at}</span>
-            </div>
-            <div class="mt-1 ${bgColor} p-2 rounded">${escapeHtml(msg.message)}</div>
-        `;
+        if (msg.is_own) {
+            stack.innerHTML = `
+                <div class="order-msg-bubble order-msg-bubble--own">${escapeHtml(msg.message)}</div>
+                <div class="order-msg-meta order-msg-meta--own">${escapeHtml(msg.created_at)}</div>
+            `;
+        } else {
+            stack.innerHTML = `
+                <div class="order-msg-sender-line d-flex justify-content-between align-items-baseline gap-2">
+                    <span class="fw-semibold text-dark">${escapeHtml(msg.sender_name)}</span>
+                    <span class="text-muted flex-shrink-0">${escapeHtml(msg.created_at)}</span>
+                </div>
+                <div class="order-msg-bubble order-msg-bubble--other">${escapeHtml(msg.message)}</div>
+            `;
+        }
 
-        return div;
+        row.appendChild(stack);
+        return row;
     }
 
     function appendMessage(msg) {
-        messagesContainer.appendChild(buildMessageNode(msg));
+        const prevEl = messagesContainer.lastElementChild;
+        let prevMsg = null;
+        if (prevEl && prevEl.dataset.own !== undefined) {
+            prevMsg = { is_own: prevEl.dataset.own === '1' };
+        }
+        messagesContainer.appendChild(buildMessageNode(msg, prevMsg));
         lastMessageId = Math.max(lastMessageId, Number(msg.id || 0));
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
