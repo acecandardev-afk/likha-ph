@@ -5,7 +5,9 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\ArtisanProfile;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -93,9 +95,15 @@ class UserSeeder extends Seeder
                 $artisanData['user']
             );
 
+            $filename = 'seed_artisan_'.Str::slug($user->email).'.svg';
+            Storage::disk('artisans')->put($filename, $this->makeArtisanSeedSvg($user->name, $artisanData['profile']['workshop_name']));
+
+            $profilePayload = $artisanData['profile'];
+            $profilePayload['profile_image'] = $filename;
+
             ArtisanProfile::updateOrCreate(
                 ['user_id' => $user->id],
-                $artisanData['profile']
+                $profilePayload
             );
 
             $this->command->info("✓ Artisan created: {$user->email} ({$artisanData['profile']['workshop_name']})");
@@ -146,5 +154,32 @@ class UserSeeder extends Seeder
         $this->command->info('');
         $this->command->warn('Default password for all test users: password');
         $this->command->warn('Admin uses SEED_ADMIN_PASSWORD in .env (default Admin@2026) — see AdminSeeder.');
+    }
+
+    private function makeArtisanSeedSvg(string $name, string $workshop): string
+    {
+        $initials = collect(explode(' ', trim($name)))
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => strtoupper(substr($part, 0, 1)))
+            ->implode('');
+
+        $safeWorkshop = e($workshop);
+
+        return <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="{$safeWorkshop}">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6e4f3f"/>
+      <stop offset="100%" stop-color="#2f241e"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" fill="url(#bg)"/>
+  <circle cx="320" cy="150" r="72" fill="#f6ede4" opacity="0.95"/>
+  <text x="320" y="170" text-anchor="middle" fill="#2f241e" font-family="Arial, sans-serif" font-size="54" font-weight="700">{$initials}</text>
+  <text x="320" y="295" text-anchor="middle" fill="#f9f4ef" font-family="Arial, sans-serif" font-size="30" font-weight="600">{$safeWorkshop}</text>
+  <text x="320" y="330" text-anchor="middle" fill="#e7dacc" font-family="Arial, sans-serif" font-size="18">Guihulngan Artisan</text>
+</svg>
+SVG;
     }
 }
