@@ -9,8 +9,8 @@ class PublicMediaUrl
     /**
      * Public URL for a path on a named disk.
      *
-     * Local disks use root-relative /storage/... so the browser resolves against the
-     * current host (avoids broken images when APP_URL / config cache does not match www).
+     * Local disks use {@see asset()} so URLs honor APP_URL (subdirectory / XAMPP installs).
+     * Root-relative "/storage/..." breaks when the app is not served from the web root.
      * S3-compatible disks use Storage::url (typically absolute).
      */
     public static function url(string $disk, string $path): string
@@ -22,11 +22,11 @@ class PublicMediaUrl
 
         if ((string) config("filesystems.disks.{$disk}.driver", 'local') !== 's3') {
             return match ($disk) {
-                'products' => '/storage/products/'.$path,
-                'artisans' => '/storage/artisans/'.$path,
-                'payments' => '/storage/payments/'.$path,
-                'delivery_proofs' => '/storage/delivery-proofs/'.$path,
-                'public' => '/storage/'.$path,
+                'products' => asset('storage/products/'.$path),
+                'artisans' => asset('storage/artisans/'.$path),
+                'payments' => asset('storage/payments/'.$path),
+                'delivery_proofs' => asset('storage/delivery-proofs/'.$path),
+                'public' => asset('storage/'.$path),
                 default => Storage::disk($disk)->url($path),
             };
         }
