@@ -25,7 +25,7 @@ class UpdateOrderStatusRequest extends FormRequest
             'status' => [
                 'required',
                 'string',
-                'in:pending,approved,confirmed,shipped,on_delivery,delivered,completed,cancelled',
+                'in:pending,confirmed,shipped,on_delivery,delivered,completed,cancelled',
             ],
             'notes' => [
                 'nullable',
@@ -58,8 +58,7 @@ class UpdateOrderStatusRequest extends FormRequest
             
             // Validate status transitions
             $validTransitions = [
-                'pending' => ['approved', 'cancelled'],
-                'approved' => ['shipped', 'cancelled'],
+                'pending' => ['shipped', 'cancelled'],
                 'shipped' => ['on_delivery'],
                 'on_delivery' => ['delivered'],
                 'delivered' => ['completed'],

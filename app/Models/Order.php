@@ -246,7 +246,7 @@ class Order extends Model
      */
     public function isSellerApprovedForFulfillment(): bool
     {
-        return in_array($this->status, ['approved', 'shipped'], true);
+        return $this->isShipped();
     }
 
     public function deliveryStatusLabel(): string

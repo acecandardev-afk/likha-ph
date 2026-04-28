@@ -158,7 +158,7 @@
             <form action="{{ route('artisan.orders.approve', $order) }}" method="POST" class="mt-2">
                 @csrf
                 @method('PATCH')
-                <button type="submit" class="btn btn-primary w-100">Approve order</button>
+                <button type="submit" class="btn btn-primary w-100">Approve & mark as shipped</button>
             </form>
             @endif
         </div>

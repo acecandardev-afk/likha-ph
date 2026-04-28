@@ -60,13 +60,13 @@ class OrderController extends ArtisanController
         }
 
         $order->update([
-            'status' => 'approved',
+            'status' => 'shipped',
             'approved_at' => now(),
         ]);
 
         $orderService->assignRidersAfterSellerApproval($order->fresh());
 
-        return back()->with('success', 'Order approved. A rider will be assigned when available; tracking updates when delivery starts.');
+        return back()->with('success', 'Order approved and marked as shipped. A rider will be assigned automatically when available.');
     }
 
     /**
