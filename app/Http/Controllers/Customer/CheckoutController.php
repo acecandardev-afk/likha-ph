@@ -9,6 +9,7 @@ use App\Models\Province;
 use App\Models\Region;
 use App\Services\CartService;
 use App\Services\OrderService;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends CustomerController
 {
@@ -90,9 +91,11 @@ class CheckoutController extends CustomerController
                 ->route('customer.orders.index')
                 ->with('success', count($orders) . ' order(s) placed successfully!');
         } catch (\Exception $e) {
+            Log::warning('checkout_failed', ['message' => $e->getMessage()]);
+
             return back()
                 ->withInput()
-                ->withErrors(['error' => $e->getMessage()]);
+                ->with('error', 'We couldn’t place your order. Please check your details and try again.');
         }
     }
 

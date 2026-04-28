@@ -14,14 +14,14 @@ class DashboardController extends CustomerController
     {
         $customer = $this->getCustomer();
 
-        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats", 60, function () use ($customer) {
+        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats:v2", 60, function () use ($customer) {
             return [
                 'total_orders' => $customer->orders()->count(),
                 'pending_orders' => $customer->orders()->pending()->count(),
                 'shipped_orders' => $customer->orders()->shipped()->count(),
                 'on_delivery_orders' => $customer->orders()->onDelivery()->count(),
                 'delivered_orders' => $customer->orders()->delivered()->count(),
-                'confirmed_orders' => $customer->orders()->confirmed()->count(),
+                'confirmed_orders' => $customer->orders()->wherePaymentVerified()->count(),
                 'completed_orders' => $customer->orders()->completed()->count(),
                 'total_spent' => $customer->orders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
             ];

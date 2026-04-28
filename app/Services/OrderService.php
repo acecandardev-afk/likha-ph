@@ -263,15 +263,27 @@ class OrderService
             'verification_status' => $verificationStatus,
         ]);
 
-        if ($verificationStatus === 'verified') {
-            foreach ($order->fresh(['packages'])->packages as $pkg) {
-                $this->deliveryService->assignRandomAvailableRider($pkg->fresh(['order.payment']));
-            }
-        }
-
         $order->refreshAggregateDeliveryFromPackages();
 
         return $order->fresh(['items', 'payment', 'artisan', 'packages']);
+    }
+
+    /**
+     * After the seller approves, assign riders to packages when payment is verified.
+     */
+    public function assignRidersAfterSellerApproval(Order $order): void
+    {
+        $order->loadMissing(['packages', 'payment']);
+
+        if (! $order->payment?->isVerified() || ! $order->isSellerApprovedForFulfillment()) {
+            return;
+        }
+
+        foreach ($order->packages as $pkg) {
+            $this->deliveryService->assignRandomAvailableRider($pkg->fresh(['order.payment']));
+        }
+
+        $order->fresh()->refreshAggregateDeliveryFromPackages();
     }
 
     /**
@@ -346,11 +358,12 @@ class OrderService
         return [
             'total' => $query->count(),
             'pending' => $query->pending()->count(),
-            'confirmed' => $query->confirmed()->count(),
+            'confirmed' => $query->clone()->wherePaymentVerified()->count(),
             'completed' => $query->completed()->count(),
             'cancelled' => $query->where('status', 'cancelled')->count(),
-            'total_value' => $query->confirmed()->sum('total'),
-            'monthly_value' => $query->confirmed()
+            'total_value' => $query->clone()->wherePaymentVerified()->sum('total'),
+            'monthly_value' => $query->clone()
+                ->wherePaymentVerified()
                 ->whereMonth('created_at', now()->month)
                 ->sum('total'),
         ];
@@ -377,7 +390,8 @@ class OrderService
     public function getPendingOrders(int $artisanId): Collection
     {
         return Order::where('artisan_id', $artisanId)
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('status', 'pending')
+            ->wherePaymentVerified()
             ->with(['customer', 'items.product', 'payment'])
             ->latest()
             ->get();

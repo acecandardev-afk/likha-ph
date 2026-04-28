@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Artisan;
 
 use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 
 class OrderController extends ArtisanController
@@ -50,7 +51,7 @@ class OrderController extends ArtisanController
     /**
      * Approve a pending order.
      */
-    public function approve(Order $order)
+    public function approve(Order $order, OrderService $orderService)
     {
         $this->authorize('approve', $order);
 
@@ -63,7 +64,9 @@ class OrderController extends ArtisanController
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Order approved. It will be marked as shipped after 5 minutes.');
+        $orderService->assignRidersAfterSellerApproval($order->fresh());
+
+        return back()->with('success', 'Order approved. A rider will be assigned when available; tracking updates when delivery starts.');
     }
 
     /**

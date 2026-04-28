@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\ImageUploadService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends CustomerController
 {
@@ -128,7 +129,9 @@ class OrderController extends CustomerController
         try {
             $orderService->cancelOrder($order->fresh());
         } catch (\Throwable $e) {
-            return back()->withErrors(['order' => $e->getMessage()]);
+            Log::warning('order_cancel_failed', ['message' => $e->getMessage()]);
+
+            return back()->with('error', 'We couldn’t cancel this order. Please try again or contact support.');
         }
 
         return redirect()

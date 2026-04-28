@@ -6,6 +6,7 @@ use App\Models\OrderPackage;
 use App\Services\DeliveryService;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryController extends RiderController
 {
@@ -78,7 +79,9 @@ class DeliveryController extends RiderController
                 $validated['note'] ?? null
             );
         } catch (\Throwable $e) {
-            return back()->withErrors(['delivery_status' => $e->getMessage()]);
+            Log::warning('rider_delivery_status_update_failed', ['message' => $e->getMessage()]);
+
+            return back()->with('error', 'Unable to update delivery status. Please try again.');
         }
 
         return back()->with('success', 'Delivery progress updated.');

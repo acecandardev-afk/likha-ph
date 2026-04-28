@@ -22,7 +22,7 @@ class DashboardController extends AdminController
      */
     public function index()
     {
-        $stats = Cache::remember('dashboard:admin:stats:v2', 60, function () {
+        $stats = Cache::remember('dashboard:admin:stats:v3', 60, function () {
             return [
                 'pending_products' => Product::pending()->count(),
                 'pending_payments' => Payment::pending()->count(),
@@ -30,7 +30,7 @@ class DashboardController extends AdminController
                 'total_customers' => User::customers()->count(),
                 'total_orders' => Order::count(),
                 'pending_orders' => Order::pending()->count(),
-                'total_revenue' => Order::confirmed()->sum('total'),
+                'total_revenue' => Order::wherePaymentVerified()->sum('total'),
                 'realized_platform_revenue' => (float) OrderPackage::query()
                     ->whereNotNull('platform_fee_realized_at')
                     ->sum('platform_fee_share'),

@@ -105,7 +105,9 @@ class CartController extends CustomerController
         try {
             $this->cartService->updateQuantity($cart->fresh(['product']), (int) $validated['quantity']);
         } catch (\Exception $e) {
-            return back()->withErrors(['quantity' => $e->getMessage()]);
+            return back()->withErrors([
+                'quantity' => 'We couldn’t update that quantity. Please choose an amount within available stock.',
+            ]);
         }
 
         return back()->with('success', 'Cart updated.');

@@ -24,13 +24,6 @@
                     <a href="{{ auth()->user()->isCustomer() ? route('customer.orders.show', $order) : route('artisan.orders.show', $order) }}" class="btn btn-outline-secondary btn-sm">Back to order</a>
                 </div>
                 <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
                     <div id="messagesContainer" class="order-messages-thread mb-4 px-1" style="max-height: 400px; overflow-y: auto;">
                         <!-- Messages will be loaded here via AJAX -->
                     </div>
@@ -145,13 +138,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     appendMessage(data.message);
                 }
                 loadMessages();
+                if (window.showLikhaToast) {
+                    window.showLikhaToast('Message sent.', { type: 'success' });
+                }
             } else {
-                alert('Error sending message');
+                if (window.showLikhaToast) {
+                    window.showLikhaToast('We couldn’t send your message. Please try again.', { type: 'danger' });
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error sending message');
+            if (window.showLikhaToast) {
+                window.showLikhaToast('We couldn’t send your message. Please try again.', { type: 'danger' });
+            }
         })
         .finally(() => {
             sendBtn.disabled = false;

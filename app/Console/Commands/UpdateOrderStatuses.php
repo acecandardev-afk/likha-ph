@@ -26,6 +26,7 @@ class UpdateOrderStatuses extends Command
         $pendingCount = OrderPackage::query()
             ->where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)
             ->whereHas('order.payment', fn ($q) => $q->where('verification_status', 'verified'))
+            ->whereHas('order', fn ($q) => $q->whereIn('status', ['approved', 'shipped']))
             ->count();
 
         $this->info("Found {$pendingCount} packages pending rider assignment");
@@ -33,6 +34,7 @@ class UpdateOrderStatuses extends Command
         OrderPackage::query()
             ->where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)
             ->whereHas('order.payment', fn ($q) => $q->where('verification_status', 'verified'))
+            ->whereHas('order', fn ($q) => $q->whereIn('status', ['approved', 'shipped']))
             ->orderBy('id')
             ->chunkById(100, function ($packages) use ($dryRun) {
                 foreach ($packages as $package) {

@@ -16,6 +16,7 @@
 </head>
 <body class="likha-app {{ auth()->check() && auth()->user()->isAdmin() ? 'admin-has-sidebar' : '' }}">
     <div id="app">
+        @include('partials.likha-flash-stack')
         @include('layouts.navigation')
         @auth
             @if(auth()->user()->isAdmin())
@@ -24,45 +25,6 @@
         @endauth
 
         <main class="flex-grow-1 @yield('main_class', 'py-4 py-md-5')">
-            @if(session('success'))
-                <div class="container-fluid px-3 px-lg-5 likha-flash-region">
-                    <div class="alert alert-success alert-dismissible fade show likha-flash-alert" role="alert">
-                        <div class="d-flex align-items-start gap-2">
-                            <div class="flex-grow-1 min-w-0">{{ session('success') }}</div>
-                            <button type="button" class="btn-close flex-shrink-0 mt-0" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="container-fluid px-3 px-lg-5 likha-flash-region">
-                    <div class="alert alert-danger alert-dismissible fade show likha-flash-alert" role="alert">
-                        <div class="d-flex align-items-start gap-2">
-                            <div class="flex-grow-1 min-w-0">{{ session('error') }}</div>
-                            <button type="button" class="btn-close flex-shrink-0 mt-0" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(isset($errors) && $errors->any() && ! request()->routeIs('login', 'register'))
-                <div class="container-fluid px-3 px-lg-5 likha-flash-region">
-                    <div class="alert alert-danger alert-dismissible fade show likha-flash-alert" role="alert">
-                        <div class="d-flex align-items-start gap-2">
-                            <div class="flex-grow-1 min-w-0">
-                                <ul class="mb-0 ps-3">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                            <button type="button" class="btn-close flex-shrink-0 mt-0" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
             @auth
                 @if($uiApplicationBanner ?? null)
                     <div class="container-fluid px-3 px-lg-5 likha-flash-region">

@@ -16,7 +16,7 @@ class DashboardController extends ArtisanController
     {
         $artisan = $this->getArtisan();
 
-        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats", 60, function () use ($artisan) {
+        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v2", 60, function () use ($artisan) {
             return [
                 'total_products' => $artisan->products()->count(),
                 'approved_products' => $artisan->products()->approved()->count(),
@@ -27,7 +27,7 @@ class DashboardController extends ArtisanController
                 'shipped_orders' => $artisan->artisanOrders()->shipped()->count(),
                 'on_delivery_orders' => $artisan->artisanOrders()->onDelivery()->count(),
                 'delivered_orders' => $artisan->artisanOrders()->delivered()->count(),
-                'confirmed_orders' => $artisan->artisanOrders()->confirmed()->count(),
+                'confirmed_orders' => $artisan->artisanOrders()->wherePaymentVerified()->count(),
                 'completed_orders' => $artisan->artisanOrders()->completed()->count(),
                 'total_revenue' => $artisan->artisanOrders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
                 'monthly_revenue' => $artisan->artisanOrders()

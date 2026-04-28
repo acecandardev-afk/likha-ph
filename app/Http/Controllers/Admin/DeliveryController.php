@@ -6,6 +6,7 @@ use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Services\DeliveryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryController extends AdminController
 {
@@ -44,6 +45,10 @@ class DeliveryController extends AdminController
             return back()->withErrors(['delivery' => 'Order payment must be verified before assignment.']);
         }
 
+        if (! $orderPackage->order->isSellerApprovedForFulfillment()) {
+            return back()->withErrors(['delivery' => 'The seller must approve the order before a rider can be assigned.']);
+        }
+
         $rider = $this->deliveryService->assignRandomAvailableRider($orderPackage->fresh(['order.payment']));
 
         if (! $rider) {
@@ -68,7 +73,9 @@ class DeliveryController extends AdminController
                 $validated['note'] ?? null
             );
         } catch (\Throwable $e) {
-            return back()->withErrors(['delivery_status' => $e->getMessage()]);
+            Log::warning('admin_delivery_status_update_failed', ['message' => $e->getMessage()]);
+
+            return back()->with('error', 'Unable to update delivery status. Please try again.');
         }
 
         return back()->with('success', 'Delivery status updated.');

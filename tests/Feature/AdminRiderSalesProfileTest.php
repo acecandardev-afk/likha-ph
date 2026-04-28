@@ -82,7 +82,7 @@ class AdminRiderSalesProfileTest extends TestCase
             'subtotal' => 200,
             'platform_fee' => 10,
             'total' => 210,
-            'status' => 'confirmed',
+            'status' => 'delivered',
             'country' => 'Philippines',
             'delivery_status' => DeliveryService::STATUS_DELIVERED,
             'delivery_completed_at' => now(),

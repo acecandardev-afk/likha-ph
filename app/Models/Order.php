@@ -159,6 +159,14 @@ class Order extends Model
         return $query->where('status', 'confirmed');
     }
 
+    /**
+     * Orders whose payment has been verified (COD at checkout or admin-approved proof).
+     */
+    public function scopeWherePaymentVerified($query)
+    {
+        return $query->whereHas('payment', fn ($q) => $q->where('verification_status', 'verified'));
+    }
+
     // Helpers
     public function isPending(): bool
     {
@@ -225,12 +233,20 @@ class Order extends Model
 
     public function canBeApproved(): bool
     {
-        return $this->isPending();
+        return $this->isPending() && ($this->payment?->isVerified() ?? false);
     }
 
     public function canBeCompleted(): bool
     {
-        return $this->isConfirmed() && $this->payment?->isVerified();
+        return $this->isDelivered() && $this->payment?->isVerified();
+    }
+
+    /**
+     * Seller has confirmed the order; riders may be assigned and delivery can proceed.
+     */
+    public function isSellerApprovedForFulfillment(): bool
+    {
+        return in_array($this->status, ['approved', 'shipped'], true);
     }
 
     public function deliveryStatusLabel(): string
@@ -364,7 +380,7 @@ class Order extends Model
 
         if ($allDelivered) {
             $updates['status'] = 'delivered';
-        } elseif ($anyInTransit) {
+        } elseif ($anyInTransit && ! $this->isPending()) {
             $updates['status'] = 'on_delivery';
         }
 

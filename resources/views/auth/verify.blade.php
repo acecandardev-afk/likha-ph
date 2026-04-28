@@ -11,10 +11,6 @@
                     <h1 class="h3 fw-semibold mb-2">Verify your email</h1>
                     <p class="text-body-secondary small mb-4">Before continuing, please check your email for a verification link.</p>
 
-                    @if (session('resent'))
-                        <div class="alert alert-success small mb-4" role="alert">A new verification link has been sent to your email.</div>
-                    @endif
-
                     <p class="small mb-4">If you didn’t receive the email, we can send another.</p>
                     <form method="POST" action="{{ route('verification.resend') }}" class="d-inline">
                         @csrf

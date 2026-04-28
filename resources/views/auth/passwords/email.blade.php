@@ -13,10 +13,6 @@
                         <p class="text-body-secondary small mb-0">Enter your email and we’ll send you a link to reset it.</p>
                     </div>
 
-                    @if (session('status'))
-                        <div class="alert alert-success small mb-4" role="alert">{{ session('status') }}</div>
-                    @endif
-
                     <form method="POST" action="{{ route('password.email') }}">
                         @csrf
                         <div class="mb-4">

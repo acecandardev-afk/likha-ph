@@ -72,8 +72,7 @@ class PaymentService
                 'verified_at' => now(),
             ]);
 
-            // Update order status
-            $payment->order->update(['status' => 'confirmed']);
+            // Order stays pending until the seller approves; payment is only cleared here.
         });
 
         // Notify customer and artisan

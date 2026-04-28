@@ -3,18 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Payment;
-use App\Services\DeliveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PaymentVerificationController extends AdminController
 {
-    public function __construct(
-        protected DeliveryService $deliveryService
-    ) {
-        parent::__construct();
-    }
-
     /**
      * Display pending payment verifications.
      */
@@ -54,17 +47,7 @@ class PaymentVerificationController extends AdminController
                 'verification_notes' => $request->notes,
                 'verified_at' => now(),
             ]);
-
-            $payment->order->update([
-                'status' => 'confirmed',
-                'delivery_status' => DeliveryService::STATUS_PENDING_ASSIGNMENT,
-            ]);
         });
-
-        $order = $payment->order->fresh(['packages', 'payment']);
-        foreach ($order->packages as $pkg) {
-            $this->deliveryService->assignRandomAvailableRider($pkg->fresh(['order.payment']));
-        }
 
         return redirect()
             ->route('admin.payments.pending')

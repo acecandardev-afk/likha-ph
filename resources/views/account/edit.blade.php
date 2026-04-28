@@ -24,7 +24,7 @@
                         @method('PUT')
 
                         @error('error')
-                            <div class="alert alert-danger">{{ $message }}</div>
+                            <div class="alert alert-danger">We couldn’t save your address. Please try again.</div>
                         @enderror
 
                         <!-- Country (Fixed to Philippines) -->

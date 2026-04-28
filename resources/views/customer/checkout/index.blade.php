@@ -55,7 +55,9 @@
             <div class="row g-4">
                 <div class="col-12 col-lg-8">
                     @if($errors->has('quantity'))
-                        <div class="alert alert-danger">{{ $errors->first('quantity') }}</div>
+                        <div class="alert alert-danger small mb-3" role="alert">
+                            Please choose a quantity within available stock for each item.
+                        </div>
                     @endif
 
                     {{-- Step 1: Delivery address --}}

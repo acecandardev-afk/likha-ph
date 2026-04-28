@@ -81,6 +81,12 @@ class DeliveryService
             return null;
         }
 
+        if (! $package->order->isSellerApprovedForFulfillment()) {
+            $package->update(['delivery_status' => self::STATUS_PENDING_ASSIGNMENT]);
+
+            return null;
+        }
+
         // Prefer lowest active (non-delivered) package count; first rider under capacity.
         // Use a correlated subquery (SQLite-compatible — avoid withCount+having; SQLite rejects HAVING here).
         $prefix = DB::getTablePrefix();
