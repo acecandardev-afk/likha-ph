@@ -49,6 +49,11 @@ code {
   word-break: break-word;
 }
 
+// Clickable overlay affordance (replaces generic utility class on labels/links)
+.likha-click-target {
+  cursor: pointer;
+}
+
 // Subtle paper gradient on larger screens
 @media (min-width: 992px) {
   body {

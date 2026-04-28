@@ -1,6 +1,6 @@
 # System design — Likha PH
 
-This folder holds the **system design diagram** (image) and a **full system description** (purpose, features, how it works) using **`[title]`** as a name placeholder—handy to paste into ChatGPT or other tools.
+This folder holds the **system design diagram** (image) and a **full system description** (purpose, features, how it works) using **`[title]`** as a name placeholder for documentation drafts.
 
 | File | Purpose |
 | --- | --- |

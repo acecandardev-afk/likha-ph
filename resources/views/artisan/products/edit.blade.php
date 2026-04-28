@@ -63,7 +63,7 @@
                                 @foreach($product->images as $image)
                                     <div class="position-relative border rounded p-1">
                                         <img src="{{ $image->image_url }}" alt="" style="width: 80px; height: 80px; object-fit: cover;">
-                                        <label class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white small text-center mb-0 py-1 cursor-pointer">
+                                        <label class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white small text-center mb-0 py-1 likha-click-target">
                                             <input type="checkbox" name="remove_images[]" value="{{ $image->id }}" class="me-1"> Remove
                                         </label>
                                     </div>

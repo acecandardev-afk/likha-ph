@@ -81,17 +81,16 @@ class DeliveryService
             return null;
         }
 
+        // Prefer lowest active (non-delivered) package count; stop at first rider under capacity (single round-trip).
         $rider = Rider::query()
             ->whereIn('status', [Rider::STATUS_AVAILABLE, Rider::STATUS_BUSY])
-            ->orderByRaw('(
-                SELECT COUNT(*) FROM order_packages op
-                WHERE op.rider_id = riders.id
-                AND op.delivery_status != ?
-            ) ASC', [self::STATUS_DELIVERED])
-            ->get()
-            ->first(function (Rider $r) {
-                return $this->activePackageCountForRider($r) < self::MAX_ACTIVE_PACKAGES_PER_RIDER;
-            });
+            ->withCount([
+                'packages as active_packages_count' => fn ($q) => $q->where('delivery_status', '!=', self::STATUS_DELIVERED),
+            ])
+            ->having('active_packages_count', '<', self::MAX_ACTIVE_PACKAGES_PER_RIDER)
+            ->orderBy('active_packages_count')
+            ->orderBy('riders.id')
+            ->first();
 
         if (! $rider) {
             $package->update(['delivery_status' => self::STATUS_PENDING_ASSIGNMENT]);
