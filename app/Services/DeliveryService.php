@@ -81,15 +81,21 @@ class DeliveryService
             return null;
         }
 
-        // Prefer lowest active (non-delivered) package count; stop at first rider under capacity (single round-trip).
+        // Prefer lowest active (non-delivered) package count; first rider under capacity.
+        // Use a correlated subquery (SQLite-compatible — avoid withCount+having; SQLite rejects HAVING here).
+        $prefix = DB::getTablePrefix();
+        $ridersTable = $prefix.(new Rider)->getTable();
+        $packagesTable = $prefix.(new OrderPackage)->getTable();
+        $delivered = self::STATUS_DELIVERED;
+        $cap = self::MAX_ACTIVE_PACKAGES_PER_RIDER;
+
+        $activeSql = '(SELECT COUNT(*) FROM '.$packagesTable.' op WHERE op.rider_id = '.$ridersTable.'.id AND op.delivery_status <> ?)';
+
         $rider = Rider::query()
             ->whereIn('status', [Rider::STATUS_AVAILABLE, Rider::STATUS_BUSY])
-            ->withCount([
-                'packages as active_packages_count' => fn ($q) => $q->where('delivery_status', '!=', self::STATUS_DELIVERED),
-            ])
-            ->having('active_packages_count', '<', self::MAX_ACTIVE_PACKAGES_PER_RIDER)
-            ->orderBy('active_packages_count')
-            ->orderBy('riders.id')
+            ->whereRaw($activeSql.' < ?', [$delivered, $cap])
+            ->orderByRaw($activeSql.' asc', [$delivered])
+            ->orderBy($ridersTable.'.id')
             ->first();
 
         if (! $rider) {
