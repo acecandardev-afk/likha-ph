@@ -50,7 +50,13 @@
                                 <span class="text-muted small">· Pkg {{ $pkg->sequence }}</span>
                             </td>
                             <td>{{ $pkg->order->customer?->name ?? '—' }}</td>
-                            <td>{{ $pkg->rider?->full_name ?? 'Unassigned' }}</td>
+                            <td>
+                                @if($pkg->rider)
+                                    <a href="{{ route('admin.riders.show', $pkg->rider) }}" class="text-decoration-none fw-medium">{{ $pkg->rider->full_name }}</a>
+                                @else
+                                    <span class="text-muted">Unassigned</span>
+                                @endif
+                            </td>
                             <td><x-status-badge :status="$pkg->delivery_status" type="delivery" /></td>
                             <td>{{ $pkg->delivery_assigned_at?->format('M d, Y h:i A') ?? '—' }}</td>
                             <td>{{ $pkg->delivery_completed_at?->format('M d, Y h:i A') ?? '—' }}</td>

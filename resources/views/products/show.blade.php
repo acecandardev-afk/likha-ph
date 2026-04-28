@@ -77,40 +77,46 @@
                 </div>
             </div>
 
-            {{-- Add to cart & Buy now: form for logged-in users; login links for guests --}}
-            <div class="mb-3">
+            {{-- Purchase: set quantity here, then proceed to checkout (not from listing cards) --}}
+            <div id="purchase" class="mb-3" tabindex="-1">
+                @if(request()->query('intent') === 'checkout')
+                    <div class="alert alert-info small py-2 mb-3" role="status">
+                        Set your quantity below, then use <strong>Proceed to checkout</strong> when you are ready.
+                    </div>
+                @endif
                 @if(auth()->check())
                     @if($product->stock > 0)
                         <form action="{{ route('customer.cart.add', $product) }}" method="POST">
                             @csrf
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                <label for="quantity" class="form-label mb-0">Quantity:</label>
-                                <input type="number" name="quantity" id="quantity" class="form-control qty-input" value="1" min="1" max="{{ $product->stock }}">
+                                <label for="quantity" class="form-label mb-0 fw-semibold">Quantity</label>
+                                <input type="number" name="quantity" id="quantity" class="form-control qty-input" value="1" min="1" max="{{ $product->stock }}" required>
+                                <span class="text-muted small">(max {{ $product->stock }})</span>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="submit" class="btn btn-outline-primary btn-lg">
                                     <i class="bi bi-cart-plus me-1"></i> Add to cart
                                 </button>
                                 <button type="submit" name="redirect" value="checkout" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-bag-check me-1"></i> Buy now
+                                    <i class="bi bi-bag-check me-1"></i> Proceed to checkout
                                 </button>
                             </div>
                         </form>
                     @else
                         <button class="btn btn-outline-primary btn-lg me-2" disabled><i class="bi bi-cart-plus me-1"></i> Add to cart</button>
-                        <button class="btn btn-primary btn-lg" disabled><i class="bi bi-bag-check me-1"></i> Buy now</button>
+                        <button class="btn btn-primary btn-lg" disabled><i class="bi bi-bag-check me-1"></i> Proceed to checkout</button>
                         <p class="text-muted small mt-2 mb-0">Out of stock. Check back later.</p>
                     @endif
                 @else
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ route('login', ['intended' => url()->current()]) }}" class="btn btn-outline-primary btn-lg">
+                        <a href="{{ route('login', ['intended' => url()->full()]) }}" class="btn btn-outline-primary btn-lg">
                             <i class="bi bi-cart-plus me-1"></i> Add to cart
                         </a>
-                        <a href="{{ route('login', ['intended' => url()->current()]) }}" class="btn btn-primary btn-lg">
-                            <i class="bi bi-bag-check me-1"></i> Buy now
+                        <a href="{{ route('login', ['intended' => url()->full()]) }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-bag-check me-1"></i> Proceed to checkout
                         </a>
                     </div>
-                    <p class="text-muted small mt-2 mb-0">Log in to purchase.</p>
+                    <p class="text-muted small mt-2 mb-0">Log in to choose quantity and complete your order.</p>
                 @endif
             </div>
         </div>

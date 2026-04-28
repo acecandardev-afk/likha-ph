@@ -43,27 +43,30 @@
             </div>
         @endif
 
-        {{-- Add to cart & Buy now: form for logged-in users; login links for guests --}}
+        {{-- Add to cart from listing; Buy now opens product page to set quantity, then checkout --}}
+        @php($buyNowHref = route('products.show', $product).'?intent=checkout#purchase')
         <div class="mt-3 pt-2 border-top">
             @if(auth()->check())
                 @if($product->stock > 0)
-                    <form action="{{ route('customer.cart.add', $product) }}" method="POST" class="d-flex flex-wrap gap-2">
-                        @csrf
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-sm btn-outline-primary flex-grow-1 rounded-pill">
-                            <i class="bi bi-cart-plus me-1"></i> Add to cart
-                        </button>
-                        <button type="submit" name="redirect" value="checkout" class="btn btn-sm btn-primary flex-grow-1 rounded-pill">
+                    <div class="d-flex flex-wrap gap-2">
+                        <form action="{{ route('customer.cart.add', $product) }}" method="POST" class="flex-grow-1 d-flex">
+                            @csrf
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-sm btn-outline-primary flex-grow-1 rounded-pill w-100">
+                                <i class="bi bi-cart-plus me-1"></i> Add to cart
+                            </button>
+                        </form>
+                        <a href="{{ $buyNowHref }}" class="btn btn-sm btn-primary flex-grow-1 rounded-pill">
                             <i class="bi bi-bag-check me-1"></i> Buy now
-                        </button>
-                    </form>
+                        </a>
+                    </div>
                 @else
                     <button class="btn btn-sm btn-outline-primary flex-grow-1" disabled><i class="bi bi-cart-plus me-1"></i> Add to cart</button>
                     <button class="btn btn-sm btn-primary flex-grow-1" disabled><i class="bi bi-bag-check me-1"></i> Buy now</button>
                 @endif
             @else
                 <a href="{{ route('login', ['intended' => route('products.show', $product)]) }}" class="btn btn-sm btn-outline-primary flex-grow-1 rounded-pill"><i class="bi bi-cart-plus me-1"></i> Add to cart</a>
-                <a href="{{ route('login', ['intended' => route('products.show', $product)]) }}" class="btn btn-sm btn-primary flex-grow-1 rounded-pill"><i class="bi bi-bag-check me-1"></i> Buy now</a>
+                <a href="{{ $buyNowHref }}" class="btn btn-sm btn-primary flex-grow-1 rounded-pill"><i class="bi bi-bag-check me-1"></i> Buy now</a>
             @endif
         </div>
     </div>

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Models\User;
+use App\Services\DeliveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +25,44 @@ class RiderController extends AdminController
         $riders = $query->paginate(20)->withQueryString();
 
         return view('admin.riders.index', compact('riders'));
+    }
+
+    /**
+     * Rider profile: delivered packages, merchandise totals, rider fees, delivery timestamps.
+     */
+    public function show(Rider $rider)
+    {
+        $rider->load('user');
+
+        $stats = [
+            'deliveries_count' => OrderPackage::query()
+                ->where('rider_id', $rider->id)
+                ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
+                ->count(),
+            'total_rider_fees' => (float) OrderPackage::query()
+                ->where('rider_id', $rider->id)
+                ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
+                ->sum('rider_fee_amount'),
+            'total_merchandise' => (float) DB::table('order_packages')
+                ->join('order_package_items', 'order_packages.id', '=', 'order_package_items.order_package_id')
+                ->join('order_items', 'order_package_items.order_item_id', '=', 'order_items.id')
+                ->where('order_packages.rider_id', $rider->id)
+                ->where('order_packages.delivery_status', DeliveryService::STATUS_DELIVERED)
+                ->sum(DB::raw('order_items.price * order_package_items.quantity')),
+        ];
+
+        $packages = OrderPackage::query()
+            ->where('rider_id', $rider->id)
+            ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
+            ->with([
+                'order.customer',
+                'items.orderItem.product',
+            ])
+            ->orderByDesc('delivery_completed_at')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('admin.riders.show', compact('rider', 'stats', 'packages'));
     }
 
     public function store(Request $request)

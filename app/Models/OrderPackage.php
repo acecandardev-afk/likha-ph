@@ -22,6 +22,7 @@ class OrderPackage extends Model
         'delivery_proof_image',
         'platform_fee_share',
         'platform_fee_realized_at',
+        'rider_fee_amount',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class OrderPackage extends Model
         'delivery_completed_at' => 'datetime',
         'platform_fee_share' => 'decimal:2',
         'platform_fee_realized_at' => 'datetime',
+        'rider_fee_amount' => 'decimal:2',
     ];
 
     public function order()
@@ -97,6 +99,38 @@ class OrderPackage extends Model
     public function isDelivered(): bool
     {
         return $this->delivery_status === DeliveryService::STATUS_DELIVERED;
+    }
+
+    /**
+     * Sum of merchandise value for this package (order line price × qty in package).
+     */
+    public function merchandiseTotal(): float
+    {
+        $this->loadMissing(['items.orderItem']);
+
+        return (float) $this->items->sum(function (OrderPackageItem $opi) {
+            $oi = $opi->orderItem;
+            if (! $oi) {
+                return 0;
+            }
+
+            return (float) $oi->price * (int) $opi->quantity;
+        });
+    }
+
+    /**
+     * Human-readable delivered timestamp with timezone (for admin rider sales profile).
+     */
+    public function deliveredAtLabel(): string
+    {
+        $at = $this->delivery_completed_at;
+        if (! $at) {
+            return '—';
+        }
+
+        $tz = config('app.timezone');
+
+        return $at->timezone($tz)->format('M j, Y').' '.$at->timezone($tz)->format('g:i:s A').' ('.$tz.')';
     }
 
     protected static function boot()

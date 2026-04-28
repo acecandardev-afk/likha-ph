@@ -68,7 +68,7 @@
                 @else
                     @auth
                         @if(auth()->user()->isCustomer())
-                            <p class="text-muted small mb-3 reveal">Use <strong>Add to cart</strong> to keep shopping, or <strong>Buy now</strong> to go straight to checkout.</p>
+                            <p class="text-muted small mb-3 reveal">Use <strong>Add to cart</strong> to keep shopping. <strong>Buy now</strong> opens the product page so you can set quantity, then continue to checkout.</p>
                         @endif
                     @endauth
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 g-md-4">

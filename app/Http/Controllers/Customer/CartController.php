@@ -4,10 +4,16 @@ namespace App\Http\Controllers\Customer;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends CustomerController
 {
+    public function __construct(protected CartService $cartService)
+    {
+        parent::__construct();
+    }
+
     /**
      * Display shopping cart.
      */
@@ -77,7 +83,7 @@ class CartController extends CustomerController
         }
 
         if ($request->get('redirect') === 'checkout') {
-            return redirect()->route('customer.checkout.index')->with('success', 'Item added. Proceed to checkout below.');
+            return redirect()->route('customer.checkout.index')->with('success', 'Item added to your cart. Complete delivery details below to place your order.');
         }
 
         return redirect()->route('customer.cart.index')->with('success', 'Item successfully added to cart.');
@@ -96,7 +102,11 @@ class CartController extends CustomerController
             'quantity' => 'required|integer|min:1|max:' . $cart->product->stock,
         ]);
 
-        $cart->update(['quantity' => $validated['quantity']]);
+        try {
+            $this->cartService->updateQuantity($cart->fresh(['product']), (int) $validated['quantity']);
+        } catch (\Exception $e) {
+            return back()->withErrors(['quantity' => $e->getMessage()]);
+        }
 
         return back()->with('success', 'Cart updated.');
     }

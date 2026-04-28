@@ -151,6 +151,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('riders')->name('riders.')->group(function () {
         Route::get('/', [AdminRiderController::class, 'index'])->name('index');
         Route::post('/', [AdminRiderController::class, 'store'])->name('store');
+        Route::get('/{rider}', [AdminRiderController::class, 'show'])->name('show');
         Route::put('/{rider}', [AdminRiderController::class, 'update'])->name('update');
         Route::patch('/{rider}/activate', [AdminRiderController::class, 'activate'])->name('activate');
         Route::patch('/{rider}/deactivate', [AdminRiderController::class, 'deactivate'])->name('deactivate');

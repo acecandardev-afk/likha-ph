@@ -41,11 +41,23 @@
             </div>
         </div>
 
+        {{-- Separate forms for quantity updates (cannot nest forms inside checkout submit form) --}}
+        @foreach($summary['items'] as $qtyCartItem)
+            <form id="checkout-qty-{{ $qtyCartItem->id }}" action="{{ route('customer.cart.update', $qtyCartItem) }}" method="POST" class="d-none" aria-hidden="true">
+                @csrf
+                @method('PATCH')
+            </form>
+        @endforeach
+
         <form action="{{ route('customer.checkout.store') }}" method="POST">
             @csrf
 
             <div class="row g-4">
                 <div class="col-12 col-lg-8">
+                    @if($errors->has('quantity'))
+                        <div class="alert alert-danger">{{ $errors->first('quantity') }}</div>
+                    @endif
+
                     {{-- Step 1: Delivery address --}}
                     <div class="card mb-4">
                         <div class="card-header bg-light">
@@ -140,12 +152,27 @@
                                 <h5 class="mb-0 fw-semibold"><i class="bi bi-box-seam me-2"></i> Delivery packages — {{ $shopItems->first()->product->artisan?->artisanProfile?->workshop_name ?? $shopItems->first()->product->artisan?->name ?? 'Seller' }}</h5>
                             </div>
                             <div class="card-body">
-                                <p class="small text-muted">Assign each line to package <strong>1</strong>, <strong>2</strong>, … Separate packages may be assigned to different riders (up to 5 active stops per rider).</p>
+                                <p class="small text-muted">Change quantity below if needed (updates your cart). Then assign each line to package <strong>1</strong>, <strong>2</strong>, … Separate packages may be assigned to different riders (up to 5 active stops per rider).</p>
                                 @foreach($shopItems as $cartItem)
                                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom">
                                         <div class="flex-grow-1 min-w-0">
                                             <div class="fw-medium small">{{ $cartItem->product->name }}</div>
-                                            <div class="text-muted small">Qty {{ $cartItem->quantity }} · ₱{{ number_format($cartItem->product->price * $cartItem->quantity, 2) }}</div>
+                                            <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+                                                <label class="small text-muted mb-0" for="checkout_qty_{{ $cartItem->id }}">Qty</label>
+                                                <input type="number"
+                                                       id="checkout_qty_{{ $cartItem->id }}"
+                                                       name="quantity"
+                                                       form="checkout-qty-{{ $cartItem->id }}"
+                                                       value="{{ $cartItem->quantity }}"
+                                                       min="1"
+                                                       max="{{ $cartItem->product->stock }}"
+                                                       class="form-control form-control-sm"
+                                                       style="width: 4.25rem;"
+                                                       onchange="this.form && this.form.submit()"
+                                                       title="Updates cart when changed">
+                                                <span class="text-muted small">· ₱{{ number_format($cartItem->product->price, 2) }} each · max {{ $cartItem->product->stock }}</span>
+                                            </div>
+                                            <div class="small fw-semibold mt-1">Line total: ₱{{ number_format($cartItem->product->price * $cartItem->quantity, 2) }}</div>
                                         </div>
                                         <div style="min-width: 140px;">
                                             <label class="visually-hidden" for="pkg_{{ $artisanId }}_{{ $cartItem->id }}">Package #</label>

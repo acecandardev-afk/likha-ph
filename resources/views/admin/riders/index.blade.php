@@ -58,7 +58,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Rider ID</th>
-                        <th>Name</th>
+                        <th>Name / profile</th>
                         <th>Contact</th>
                         <th>Email</th>
                         <th>Vehicle</th>
@@ -70,7 +70,12 @@
                     @forelse($riders as $rider)
                         <tr>
                             <td>{{ $rider->rider_id }}</td>
-                            <td>{{ $rider->full_name }}</td>
+                            <td>
+                                <a href="{{ route('admin.riders.show', $rider) }}" class="fw-semibold text-decoration-none">{{ $rider->full_name }}</a>
+                                <div class="mt-1">
+                                    <a href="{{ route('admin.riders.show', $rider) }}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 small">Sales &amp; deliveries</a>
+                                </div>
+                            </td>
                             <td>{{ $rider->contact_number }}</td>
                             <td>{{ $rider->email }}</td>
                             <td>{{ $rider->vehicle_type ?? '—' }}</td>

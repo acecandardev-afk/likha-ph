@@ -155,6 +155,9 @@ class DeliveryService
 
             if ($status === self::STATUS_DELIVERED) {
                 $data['platform_fee_realized_at'] = $now;
+                if (! $package->isDelivered()) {
+                    $data['rider_fee_amount'] = round((float) config('fees.rider_fee_per_package', 0), 2);
+                }
             }
 
             $package->update($data);
