@@ -35,8 +35,9 @@
             <div class="card stat-card h-100 bg-success bg-opacity-10 border-success">
                 <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted small fw-medium mb-1">Total revenue</p>
+                        <p class="text-muted small fw-medium mb-1">Order value (confirmed)</p>
                         <h2 class="h3 mb-0">₱{{ number_format($stats['total_revenue'], 0) }}</h2>
+                        <p class="small text-muted mb-0 mt-2">Platform fee realized: <strong>₱{{ number_format($stats['realized_platform_revenue'] ?? 0, 2) }}</strong></p>
                     </div>
                     <i class="bi bi-cash-stack text-success opacity-75 fs-2"></i>
                 </div>
@@ -106,6 +107,14 @@
                         <div class="col-6">
                             <div class="text-muted small fw-medium">Completed deliveries</div>
                             <div class="fw-semibold fs-4">{{ $stats['completed_deliveries'] }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small fw-medium">Open delivery reports</div>
+                            <div class="fw-semibold fs-4">{{ $stats['open_delivery_reports'] ?? 0 }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small fw-medium">Platform fee realized</div>
+                            <div class="fw-semibold fs-4">₱{{ number_format($stats['realized_platform_revenue'] ?? 0, 0) }}</div>
                         </div>
                     </div>
                     <p class="text-muted small mb-0 mt-3">Use the tables above to take action quickly.</p>

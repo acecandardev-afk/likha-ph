@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Payment;
-use App\Models\Order;
 use App\Services\DeliveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,8 +61,10 @@ class PaymentVerificationController extends AdminController
             ]);
         });
 
-        // Auto-assign available rider after payment verification.
-        $this->deliveryService->assignRandomAvailableRider($payment->order->fresh(['payment', 'rider']));
+        $order = $payment->order->fresh(['packages', 'payment']);
+        foreach ($order->packages as $pkg) {
+            $this->deliveryService->assignRandomAvailableRider($pkg->fresh(['order.payment']));
+        }
 
         return redirect()
             ->route('admin.payments.pending')

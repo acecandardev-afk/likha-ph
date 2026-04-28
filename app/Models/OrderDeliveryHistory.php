@@ -11,6 +11,7 @@ class OrderDeliveryHistory extends Model
 
     protected $fillable = [
         'order_id',
+        'order_package_id',
         'status',
         'updated_by',
         'updated_by_role',
@@ -25,6 +26,11 @@ class OrderDeliveryHistory extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderPackage()
+    {
+        return $this->belongsTo(OrderPackage::class);
     }
 
     public function actor()

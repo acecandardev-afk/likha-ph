@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 use App\Http\Controllers\Admin\RiderController as AdminRiderController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
+use App\Http\Controllers\Admin\DeliveryReportController as AdminDeliveryReportController;
 
 // Artisan Controllers
 use App\Http\Controllers\Artisan\DashboardController as ArtisanDashboardController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ReviewController;
+use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryReportController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
 use App\Http\Controllers\AccountController;
@@ -154,11 +156,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::patch('/{rider}/deactivate', [AdminRiderController::class, 'deactivate'])->name('deactivate');
     });
 
-    // Delivery monitoring
+    // Delivery monitoring (per package)
     Route::prefix('deliveries')->name('deliveries.')->group(function () {
         Route::get('/', [AdminDeliveryController::class, 'index'])->name('index');
-        Route::patch('/{order}/assign', [AdminDeliveryController::class, 'assign'])->name('assign');
-        Route::patch('/{order}/status', [AdminDeliveryController::class, 'updateStatus'])->name('status');
+        Route::patch('/packages/{orderPackage}/assign', [AdminDeliveryController::class, 'assign'])->name('assign');
+        Route::patch('/packages/{orderPackage}/status', [AdminDeliveryController::class, 'updateStatus'])->name('status');
+    });
+
+    Route::prefix('delivery-reports')->name('delivery-reports.')->group(function () {
+        Route::get('/', [AdminDeliveryReportController::class, 'index'])->name('index');
+        Route::get('/{deliveryReport}', [AdminDeliveryReportController::class, 'show'])->name('show');
+        Route::patch('/{deliveryReport}', [AdminDeliveryReportController::class, 'update'])->name('update');
     });
 
     // Categories
@@ -235,6 +243,11 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
         Route::patch('/{order}/mark-received', [CustomerOrderController::class, 'markReceived'])->name('mark-received');
     });
 
+    Route::prefix('delivery-reports')->name('delivery-reports.')->group(function () {
+        Route::get('/package/{orderPackage}/create', [CustomerDeliveryReportController::class, 'create'])->name('create');
+        Route::post('/package/{orderPackage}', [CustomerDeliveryReportController::class, 'store'])->name('store');
+    });
+
     // Reviews
     Route::prefix('reviews')->name('reviews.')->group(function () {
         Route::get('/orders/{order}/products/{product}', [ReviewController::class, 'create'])->name('create');
@@ -280,7 +293,7 @@ Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(fun
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
     Route::prefix('deliveries')->name('deliveries.')->group(function () {
         Route::get('/', [RiderDeliveryController::class, 'index'])->name('index');
-        Route::get('/{order}', [RiderDeliveryController::class, 'show'])->name('show');
-        Route::patch('/{order}/status', [RiderDeliveryController::class, 'updateStatus'])->name('status');
+        Route::get('/package/{orderPackage}', [RiderDeliveryController::class, 'show'])->name('show');
+        Route::patch('/package/{orderPackage}/status', [RiderDeliveryController::class, 'updateStatus'])->name('status');
     });
 });

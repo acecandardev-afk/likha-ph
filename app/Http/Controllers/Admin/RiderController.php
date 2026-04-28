@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class RiderController extends AdminController
@@ -34,9 +35,19 @@ class RiderController extends AdminController
             'vehicle_type' => 'nullable|string|max:100',
             'status' => ['required', Rule::in(['available', 'busy', 'offline'])],
             'password' => 'required|string|min:8|max:64',
+            'birth_date' => ['nullable', 'date'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
+            'license_number' => ['nullable', 'string', 'max:100'],
+            'license_expiry' => ['nullable', 'string', 'max:50'],
+            'vehicle_plate' => ['nullable', 'string', 'max:50'],
+            'bio' => ['nullable', 'string', 'max:2000'],
+            'license_image' => ['nullable', 'image', 'max:5120'],
+            'id_document_image' => ['nullable', 'image', 'max:5120'],
+            'clearance_document_image' => ['nullable', 'image', 'max:5120'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated, $request) {
             $user = User::create([
                 'name' => $validated['full_name'],
                 'email' => $validated['email'],
@@ -47,7 +58,7 @@ class RiderController extends AdminController
                 'status' => $validated['status'] === 'offline' ? 'suspended' : 'active',
             ]);
 
-            Rider::create([
+            $riderData = [
                 'rider_id' => 'RDR-'.strtoupper(uniqid()),
                 'user_id' => $user->id,
                 'full_name' => $validated['full_name'],
@@ -57,7 +68,22 @@ class RiderController extends AdminController
                 'vehicle_type' => $validated['vehicle_type'] ?? null,
                 'status' => $validated['status'],
                 'date_created' => now(),
-            ]);
+                'birth_date' => $validated['birth_date'] ?? null,
+                'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+                'license_number' => $validated['license_number'] ?? null,
+                'license_expiry' => $validated['license_expiry'] ?? null,
+                'vehicle_plate' => $validated['vehicle_plate'] ?? null,
+                'bio' => $validated['bio'] ?? null,
+            ];
+
+            foreach (['license_image', 'id_document_image', 'clearance_document_image'] as $docField) {
+                if ($request->hasFile($docField)) {
+                    $riderData[$docField] = $request->file($docField)->store('rider-documents', 'public');
+                }
+            }
+
+            Rider::create($riderData);
         });
 
         return back()->with('success', 'Rider account created successfully.');
@@ -72,9 +98,28 @@ class RiderController extends AdminController
             'address' => 'nullable|string|max:500',
             'vehicle_type' => 'nullable|string|max:100',
             'status' => ['required', Rule::in(['available', 'busy', 'offline'])],
+            'birth_date' => ['nullable', 'date'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:50'],
+            'license_number' => ['nullable', 'string', 'max:100'],
+            'license_expiry' => ['nullable', 'string', 'max:50'],
+            'vehicle_plate' => ['nullable', 'string', 'max:50'],
+            'bio' => ['nullable', 'string', 'max:2000'],
+            'license_image' => ['nullable', 'image', 'max:5120'],
+            'id_document_image' => ['nullable', 'image', 'max:5120'],
+            'clearance_document_image' => ['nullable', 'image', 'max:5120'],
         ]);
 
-        DB::transaction(function () use ($rider, $validated) {
+        DB::transaction(function () use ($rider, $validated, $request) {
+            foreach (['license_image', 'id_document_image', 'clearance_document_image'] as $docField) {
+                if ($request->hasFile($docField)) {
+                    if ($rider->{$docField}) {
+                        Storage::disk('public')->delete($rider->{$docField});
+                    }
+                    $validated[$docField] = $request->file($docField)->store('rider-documents', 'public');
+                }
+            }
+
             $rider->update($validated);
             $rider->user?->update([
                 'name' => $validated['full_name'],

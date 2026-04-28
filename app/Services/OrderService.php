@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderPackage;
+use App\Models\OrderPackageItem;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -22,6 +24,8 @@ class OrderService
 
     /**
      * Create orders from cart (multi-artisan checkout).
+     *
+     * @param  array<int, array<int, int>>|null  $packageSplit  [artisan_id => [ cart_id => package_number_1_based ]]
      */
     public function createOrdersFromCart(
         User $customer,
@@ -33,7 +37,8 @@ class OrderService
         string $barangay,
         ?string $streetAddress,
         string $phone,
-        ?string $customerNotes = null
+        ?string $customerNotes = null,
+        ?array $packageSplit = null
     ): Collection {
         // Validate cart
         $validationErrors = $this->cartService->validateCart($customer);
@@ -42,18 +47,20 @@ class OrderService
         }
 
         $cartItems = $this->cartService->getCartItems($customer);
-        
+
         if ($cartItems->isEmpty()) {
             throw new \Exception("Cart is empty.");
         }
 
         $orders = collect();
 
-        DB::transaction(function () use ($customer, $cartItems, $paymentMethod, $country, $region, $province, $city, $barangay, $streetAddress, $phone, $customerNotes, &$orders) {
+        DB::transaction(function () use ($customer, $cartItems, $paymentMethod, $country, $region, $province, $city, $barangay, $streetAddress, $phone, $customerNotes, $packageSplit, &$orders) {
             // Group cart items by artisan
             $groupedByArtisan = $cartItems->groupBy('product.artisan_id');
 
             foreach ($groupedByArtisan as $artisanId => $items) {
+                $groups = $this->buildCartGroupsForPackages($items, $packageSplit[(int) $artisanId] ?? []);
+
                 $order = $this->createSingleOrder(
                     $customer,
                     $artisanId,
@@ -66,7 +73,8 @@ class OrderService
                     $barangay,
                     $streetAddress,
                     $phone,
-                    $customerNotes
+                    $customerNotes,
+                    $groups
                 );
 
                 $orders->push($order);
@@ -85,7 +93,64 @@ class OrderService
     }
 
     /**
+     * @param  Collection<int, \App\Models\Cart>  $items
+     * @param  array<int, int>  $splitForArtisan  cart_id => package number (1-based)
+     * @return array<int, array<int>>  List of cart-id groups per package
+     */
+    protected function buildCartGroupsForPackages(Collection $items, array $splitForArtisan): array
+    {
+        $cartIds = $items->pluck('id')->all();
+        if ($splitForArtisan === []) {
+            return [$cartIds];
+        }
+
+        $maxPkg = max(1, ...array_merge([1], array_values($splitForArtisan)));
+        $groups = [];
+        for ($i = 0; $i < $maxPkg; $i++) {
+            $groups[$i] = [];
+        }
+
+        foreach ($items as $item) {
+            $p = (int) ($splitForArtisan[$item->id] ?? 1);
+            $p = max(1, min(10, $p));
+            if (! isset($groups[$p - 1])) {
+                $groups[$p - 1] = [];
+            }
+            $groups[$p - 1][] = $item->id;
+        }
+
+        $nonEmpty = array_values(array_filter($groups, fn ($g) => count($g) > 0));
+
+        return count($nonEmpty) > 0 ? $nonEmpty : [$cartIds];
+    }
+
+    /**
+     * Split platform fee across packages without losing cents.
+     *
+     * @return array<int, float>
+     */
+    protected function splitPlatformFeeShares(float $total, int $parts): array
+    {
+        if ($parts < 1) {
+            return [];
+        }
+
+        $totalCents = (int) round($total * 100);
+        $base = intdiv($totalCents, $parts);
+        $rem = $totalCents % $parts;
+        $shares = [];
+        for ($i = 0; $i < $parts; $i++) {
+            $shares[] = ($base + ($i < $rem ? 1 : 0)) / 100;
+        }
+
+        return $shares;
+    }
+
+    /**
      * Create a single order.
+     *
+     * @param  Collection<int, \App\Models\Cart>  $items
+     * @param  array<int, array<int>>  $packageCartGroups  Each inner array is cart IDs for one package (full cart lines).
      */
     private function createSingleOrder(
         User $customer,
@@ -99,8 +164,19 @@ class OrderService
         string $barangay,
         ?string $streetAddress,
         string $phone,
-        ?string $customerNotes
+        ?string $customerNotes,
+        array $packageCartGroups
     ): Order {
+        if (count($packageCartGroups) < 1) {
+            throw new \Exception('At least one delivery package is required.');
+        }
+
+        $flat = collect($packageCartGroups)->flatten()->sort()->values()->all();
+        $expectedIds = $items->pluck('id')->sort()->values()->all();
+        if ($flat !== $expectedIds) {
+            throw new \Exception('Each cart line must belong to exactly one delivery package.');
+        }
+
         $subtotal = 0;
 
         // Validate stock for all items
@@ -133,9 +209,13 @@ class OrderService
             'shipping_phone' => $phone,
         ]);
 
+        $cartById = $items->keyBy('id');
+        $cartIdToOrderItem = [];
+
         // Create order items and reduce each product's stock by the ordered quantity
         foreach ($items as $item) {
-            $this->createOrderItem($order, $item);
+            $orderItem = $this->createOrderItem($order, $item);
+            $cartIdToOrderItem[$item->id] = $orderItem;
             $product = $item->product;
             $product->decrement('stock', $item->quantity);
             $product->refresh();
@@ -149,7 +229,32 @@ class OrderService
             }
         }
 
-        // Create payment record (COD does not require proof)
+        $pkgCount = max(1, count($packageCartGroups));
+        $feeShares = $this->splitPlatformFeeShares((float) $platformFee, $pkgCount);
+
+        foreach ($packageCartGroups as $idx => $cartIdsInPkg) {
+            $pkg = OrderPackage::create([
+                'order_id' => $order->id,
+                'sequence' => $idx + 1,
+                'delivery_status' => DeliveryService::STATUS_PENDING_ASSIGNMENT,
+                'platform_fee_share' => $feeShares[$idx] ?? 0,
+            ]);
+
+            foreach ($cartIdsInPkg as $cartId) {
+                $cartItem = $cartById->get($cartId);
+                if (! $cartItem || ! isset($cartIdToOrderItem[$cartId])) {
+                    throw new \Exception('Invalid package grouping for checkout.');
+                }
+                $orderItem = $cartIdToOrderItem[$cartId];
+                OrderPackageItem::create([
+                    'order_package_id' => $pkg->id,
+                    'order_item_id' => $orderItem->id,
+                    'quantity' => $orderItem->quantity,
+                ]);
+            }
+        }
+
+        // Create payment record (COD only in production flow — verified immediately)
         $verificationStatus = $paymentMethod === 'cod' ? 'verified' : 'awaiting_proof';
         Payment::create([
             'order_id' => $order->id,
@@ -158,17 +263,15 @@ class OrderService
             'verification_status' => $verificationStatus,
         ]);
 
-        // Initial delivery state waits for assignment. For COD (already verified),
-        // assignment is attempted immediately after order creation.
-        $order->update([
-            'delivery_status' => DeliveryService::STATUS_PENDING_ASSIGNMENT,
-        ]);
-
         if ($verificationStatus === 'verified') {
-            $this->deliveryService->assignRandomAvailableRider($order->fresh(['payment', 'rider']));
+            foreach ($order->fresh(['packages'])->packages as $pkg) {
+                $this->deliveryService->assignRandomAvailableRider($pkg->fresh(['order.payment']));
+            }
         }
 
-        return $order->fresh(['items', 'payment', 'artisan']);
+        $order->refreshAggregateDeliveryFromPackages();
+
+        return $order->fresh(['items', 'payment', 'artisan', 'packages']);
     }
 
     /**

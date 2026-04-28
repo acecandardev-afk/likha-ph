@@ -131,20 +131,10 @@ class PaymentService
     public function getPaymentMethods(): array
     {
         return [
-            'bank_transfer' => [
-                'name' => 'Bank Transfer',
-                'description' => 'Direct bank transfer to our account',
-                'instructions' => 'Please transfer to: Bank Name - Account Number',
-            ],
-            'gcash' => [
-                'name' => 'GCash',
-                'description' => 'Payment via GCash mobile wallet',
-                'instructions' => 'Send to GCash number: 0917-XXX-XXXX',
-            ],
-            'cash' => [
-                'name' => 'Cash on Pickup',
-                'description' => 'Pay cash when you pick up the item',
-                'instructions' => 'Prepare exact amount during pickup',
+            'cod' => [
+                'name' => 'Cash on Delivery (COD)',
+                'description' => 'Pay the rider when your package arrives.',
+                'instructions' => 'Prepare exact change when possible.',
             ],
         ];
     }
@@ -192,7 +182,7 @@ class PaymentService
      */
     public function requiresProof(string $method): bool
     {
-        return in_array($method, ['bank_transfer', 'gcash']);
+        return false;
     }
 
     /**

@@ -49,7 +49,9 @@ class OrderController extends CustomerController
             'items.product.images',
             'payment',
             'messages.sender',
-            'rider'
+            'rider',
+            'packages.rider',
+            'packages.items.orderItem.product',
         ]);
 
         return view('customer.orders.show', compact('order'));
@@ -66,6 +68,7 @@ class OrderController extends CustomerController
             'artisan.artisanProfile',
             'rider',
             'deliveryHistory.actor',
+            'packages.rider',
         ]);
 
         return view('customer.orders.tracking', compact('order'));

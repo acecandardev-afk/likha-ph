@@ -23,10 +23,21 @@ class Rider extends Model
         'vehicle_type',
         'status',
         'date_created',
+        'birth_date',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'license_number',
+        'license_expiry',
+        'vehicle_plate',
+        'bio',
+        'license_image',
+        'id_document_image',
+        'clearance_document_image',
     ];
 
     protected $casts = [
         'date_created' => 'datetime',
+        'birth_date' => 'date',
     ];
 
     public function user()
@@ -37,6 +48,11 @@ class Rider extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function packages()
+    {
+        return $this->hasMany(OrderPackage::class);
     }
 
     public function scopeAvailable($query)

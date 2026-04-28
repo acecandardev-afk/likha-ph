@@ -111,6 +111,31 @@
                 </div>
             </div>
 
+            @if($order->packages->isNotEmpty())
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-semibold">Delivery packages</h5>
+                </div>
+                <div class="card-body">
+                    @foreach($order->packages as $pkg)
+                        <div class="border rounded p-3 mb-3 mb-md-2">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <span class="fw-semibold small">Package {{ $pkg->sequence }}</span>
+                                <x-status-badge :status="$pkg->delivery_status" type="delivery" />
+                            </div>
+                            @if($pkg->rider)
+                                <p class="small text-muted mb-1 mb-md-2">Rider: {{ $pkg->rider->full_name }} @if($pkg->rider->contact_number)<span class="text-muted">· {{ $pkg->rider->contact_number }}</span>@endif</p>
+                            @endif
+                            @if($pkg->delivery_proof_image_url)
+                                <p class="small mb-2"><a href="{{ $pkg->delivery_proof_image_url }}" target="_blank" rel="noopener">View delivery photo</a></p>
+                            @endif
+                            <a href="{{ route('customer.delivery-reports.create', $pkg) }}" class="btn btn-sm btn-outline-secondary">Report an issue with this delivery</a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             @if($order->country || $order->region || $order->province || $order->city || $order->barangay || $order->street_address || $order->shipping_phone)
             <div class="card mb-3">
                 <div class="card-header">

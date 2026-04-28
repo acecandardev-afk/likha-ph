@@ -10,6 +10,7 @@
         ['route' => 'admin.users.customers', 'label' => 'Customers', 'icon' => 'bi-people'],
         ['route' => 'admin.riders.index', 'label' => 'Riders', 'icon' => 'bi-bicycle'],
         ['route' => 'admin.deliveries.index', 'label' => 'Deliveries', 'icon' => 'bi-truck', 'badge_key' => 'deliveries'],
+        ['route' => 'admin.delivery-reports.index', 'label' => 'Delivery reports', 'icon' => 'bi-flag', 'badge_key' => 'reports'],
         ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'bi-tags'],
         ['route' => 'admin.sales.index', 'label' => 'Sales', 'icon' => 'bi-receipt-cutoff'],
     ];

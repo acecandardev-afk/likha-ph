@@ -39,7 +39,9 @@ class OrderController extends ArtisanController
             'items.product.images',
             'payment',
             'messages.sender',
-            'rider'
+            'rider',
+            'packages.rider',
+            'packages.items.orderItem',
         ]);
 
         return view('artisan.orders.show', compact('order'));

@@ -131,6 +131,23 @@ class ImageUploadService
     }
 
     /**
+     * Customer proof image for reporting a delivery issue.
+     */
+    public function uploadDeliveryReportProof(UploadedFile $file, int $reportId): string
+    {
+        if ($this->isLocalDisk('delivery_reports')) {
+            $this->ensureStorageDir('delivery-reports');
+        }
+
+        $filename = $this->generateFilename('delivery_report_'.$reportId);
+        $image = Image::read($file);
+        $image->scale(width: 1200);
+        $this->putJpegToDisk('delivery_reports', $filename, $image, 85);
+
+        return $filename;
+    }
+
+    /**
      * Delete product images.
      */
     public function deleteProductImage(string $filename): bool

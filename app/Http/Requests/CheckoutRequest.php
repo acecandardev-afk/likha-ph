@@ -45,6 +45,10 @@ class CheckoutRequest extends FormRequest
         }
 
         $this->reconcileBarangayToCity();
+
+        $this->merge([
+            'payment_method' => 'cod',
+        ]);
     }
 
     /**
@@ -113,14 +117,55 @@ class CheckoutRequest extends FormRequest
             'payment_method' => [
                 'required',
                 'string',
-                'in:bank_transfer,gcash,cash,cod',
+                'in:cod',
             ],
+            'package_split' => ['nullable', 'array'],
+            'package_split.*' => ['array'],
+            'package_split.*.*' => ['integer', 'min:1', 'max:10'],
             'customer_notes' => [
                 'nullable',
                 'string',
                 'max:500',
             ],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $user = $this->user();
+            if (! $user) {
+                return;
+            }
+
+            $cartRows = $user->cart()->with('product')->get()->keyBy('id');
+            $split = $this->input('package_split', []);
+
+            foreach ($split as $artisanKey => $assignments) {
+                if (! is_array($assignments)) {
+                    continue;
+                }
+                foreach ($assignments as $cartId => $pkgNum) {
+                    $cid = (int) $cartId;
+                    if (! $cartRows->has($cid)) {
+                        $validator->errors()->add(
+                            'package_split',
+                            'Invalid cart item in delivery package assignment.'
+                        );
+
+                        return;
+                    }
+                    if ((int) $cartRows[$cid]->product->artisan_id !== (int) $artisanKey) {
+                        $validator->errors()->add(
+                            'package_split',
+                            'Package assignment does not match the seller for this item.'
+                        );
+
+                        return;
+                    }
+                }
+            }
+        });
     }
 
     public function messages(): array

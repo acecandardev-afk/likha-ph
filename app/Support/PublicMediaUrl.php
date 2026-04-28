@@ -26,6 +26,7 @@ class PublicMediaUrl
                 'artisans' => asset('storage/artisans/'.$path),
                 'payments' => asset('storage/payments/'.$path),
                 'delivery_proofs' => asset('storage/delivery-proofs/'.$path),
+                'delivery_reports' => asset('storage/delivery-reports/'.$path),
                 'public' => asset('storage/'.$path),
                 default => Storage::disk($disk)->url($path),
             };

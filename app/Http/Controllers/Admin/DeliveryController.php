@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Order;
+use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Services\DeliveryService;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class DeliveryController extends AdminController
 
     public function index(Request $request)
     {
-        $query = Order::with(['customer', 'artisan', 'rider'])->latest();
+        $query = OrderPackage::with(['order.customer', 'order.artisan', 'rider'])->latest();
 
         if ($request->filled('delivery_status')) {
             $query->where('delivery_status', $request->delivery_status);
@@ -31,29 +31,29 @@ class DeliveryController extends AdminController
             $query->whereDate('delivery_completed_at', $request->delivery_date);
         }
 
-        $deliveries = $query->paginate(20)->withQueryString();
+        $packages = $query->paginate(20)->withQueryString();
         $riders = Rider::orderBy('full_name')->get(['id', 'full_name']);
         $statusOptions = [DeliveryService::STATUS_PENDING_ASSIGNMENT => 'Pending Delivery Assignment'] + $this->deliveryService->deliveryStatusOptions();
 
-        return view('admin.deliveries.index', compact('deliveries', 'riders', 'statusOptions'));
+        return view('admin.deliveries.index', compact('packages', 'riders', 'statusOptions'));
     }
 
-    public function assign(Order $order)
+    public function assign(OrderPackage $orderPackage)
     {
-        if (! $order->payment?->isVerified()) {
+        if (! $orderPackage->order->payment?->isVerified()) {
             return back()->withErrors(['delivery' => 'Order payment must be verified before assignment.']);
         }
 
-        $rider = $this->deliveryService->assignRandomAvailableRider($order->fresh(['payment', 'rider']));
+        $rider = $this->deliveryService->assignRandomAvailableRider($orderPackage->fresh(['order.payment']));
 
         if (! $rider) {
-            return back()->with('warning', 'No available rider. Order remains pending delivery assignment.');
+            return back()->with('warning', 'No available rider with capacity. Package remains pending assignment.');
         }
 
-        return back()->with('success', 'Order assigned to '.$rider->full_name.'.');
+        return back()->with('success', 'Package assigned to '.$rider->full_name.'.');
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, OrderPackage $orderPackage)
     {
         $validated = $request->validate([
             'delivery_status' => 'required|string',
@@ -61,7 +61,12 @@ class DeliveryController extends AdminController
         ]);
 
         try {
-            $this->deliveryService->updateDeliveryStatus($order, $validated['delivery_status'], $request->user(), $validated['note'] ?? null);
+            $this->deliveryService->updateDeliveryStatus(
+                $orderPackage,
+                $validated['delivery_status'],
+                $request->user(),
+                $validated['note'] ?? null
+            );
         } catch (\Throwable $e) {
             return back()->withErrors(['delivery_status' => $e->getMessage()]);
         }

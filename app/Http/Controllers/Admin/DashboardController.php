@@ -9,6 +9,8 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\Review;
 use App\Models\Rider;
+use App\Models\OrderPackage;
+use App\Models\DeliveryReport;
 use App\Services\DeliveryService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class DashboardController extends AdminController
      */
     public function index()
     {
-        $stats = Cache::remember('dashboard:admin:stats', 60, function () {
+        $stats = Cache::remember('dashboard:admin:stats:v2', 60, function () {
             return [
                 'pending_products' => Product::pending()->count(),
                 'pending_payments' => Payment::pending()->count(),
@@ -29,11 +31,17 @@ class DashboardController extends AdminController
                 'total_orders' => Order::count(),
                 'pending_orders' => Order::pending()->count(),
                 'total_revenue' => Order::confirmed()->sum('total'),
+                'realized_platform_revenue' => (float) OrderPackage::query()
+                    ->whereNotNull('platform_fee_realized_at')
+                    ->sum('platform_fee_share'),
                 'unapproved_reviews' => Review::where('is_approved', false)->count(),
+                'open_delivery_reports' => DeliveryReport::query()
+                    ->where('status', DeliveryReport::STATUS_OPEN)
+                    ->count(),
                 'total_riders' => Rider::count(),
                 'available_riders' => Rider::where('status', Rider::STATUS_AVAILABLE)->count(),
-                'pending_delivery_assignment' => Order::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)->count(),
-                'completed_deliveries' => Order::where('delivery_status', DeliveryService::STATUS_DELIVERED)->count(),
+                'pending_delivery_assignment' => OrderPackage::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)->count(),
+                'completed_deliveries' => OrderPackage::where('delivery_status', DeliveryService::STATUS_DELIVERED)->count(),
             ];
         });
 

@@ -75,7 +75,8 @@ class AppServiceProvider extends ServiceProvider
                     (SELECT COUNT(*) FROM {$t}products WHERE approval_status = ?) AS products,
                     (SELECT COUNT(*) FROM {$t}payments WHERE verification_status = ?) AS payments,
                     (SELECT COUNT(*) FROM {$t}users WHERE role = ? AND status = ?) AS artisans,
-                    (SELECT COUNT(*) FROM {$t}orders WHERE delivery_status = ?) AS deliveries",
+                    (SELECT COUNT(*) FROM {$t}order_packages WHERE delivery_status = ?) AS deliveries,
+                    (SELECT COUNT(*) FROM {$t}delivery_reports WHERE status = 'open') AS reports",
                 [
                     'pending',
                     'pending',
@@ -90,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
                 'payments' => (int) ($row->payments ?? 0),
                 'artisans' => (int) ($row->artisans ?? 0),
                 'deliveries' => (int) ($row->deliveries ?? 0),
+                'reports' => (int) ($row->reports ?? 0),
             ]);
         });
     }

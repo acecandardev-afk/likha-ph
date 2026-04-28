@@ -11,7 +11,7 @@
     <div class="card mb-3">
         <div class="card-header"><strong>Add rider</strong></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.riders.store') }}" class="row g-2">
+            <form method="POST" action="{{ route('admin.riders.store') }}" enctype="multipart/form-data" class="row g-2 align-items-end">
                 @csrf
                 <div class="col-md-3"><input name="full_name" class="form-control" placeholder="Full name" required></div>
                 <div class="col-md-2"><input name="contact_number" class="form-control" placeholder="Contact number" required></div>
@@ -26,6 +26,16 @@
                 </div>
                 <div class="col-md-8"><input name="address" class="form-control" placeholder="Address"></div>
                 <div class="col-md-2"><input name="password" type="password" class="form-control" placeholder="Password" required></div>
+                <div class="col-md-2"><input name="birth_date" type="date" class="form-control" title="Birth date"></div>
+                <div class="col-md-3"><input name="emergency_contact_name" class="form-control" placeholder="Emergency contact name"></div>
+                <div class="col-md-3"><input name="emergency_contact_phone" class="form-control" placeholder="Emergency phone"></div>
+                <div class="col-md-2"><input name="license_number" class="form-control" placeholder="License no."></div>
+                <div class="col-md-2"><input name="license_expiry" class="form-control" placeholder="License expiry"></div>
+                <div class="col-md-2"><input name="vehicle_plate" class="form-control" placeholder="Plate no."></div>
+                <div class="col-12"><textarea name="bio" class="form-control" rows="2" placeholder="Short bio / notes"></textarea></div>
+                <div class="col-md-4"><label class="form-label small mb-0">License photo</label><input type="file" name="license_image" class="form-control form-control-sm" accept="image/*"></div>
+                <div class="col-md-4"><label class="form-label small mb-0">ID document</label><input type="file" name="id_document_image" class="form-control form-control-sm" accept="image/*"></div>
+                <div class="col-md-4"><label class="form-label small mb-0">Clearance</label><input type="file" name="clearance_document_image" class="form-control form-control-sm" accept="image/*"></div>
                 <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Create rider</button></div>
             </form>
         </div>
@@ -76,7 +86,7 @@
                         </tr>
                         <tr class="collapse" id="edit-rider-{{ $rider->id }}">
                             <td colspan="7">
-                                <form method="POST" action="{{ route('admin.riders.update', $rider) }}" class="row g-2">
+                                <form method="POST" action="{{ route('admin.riders.update', $rider) }}" enctype="multipart/form-data" class="row g-2">
                                     @csrf
                                     @method('PUT')
                                     <div class="col-md-3"><input name="full_name" class="form-control" value="{{ $rider->full_name }}" required></div>
@@ -91,6 +101,16 @@
                                         </select>
                                     </div>
                                     <div class="col-md-10"><input name="address" class="form-control" value="{{ $rider->address }}" placeholder="Address"></div>
+                                    <div class="col-md-2"><input name="birth_date" type="date" class="form-control" value="{{ $rider->birth_date?->format('Y-m-d') }}"></div>
+                                    <div class="col-md-3"><input name="emergency_contact_name" class="form-control" value="{{ $rider->emergency_contact_name }}" placeholder="Emergency contact"></div>
+                                    <div class="col-md-3"><input name="emergency_contact_phone" class="form-control" value="{{ $rider->emergency_contact_phone }}" placeholder="Emergency phone"></div>
+                                    <div class="col-md-2"><input name="license_number" class="form-control" value="{{ $rider->license_number }}" placeholder="License no."></div>
+                                    <div class="col-md-2"><input name="license_expiry" class="form-control" value="{{ $rider->license_expiry }}" placeholder="License expiry"></div>
+                                    <div class="col-md-2"><input name="vehicle_plate" class="form-control" value="{{ $rider->vehicle_plate }}" placeholder="Plate"></div>
+                                    <div class="col-12"><textarea name="bio" class="form-control" rows="2" placeholder="Bio">{{ $rider->bio }}</textarea></div>
+                                    <div class="col-md-4"><label class="form-label small mb-0">License photo @if($rider->license_image)<a href="{{ asset('storage/'.$rider->license_image) }}" target="_blank" rel="noopener">current</a>@endif</label><input type="file" name="license_image" class="form-control form-control-sm" accept="image/*"></div>
+                                    <div class="col-md-4"><label class="form-label small mb-0">ID @if($rider->id_document_image)<a href="{{ asset('storage/'.$rider->id_document_image) }}" target="_blank" rel="noopener">current</a>@endif</label><input type="file" name="id_document_image" class="form-control form-control-sm" accept="image/*"></div>
+                                    <div class="col-md-4"><label class="form-label small mb-0">Clearance @if($rider->clearance_document_image)<a href="{{ asset('storage/'.$rider->clearance_document_image) }}" target="_blank" rel="noopener">current</a>@endif</label><input type="file" name="clearance_document_image" class="form-control form-control-sm" accept="image/*"></div>
                                     <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Save</button></div>
                                 </form>
                             </td>

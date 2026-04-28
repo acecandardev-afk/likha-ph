@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DirectMessage;
 use App\Models\Message;
 use App\Models\Order;
+use App\Models\OrderPackage;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Rider;
@@ -235,16 +236,17 @@ class NotificationService
         );
     }
 
-    public function notifyDeliveryAssigned(Order $order, Rider $rider): void
+    public function notifyDeliveryAssigned(Order $order, Rider $rider, OrderPackage $package): void
     {
         $order->loadMissing(['customer', 'artisan']);
         $num = $order->order_number;
+        $seq = $package->sequence;
         $riderName = $rider->full_name ?: 'Assigned rider';
 
         $this->notifyAdmins(
             'delivery_assigned_admin',
             'Rider assigned automatically',
-            "Order {$num} was assigned to {$riderName}.",
+            "Order {$num} (package #{$seq}) was assigned to {$riderName}.",
             route('admin.deliveries.index')
         );
 
@@ -252,7 +254,7 @@ class NotificationService
             $order->customer_id,
             'delivery_assigned_customer',
             'Rider assigned to your order',
-            "Order {$num} is now assigned to {$riderName}.",
+            "Order {$num}, package #{$seq}, is assigned to {$riderName}.",
             route('customer.orders.tracking', $order)
         );
 
@@ -260,7 +262,7 @@ class NotificationService
             $order->artisan_id,
             'delivery_assigned_artisan',
             'Rider assigned',
-            "Order {$num} is now assigned to {$riderName}.",
+            "Order {$num}, package #{$seq}, is assigned to {$riderName}.",
             route('artisan.orders.show', $order)
         );
 
@@ -269,8 +271,8 @@ class NotificationService
                 (int) $rider->user_id,
                 'delivery_assigned_rider',
                 'New delivery assignment',
-                "You have a new assignment for order {$num}.",
-                route('rider.deliveries.show', $order)
+                "New assignment: order {$num}, package #{$seq}.",
+                route('rider.deliveries.show', $package)
             );
         }
     }

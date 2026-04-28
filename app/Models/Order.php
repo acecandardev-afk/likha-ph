@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\DeliveryService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Support\PublicMediaUrl;
@@ -75,6 +76,11 @@ class Order extends Model
     public function deliveryHistory()
     {
         return $this->hasMany(OrderDeliveryHistory::class)->orderBy('status_at');
+    }
+
+    public function packages()
+    {
+        return $this->hasMany(OrderPackage::class)->orderBy('sequence');
     }
 
     public function messages()
@@ -318,5 +324,50 @@ class Order extends Model
         }
 
         return implode(', ', $addressParts);
+    }
+
+    /**
+     * Sync orders.rider_id, delivery_status, delivery_proof_image, etc. from child packages (bottleneck + totals).
+     */
+    public function refreshAggregateDeliveryFromPackages(): void
+    {
+        $this->loadMissing('packages');
+        $packages = $this->packages;
+        if ($packages->isEmpty()) {
+            return;
+        }
+
+        if ($this->isCancelled()) {
+            return;
+        }
+
+        $rank = DeliveryService::statusRank();
+        $bottleneck = $packages->sortBy(fn ($p) => $rank[$p->delivery_status] ?? 0)->first();
+        $allDelivered = $packages->every(fn ($p) => $p->delivery_status === DeliveryService::STATUS_DELIVERED);
+        $riderIds = $packages->pluck('rider_id')->filter()->unique();
+
+        $pendingRank = $rank[DeliveryService::STATUS_PENDING_ASSIGNMENT];
+        $deliveredRank = $rank[DeliveryService::STATUS_DELIVERED];
+        $anyInTransit = $packages->contains(function ($p) use ($rank, $pendingRank, $deliveredRank) {
+            $r = $rank[$p->delivery_status] ?? 0;
+
+            return $r > $pendingRank && $r < $deliveredRank;
+        });
+
+        $updates = [
+            'delivery_status' => $bottleneck->delivery_status,
+            'rider_id' => $riderIds->count() === 1 ? $riderIds->first() : $bottleneck->rider_id,
+            'delivery_proof_image' => $packages->count() === 1 ? $packages->first()->delivery_proof_image : null,
+            'delivery_completed_at' => $allDelivered ? $packages->max('delivery_completed_at') : null,
+            'delivery_assigned_at' => $packages->whereNotNull('delivery_assigned_at')->min('delivery_assigned_at'),
+        ];
+
+        if ($allDelivered) {
+            $updates['status'] = 'delivered';
+        } elseif ($anyInTransit) {
+            $updates['status'] = 'on_delivery';
+        }
+
+        $this->update($updates);
     }
 }

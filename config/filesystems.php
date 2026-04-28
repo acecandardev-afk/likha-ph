@@ -137,6 +137,20 @@ return [
                 'visibility' => 'public',
                 'throw' => false,
             ],
+
+        'delivery_reports' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('delivery-reports'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/delivery-reports'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/delivery-reports',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
     ],
 
     /*

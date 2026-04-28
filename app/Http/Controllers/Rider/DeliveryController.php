@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Rider;
 
-use App\Models\Order;
+use App\Models\OrderPackage;
 use App\Services\DeliveryService;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
@@ -20,33 +20,42 @@ class DeliveryController extends RiderController
     {
         $rider = $this->getRiderUser()->riderProfile;
 
-        $query = $rider->orders()->with(['customer', 'artisan'])->latest();
+        $query = OrderPackage::query()
+            ->where('rider_id', $rider?->id)
+            ->with(['order.customer', 'order.artisan'])
+            ->latest();
 
         if ($request->filled('status')) {
             $query->where('delivery_status', $request->status);
         }
 
-        $orders = $query->paginate(20)->withQueryString();
+        $packages = $query->paginate(20)->withQueryString();
         $statusOptions = $this->deliveryService->deliveryStatusOptions();
 
-        return view('rider.deliveries.index', compact('orders', 'statusOptions'));
+        return view('rider.deliveries.index', compact('packages', 'statusOptions'));
     }
 
-    public function show(Order $order)
+    public function show(OrderPackage $orderPackage)
     {
         $rider = $this->getRiderUser()->riderProfile;
-        abort_unless($order->rider_id === $rider?->id, 403);
+        abort_unless($orderPackage->rider_id === $rider?->id, 403);
 
-        $order->load(['customer', 'artisan', 'deliveryHistory.actor', 'items.product']);
+        $orderPackage->load([
+            'order.customer',
+            'order.artisan',
+            'order.deliveryHistory.actor',
+            'items.orderItem.product',
+        ]);
+        $order = $orderPackage->order;
         $statusOptions = $this->deliveryService->deliveryStatusOptions();
 
-        return view('rider.deliveries.show', compact('order', 'statusOptions'));
+        return view('rider.deliveries.show', compact('orderPackage', 'order', 'statusOptions'));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, OrderPackage $orderPackage)
     {
         $rider = $this->getRiderUser()->riderProfile;
-        abort_unless($order->rider_id === $rider?->id, 403);
+        abort_unless($orderPackage->rider_id === $rider?->id, 403);
 
         $validated = $request->validate([
             'delivery_status' => 'required|string',
@@ -55,14 +64,19 @@ class DeliveryController extends RiderController
         ]);
 
         if (($validated['delivery_status'] ?? null) === DeliveryService::STATUS_DELIVERED && $request->hasFile('proof_image')) {
-            $filename = $this->imageUploadService->uploadDeliveryProof($request->file('proof_image'), $order->id);
-            $order->update([
+            $filename = $this->imageUploadService->uploadDeliveryProof($request->file('proof_image'), $orderPackage->order_id);
+            $orderPackage->update([
                 'delivery_proof_image' => $filename,
             ]);
         }
 
         try {
-            $this->deliveryService->updateDeliveryStatus($order->fresh(), $validated['delivery_status'], $request->user(), $validated['note'] ?? null);
+            $this->deliveryService->updateDeliveryStatus(
+                $orderPackage->fresh(),
+                $validated['delivery_status'],
+                $request->user(),
+                $validated['note'] ?? null
+            );
         } catch (\Throwable $e) {
             return back()->withErrors(['delivery_status' => $e->getMessage()]);
         }

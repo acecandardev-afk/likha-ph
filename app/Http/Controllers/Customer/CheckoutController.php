@@ -82,7 +82,8 @@ class CheckoutController extends CustomerController
                 $resolvedAddress['barangay'],
                 $resolvedAddress['street_address'] ?? null,
                 $resolvedAddress['phone'],
-                $resolvedAddress['customer_notes'] ?? null
+                $resolvedAddress['customer_notes'] ?? null,
+                $validated['package_split'] ?? null
             );
 
             return redirect()

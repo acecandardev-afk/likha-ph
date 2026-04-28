@@ -12,7 +12,7 @@
         </ol>
     </nav>
     <h2 class="h4 fw-semibold mb-2">Checkout</h2>
-    <p class="text-muted small mb-4">Confirm your delivery details, choose payment, and place your order.</p>
+    <p class="text-muted small mb-4">Confirm your delivery details, group items into packages if needed (each package may ship separately), and place your order. Payment is cash on delivery (COD).</p>
 
     @if(empty($summary['items']) || $summary['total_items'] === 0)
         <div class="alert alert-info">
@@ -30,7 +30,7 @@
                     <div class="flex-grow-1 border-top mx-2" style="min-width: 20px;"></div>
                     <div class="d-flex align-items-center">
                         <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-semibold" style="width: 28px; height: 28px;">2</span>
-                        <span class="ms-2">Payment</span>
+                        <span class="ms-2">Packages</span>
                     </div>
                     <div class="flex-grow-1 border-top mx-2" style="min-width: 20px;"></div>
                     <div class="d-flex align-items-center">
@@ -131,27 +131,35 @@
                         </div>
                     </div>
 
-                    {{-- Step 2: Payment method --}}
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0 fw-semibold"><i class="bi bi-credit-card me-2"></i> Payment method</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-0">
-                                <select name="payment_method" class="form-select form-select-lg @error('payment_method') is-invalid @enderror" required>
-                                    <option value="">Choose payment method</option>
-                                    <option value="cod" {{ old('payment_method') === 'cod' ? 'selected' : '' }}>Cash on Delivery (COD)</option>
-                                    <option value="bank_transfer" {{ old('payment_method') === 'bank_transfer' ? 'selected' : '' }}>Bank transfer</option>
-                                    <option value="gcash" {{ old('payment_method') === 'gcash' ? 'selected' : '' }}>GCash</option>
-                                    <option value="cash" {{ old('payment_method') === 'cash' ? 'selected' : '' }}>Cash on pickup</option>
-                                </select>
-                                <small class="text-muted d-block mt-2">With COD, pay when your order is delivered. For bank transfer and GCash, you will upload payment proof after placing the order.</small>
-                                @error('payment_method')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
+                    <input type="hidden" name="payment_method" value="cod">
+
+                    {{-- Step 2: Package groups per artisan --}}
+                    @foreach($summary['grouped_by_artisan'] as $artisanId => $shopItems)
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0 fw-semibold"><i class="bi bi-box-seam me-2"></i> Delivery packages — {{ $shopItems->first()->product->artisan?->artisanProfile?->workshop_name ?? $shopItems->first()->product->artisan?->name ?? 'Seller' }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted">Assign each line to package <strong>1</strong>, <strong>2</strong>, … Separate packages may be assigned to different riders (up to 5 active stops per rider).</p>
+                                @foreach($shopItems as $cartItem)
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-medium small">{{ $cartItem->product->name }}</div>
+                                            <div class="text-muted small">Qty {{ $cartItem->quantity }} · ₱{{ number_format($cartItem->product->price * $cartItem->quantity, 2) }}</div>
+                                        </div>
+                                        <div style="min-width: 140px;">
+                                            <label class="visually-hidden" for="pkg_{{ $artisanId }}_{{ $cartItem->id }}">Package #</label>
+                                            <select name="package_split[{{ $artisanId }}][{{ $cartItem->id }}]" id="pkg_{{ $artisanId }}_{{ $cartItem->id }}" class="form-select form-select-sm">
+                                                @for($p = 1; $p <= 5; $p++)
+                                                    <option value="{{ $p }}" @selected((int) old('package_split.'.$artisanId.'.'.$cartItem->id, 1) === $p)>Package {{ $p }}</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
-                    </div>
+                    @endforeach
 
                     {{-- Order notes --}}
                     <div class="card mb-4">

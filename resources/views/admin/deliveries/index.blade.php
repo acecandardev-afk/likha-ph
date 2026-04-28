@@ -5,6 +5,7 @@
 @section('content')
 <div class="container py-2 py-md-3">
     <h1 class="h3 mb-3">Delivery Monitoring</h1>
+    <p class="text-muted small mb-4">Each row is one physical package. Riders may carry up to {{ \App\Services\DeliveryService::MAX_ACTIVE_PACKAGES_PER_RIDER }} active deliveries.</p>
 
     <form method="GET" class="row g-2 mb-3">
         <div class="col-md-3">
@@ -32,7 +33,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Order</th>
+                        <th>Order · Package</th>
                         <th>Customer</th>
                         <th>Rider</th>
                         <th>Delivery status</th>
@@ -42,31 +43,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($deliveries as $order)
+                    @forelse($packages as $pkg)
                         <tr>
-                            <td>{{ $order->order_number }}</td>
-                            <td>{{ $order->customer?->name ?? '—' }}</td>
-                            <td>{{ $order->rider?->full_name ?? 'Unassigned' }}</td>
-                            <td><x-status-badge :status="$order->delivery_status" type="delivery" /></td>
-                            <td>{{ $order->delivery_assigned_at?->format('M d, Y h:i A') ?? '—' }}</td>
-                            <td>{{ $order->delivery_completed_at?->format('M d, Y h:i A') ?? '—' }}</td>
+                            <td>
+                                <span class="fw-semibold">{{ $pkg->order->order_number }}</span>
+                                <span class="text-muted small">· Pkg {{ $pkg->sequence }}</span>
+                            </td>
+                            <td>{{ $pkg->order->customer?->name ?? '—' }}</td>
+                            <td>{{ $pkg->rider?->full_name ?? 'Unassigned' }}</td>
+                            <td><x-status-badge :status="$pkg->delivery_status" type="delivery" /></td>
+                            <td>{{ $pkg->delivery_assigned_at?->format('M d, Y h:i A') ?? '—' }}</td>
+                            <td>{{ $pkg->delivery_completed_at?->format('M d, Y h:i A') ?? '—' }}</td>
                             <td class="text-end">
-                                @if(!$order->rider_id)
-                                    <form action="{{ route('admin.deliveries.assign', $order) }}" method="POST" class="d-inline">@csrf @method('PATCH')<button class="btn btn-sm btn-success">Assign rider</button></form>
+                                @if(!$pkg->rider_id)
+                                    <form action="{{ route('admin.deliveries.assign', $pkg) }}" method="POST" class="d-inline">@csrf @method('PATCH')<button class="btn btn-sm btn-success">Assign rider</button></form>
                                 @endif
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#status-{{ $order->id }}">Update</button>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#status-{{ $pkg->id }}">Update</button>
                             </td>
                         </tr>
-                        <tr class="collapse" id="status-{{ $order->id }}">
+                        <tr class="collapse" id="status-{{ $pkg->id }}">
                             <td colspan="7">
-                                <form action="{{ route('admin.deliveries.status', $order) }}" method="POST" class="row g-2">
+                                <form action="{{ route('admin.deliveries.status', $pkg) }}" method="POST" class="row g-2">
                                     @csrf
                                     @method('PATCH')
                                     <div class="col-md-4">
                                         <select class="form-select" name="delivery_status" required>
                                             @foreach($statusOptions as $value => $label)
                                                 @if($value !== 'pending_assignment')
-                                                <option value="{{ $value }}" @selected($order->delivery_status === $value)>{{ $label }}</option>
+                                                <option value="{{ $value }}" @selected($pkg->delivery_status === $value)>{{ $label }}</option>
                                                 @endif
                                             @endforeach
                                         </select>
@@ -77,12 +81,12 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-muted py-4">No deliveries found.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">No packages found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="mt-3">{{ $deliveries->links() }}</div>
+    <div class="mt-3">{{ $packages->links() }}</div>
 </div>
 @endsection

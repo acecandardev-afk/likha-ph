@@ -83,6 +83,25 @@
                 </div>
             </div>
 
+            @if($order->packages->isNotEmpty())
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-semibold">Delivery packages</h5>
+                </div>
+                <div class="card-body">
+                    @foreach($order->packages as $pkg)
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="small fw-semibold">Package {{ $pkg->sequence }}</span>
+                            <x-status-badge :status="$pkg->delivery_status" type="delivery" />
+                        </div>
+                        @if($pkg->rider)
+                            <p class="small text-muted mb-0 mt-1">Rider: {{ $pkg->rider->full_name }}</p>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="mb-0 fw-semibold">Customer</h5>
