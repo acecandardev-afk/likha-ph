@@ -13,7 +13,7 @@ class EnsureUserIsArtisan
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isArtisan()) {
+        if (! $request->user() || ! $request->user()->isArtisan()) {
             abort(403, 'Access denied. Artisan account required.');
         }
 

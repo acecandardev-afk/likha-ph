@@ -14,19 +14,19 @@ return new class extends Migration
         // This migration duplicates 2026_02_02_225048_modify_users_table.
         // To keep migrate:fresh working, only add columns if they don't already exist.
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'role')) {
+            if (! Schema::hasColumn('users', 'role')) {
                 $table->string('role')->default('customer')->after('password');
             }
 
-            if (!Schema::hasColumn('users', 'phone')) {
+            if (! Schema::hasColumn('users', 'phone')) {
                 $table->string('phone')->nullable()->after('role');
             }
 
-            if (!Schema::hasColumn('users', 'address')) {
+            if (! Schema::hasColumn('users', 'address')) {
                 $table->text('address')->nullable()->after('phone');
             }
 
-            if (!Schema::hasColumn('users', 'status')) {
+            if (! Schema::hasColumn('users', 'status')) {
                 $table->string('status')->default('active')->after('address');
             }
         });

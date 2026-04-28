@@ -32,4 +32,3 @@ class UserNotification extends Model
         return $query->where('is_read', false);
     }
 }
-

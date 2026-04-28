@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Models\UserNotification;
-use Illuminate\Http\Request;
 
 class UserManagementController extends AdminController
 {
@@ -47,7 +47,7 @@ class UserManagementController extends AdminController
         $previousStatus = $user->status;
         $user->update(['status' => 'suspended']);
 
-        // Artisan application rejected
+        AuditLog::record('account.suspended', 'Paused access for '.$user->name.'.', $user);
         if ($previousStatus === 'pending' && $user->role === 'artisan') {
             UserNotification::create([
                 'user_id' => $user->id,
@@ -70,7 +70,7 @@ class UserManagementController extends AdminController
         $previousStatus = $user->status;
         $user->update(['status' => 'active']);
 
-        // Artisan application approved
+        AuditLog::record('account.activated', 'Restored access for '.$user->name.'.', $user);
         if ($previousStatus === 'pending' && $user->role === 'artisan') {
             UserNotification::create([
                 'user_id' => $user->id,

@@ -12,25 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('order_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('order_items', 'order_id')) {
+            if (! Schema::hasColumn('order_items', 'order_id')) {
                 $table->foreignId('order_id')->after('id')->constrained()->cascadeOnDelete();
             }
-            if (!Schema::hasColumn('order_items', 'product_id')) {
+            if (! Schema::hasColumn('order_items', 'product_id')) {
                 $table->foreignId('product_id')->nullable()->after('order_id')->constrained()->nullOnDelete();
             }
-            if (!Schema::hasColumn('order_items', 'product_name')) {
+            if (! Schema::hasColumn('order_items', 'product_name')) {
                 $table->string('product_name')->after('product_id');
             }
-            if (!Schema::hasColumn('order_items', 'product_description')) {
+            if (! Schema::hasColumn('order_items', 'product_description')) {
                 $table->text('product_description')->nullable()->after('product_name');
             }
-            if (!Schema::hasColumn('order_items', 'price')) {
+            if (! Schema::hasColumn('order_items', 'price')) {
                 $table->decimal('price', 10, 2)->after('product_description');
             }
-            if (!Schema::hasColumn('order_items', 'quantity')) {
+            if (! Schema::hasColumn('order_items', 'quantity')) {
                 $table->unsignedInteger('quantity')->after('price');
             }
-            if (!Schema::hasColumn('order_items', 'subtotal')) {
+            if (! Schema::hasColumn('order_items', 'subtotal')) {
                 $table->decimal('subtotal', 10, 2)->after('quantity');
             }
         });

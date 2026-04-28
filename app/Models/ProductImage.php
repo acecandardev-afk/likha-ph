@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\PublicMediaUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model

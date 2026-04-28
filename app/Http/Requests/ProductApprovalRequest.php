@@ -12,7 +12,7 @@ class ProductApprovalRequest extends FormRequest
     public function authorize(): bool
     {
         $product = $this->route('product');
-        
+
         return $this->user() && $this->user()->can('approve', $product);
     }
 
@@ -22,7 +22,7 @@ class ProductApprovalRequest extends FormRequest
     public function rules(): array
     {
         $action = $this->route()->getActionMethod();
-        
+
         if ($action === 'reject') {
             return [
                 'reason' => [
@@ -33,7 +33,7 @@ class ProductApprovalRequest extends FormRequest
                 ],
             ];
         }
-        
+
         // For approve action
         return [
             'notes' => [

@@ -154,6 +154,12 @@ class DeliveryService
 
     public function updateDeliveryStatus(OrderPackage $package, string $status, ?User $actor = null, ?string $note = null): OrderPackage
     {
+        $package->refresh();
+
+        if ($package->isDelivered()) {
+            throw new \InvalidArgumentException('This package has already been delivered. Its status can no longer be changed.');
+        }
+
         if (! in_array($status, self::TRACKING_STATUSES, true)) {
             throw new \InvalidArgumentException('Invalid delivery status selected.');
         }
@@ -214,5 +220,18 @@ class DeliveryService
             self::STATUS_OUT_FOR_DELIVERY => 'Out for Delivery',
             self::STATUS_DELIVERED => 'Delivered',
         ];
+    }
+
+    /**
+     * Status options for incremental rider updates (terminal “delivered” uses a separate confirmation flow).
+     *
+     * @return array<string, string>
+     */
+    public function riderProgressStatusOptions(): array
+    {
+        $options = $this->deliveryStatusOptions();
+        unset($options[self::STATUS_DELIVERED]);
+
+        return $options;
     }
 }

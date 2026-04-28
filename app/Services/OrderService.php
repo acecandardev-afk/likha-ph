@@ -8,6 +8,7 @@ use App\Models\OrderPackage;
 use App\Models\OrderPackageItem;
 use App\Models\Payment;
 use App\Models\User;
+use App\Models\Voucher;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -19,11 +20,12 @@ class OrderService
         protected StockService $stockService,
         protected CartService $cartService,
         protected NotificationService $notificationService,
-        protected DeliveryService $deliveryService
+        protected DeliveryService $deliveryService,
+        protected VoucherService $voucherService
     ) {}
 
     /**
-     * Create orders from cart (multi-artisan checkout).
+     * Create orders from cart (multi-artisan checkout). Online storefront only supports pay on delivery.
      *
      * @param  array<int, array<int, int>>|null  $packageSplit  [artisan_id => [ cart_id => package_number_1_based ]]
      */
@@ -38,34 +40,70 @@ class OrderService
         ?string $streetAddress,
         string $phone,
         ?string $customerNotes = null,
-        ?array $packageSplit = null
+        ?array $packageSplit = null,
+        ?string $voucherCode = null
     ): Collection {
-        // Validate cart
+        $normalizedPayment = strtolower(trim($paymentMethod));
+        if ($normalizedPayment !== 'cod') {
+            throw new \InvalidArgumentException('online_checkout_cod_only');
+        }
+
         $validationErrors = $this->cartService->validateCart($customer);
-        if (!empty($validationErrors)) {
+        if (! empty($validationErrors)) {
             throw new \Exception(implode(', ', $validationErrors));
         }
 
         $cartItems = $this->cartService->getCartItems($customer);
 
         if ($cartItems->isEmpty()) {
-            throw new \Exception("Cart is empty.");
+            throw new \Exception('Cart is empty.');
         }
+
+        $cartSubtotal = round((float) $cartItems->sum(fn ($item) => $item->product->price * $item->quantity), 2);
+        $voucherResolution = $this->voucherService->resolve($voucherCode, $cartSubtotal);
+        if ($voucherResolution['error'] !== null) {
+            throw new \InvalidArgumentException('voucher_invalid');
+        }
+
+        /** @var Voucher|null $appliedVoucher */
+        $appliedVoucher = $voucherResolution['voucher'];
+        $cartDiscount = (float) $voucherResolution['discount'];
+
+        $groupedByArtisan = $cartItems->groupBy('product.artisan_id');
+        $artisanIds = $groupedByArtisan->keys()->values()->all();
+        $allocatedDiscounts = $this->allocateDiscountAcrossArtisans($groupedByArtisan, $cartSubtotal, $cartDiscount);
 
         $orders = collect();
 
-        DB::transaction(function () use ($customer, $cartItems, $paymentMethod, $country, $region, $province, $city, $barangay, $streetAddress, $phone, $customerNotes, $packageSplit, &$orders) {
-            // Group cart items by artisan
-            $groupedByArtisan = $cartItems->groupBy('product.artisan_id');
-
-            foreach ($groupedByArtisan as $artisanId => $items) {
+        DB::transaction(function () use (
+            $customer,
+            $appliedVoucher,
+            $groupedByArtisan,
+            $allocatedDiscounts,
+            $packageSplit,
+            $country,
+            $region,
+            $province,
+            $city,
+            $barangay,
+            $streetAddress,
+            $phone,
+            $customerNotes,
+            $normalizedPayment,
+            &$orders,
+            $artisanIds,
+        ) {
+            foreach ($artisanIds as $artisanId) {
+                /** @var int|string $artisanId */
+                $items = $groupedByArtisan->get($artisanId);
+                $discountForSlice = $allocatedDiscounts[(int) $artisanId] ?? 0.0;
                 $groups = $this->buildCartGroupsForPackages($items, $packageSplit[(int) $artisanId] ?? []);
 
                 $order = $this->createSingleOrder(
                     $customer,
-                    $artisanId,
+                    (int) $artisanId,
                     $items,
-                    $paymentMethod,
+                    $normalizedPayment,
                     $country,
                     $region,
                     $province,
@@ -74,17 +112,21 @@ class OrderService
                     $streetAddress,
                     $phone,
                     $customerNotes,
-                    $groups
+                    $groups,
+                    $discountForSlice,
+                    $appliedVoucher
                 );
 
                 $orders->push($order);
             }
 
-            // Clear cart after successful order creation
+            if ($appliedVoucher) {
+                $this->voucherService->incrementRedemption($appliedVoucher->fresh());
+            }
+
             $this->cartService->clearCart($customer);
         });
 
-        // Send notifications
         foreach ($orders as $order) {
             $this->notificationService->notifyOrderCreated($order);
         }
@@ -93,9 +135,118 @@ class OrderService
     }
 
     /**
+     * Live preview for checkout page (same math as checkout, no side effects).
+     *
+     * @return array{
+     *   subtotal: float,
+     *   discount: float,
+     *   merchandise_after_discount: float,
+     *   service_fee_total: float,
+     *   delivery_total: float,
+     *   taxes_total: float,
+     *   grand_total: float,
+     *   seller_count: int,
+     *   voucher_error: string|null,
+     *   voucher_label: string|null
+     * }
+     */
+    public function previewCheckoutTotals(User $customer, ?string $voucherCode): array
+    {
+        $cartItems = $this->cartService->getCartItems($customer);
+        if ($cartItems->isEmpty()) {
+            return [
+                'subtotal' => 0.0,
+                'discount' => 0.0,
+                'merchandise_after_discount' => 0.0,
+                'service_fee_total' => 0.0,
+                'delivery_total' => 0.0,
+                'taxes_total' => 0.0,
+                'grand_total' => 0.0,
+                'seller_count' => 0,
+                'voucher_error' => null,
+                'voucher_label' => null,
+            ];
+        }
+
+        $cartSubtotal = round((float) $cartItems->sum(fn ($item) => $item->product->price * $item->quantity), 2);
+        $resolution = $this->voucherService->resolve($voucherCode, $cartSubtotal);
+
+        $discount = 0.0;
+        $voucherLabel = null;
+        if ($resolution['voucher']) {
+            $discount = $resolution['discount'];
+            $voucherLabel = $resolution['voucher']->label ?? $resolution['voucher']->code;
+        }
+
+        $grouped = $cartItems->groupBy('product.artisan_id');
+        $allocated = $this->allocateDiscountAcrossArtisans($grouped, $cartSubtotal, $discount);
+
+        $serviceFeeTotal = 0.0;
+        $deliveryTotal = 0.0;
+        $taxTotal = 0.0;
+        $grandTotal = 0.0;
+
+        foreach ($grouped as $artisanId => $items) {
+            $sliceSubtotal = round((float) $items->sum(fn ($item) => $item->product->price * $item->quantity), 2);
+            $sliceDiscount = $allocated[(int) $artisanId] ?? 0.0;
+            $slice = $this->computeFinancialsForSlice($sliceSubtotal, $sliceDiscount);
+            $serviceFeeTotal += $slice['platform_fee'];
+            $deliveryTotal += $slice['shipping_amount'];
+            $taxTotal += $slice['tax_amount'];
+            $grandTotal += $slice['total'];
+        }
+
+        return [
+            'subtotal' => $cartSubtotal,
+            'discount' => round($discount, 2),
+            'merchandise_after_discount' => round($cartSubtotal - $discount, 2),
+            'service_fee_total' => round($serviceFeeTotal, 2),
+            'delivery_total' => round($deliveryTotal, 2),
+            'taxes_total' => round($taxTotal, 2),
+            'grand_total' => round($grandTotal, 2),
+            'seller_count' => $grouped->count(),
+            'voucher_error' => $resolution['error'],
+            'voucher_label' => $voucherLabel,
+        ];
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int|string, Collection<int,\App\Models\Cart>>  $groupedByArtisan
+     * @return array<int,float>
+     */
+    protected function allocateDiscountAcrossArtisans(Collection $groupedByArtisan, float $cartSubtotal, float $cartDiscount): array
+    {
+        $cartDiscount = round($cartDiscount, 2);
+        if ($cartDiscount <= 0 || $cartSubtotal <= 0) {
+            return [];
+        }
+
+        $ids = $groupedByArtisan->keys()->values()->all();
+        $remaining = $cartDiscount;
+        $out = [];
+
+        foreach ($ids as $idx => $aid) {
+            /** @var int|string $aid */
+            $items = $groupedByArtisan->get($aid);
+            $slice = round((float) $items->sum(fn ($item) => $item->product->price * $item->quantity), 2);
+
+            if ($idx === count($ids) - 1) {
+                $portion = round($remaining, 2);
+            } else {
+                $portion = round($cartDiscount * ($slice / $cartSubtotal), 2);
+                $remaining -= $portion;
+            }
+
+            $out[(int) $aid] = $portion;
+        }
+
+        return $out;
+    }
+
+    /**
      * @param  Collection<int, \App\Models\Cart>  $items
      * @param  array<int, int>  $splitForArtisan  cart_id => package number (1-based)
-     * @return array<int, array<int>>  List of cart-id groups per package
+     * @return array<int, array<int>>
      */
     protected function buildCartGroupsForPackages(Collection $items, array $splitForArtisan): array
     {
@@ -125,8 +276,6 @@ class OrderService
     }
 
     /**
-     * Split platform fee across packages without losing cents.
-     *
      * @return array<int, float>
      */
     protected function splitPlatformFeeShares(float $total, int $parts): array
@@ -147,10 +296,8 @@ class OrderService
     }
 
     /**
-     * Create a single order.
-     *
      * @param  Collection<int, \App\Models\Cart>  $items
-     * @param  array<int, array<int>>  $packageCartGroups  Each inner array is cart IDs for one package (full cart lines).
+     * @param  array<int, array<int>>  $packageCartGroups
      */
     private function createSingleOrder(
         User $customer,
@@ -165,7 +312,9 @@ class OrderService
         ?string $streetAddress,
         string $phone,
         ?string $customerNotes,
-        array $packageCartGroups
+        array $packageCartGroups,
+        float $allocatedDiscount,
+        ?Voucher $voucher
     ): Order {
         if (count($packageCartGroups) < 1) {
             throw new \Exception('At least one delivery package is required.');
@@ -177,27 +326,31 @@ class OrderService
             throw new \Exception('Each cart line must belong to exactly one delivery package.');
         }
 
-        $subtotal = 0;
-
-        // Validate stock for all items
-        foreach ($items as $item) {
-            if (!$this->stockService->hasStock($item->product, $item->quantity)) {
-                throw new \Exception("Insufficient stock for '{$item->product->name}'");
-            }
-            $subtotal += $item->product->price * $item->quantity;
+        $subtotal = round((float) $items->sum(fn ($item) => $item->product->price * $item->quantity), 2);
+        $allocatedDiscount = round($allocatedDiscount, 2);
+        if ($allocatedDiscount > $subtotal) {
+            $allocatedDiscount = $subtotal;
         }
 
-        $platformFeeRate = (float) config('fees.platform_fee_rate', self::PLATFORM_FEE_RATE);
-        $platformFee = round($subtotal * $platformFeeRate, 2);
-        $total = $subtotal + $platformFee;
+        $pkgCount = max(1, count($packageCartGroups));
+        $financials = $this->computeFinancialsForSlice($subtotal, $allocatedDiscount);
 
-        // Create order
+        foreach ($items as $item) {
+            if (! $this->stockService->hasStock($item->product, $item->quantity)) {
+                throw new \Exception("Insufficient stock for '{$item->product->name}'");
+            }
+        }
+
         $order = Order::create([
             'customer_id' => $customer->id,
             'artisan_id' => $artisanId,
             'subtotal' => $subtotal,
-            'platform_fee' => $platformFee,
-            'total' => $total,
+            'platform_fee' => $financials['platform_fee'],
+            'shipping_amount' => $financials['shipping_amount'],
+            'tax_amount' => $financials['tax_amount'],
+            'discount_amount' => $financials['discount_amount'],
+            'voucher_code' => $voucher?->code,
+            'total' => $financials['total'],
             'status' => 'pending',
             'customer_notes' => $customerNotes,
             'country' => $country,
@@ -212,7 +365,6 @@ class OrderService
         $cartById = $items->keyBy('id');
         $cartIdToOrderItem = [];
 
-        // Create order items and reduce each product's stock by the ordered quantity
         foreach ($items as $item) {
             $orderItem = $this->createOrderItem($order, $item);
             $cartIdToOrderItem[$item->id] = $orderItem;
@@ -229,8 +381,7 @@ class OrderService
             }
         }
 
-        $pkgCount = max(1, count($packageCartGroups));
-        $feeShares = $this->splitPlatformFeeShares((float) $platformFee, $pkgCount);
+        $feeShares = $this->splitPlatformFeeShares((float) $order->platform_fee, $pkgCount);
 
         foreach ($packageCartGroups as $idx => $cartIdsInPkg) {
             $pkg = OrderPackage::create([
@@ -254,7 +405,6 @@ class OrderService
             }
         }
 
-        // Create payment record (COD only in production flow — verified immediately)
         $verificationStatus = $paymentMethod === 'cod' ? 'verified' : 'awaiting_proof';
         Payment::create([
             'order_id' => $order->id,
@@ -269,8 +419,44 @@ class OrderService
     }
 
     /**
-     * After the seller approves, assign riders to packages when payment is verified.
+     * One delivery fee and tax calculation per seller order (multiple packages share one fee).
+     *
+     * @return array{
+     *   discount_amount: float,
+     *   merchandise_net: float,
+     *   platform_fee: float,
+     *   shipping_amount: float,
+     *   tax_amount: float,
+     *   total: float
+     * }
      */
+    protected function computeFinancialsForSlice(float $sliceSubtotal, float $discountAmount): array
+    {
+        $discountAmount = round(min($discountAmount, $sliceSubtotal), 2);
+        $merchandiseNet = round($sliceSubtotal - $discountAmount, 2);
+
+        $platformFeeRate = (float) config('fees.platform_fee_rate', self::PLATFORM_FEE_RATE);
+        $platformFee = round($merchandiseNet * $platformFeeRate, 2);
+
+        $shippingEach = max(0.0, (float) config('commerce.shipping_flat_per_order', 0));
+        $shippingTotal = round($shippingEach, 2);
+
+        $taxRate = max(0.0, (float) config('commerce.tax_rate', 0));
+        $taxBase = $merchandiseNet + $shippingTotal;
+        $taxAmount = $taxRate > 0 ? round($taxBase * $taxRate, 2) : 0.0;
+
+        $total = round($merchandiseNet + $platformFee + $shippingTotal + $taxAmount, 2);
+
+        return [
+            'discount_amount' => $discountAmount,
+            'merchandise_net' => $merchandiseNet,
+            'platform_fee' => $platformFee,
+            'shipping_amount' => $shippingTotal,
+            'tax_amount' => $taxAmount,
+            'total' => $total,
+        ];
+    }
+
     public function assignRidersAfterSellerApproval(Order $order): void
     {
         $order->loadMissing(['packages', 'payment']);
@@ -286,13 +472,10 @@ class OrderService
         $order->fresh()->refreshAggregateDeliveryFromPackages();
     }
 
-    /**
-     * Create order item with product snapshot.
-     */
     private function createOrderItem(Order $order, $cartItem): OrderItem
     {
         $product = $cartItem->product;
-        $subtotal = $product->price * $cartItem->quantity;
+        $line = $product->price * $cartItem->quantity;
 
         return OrderItem::create([
             'order_id' => $order->id,
@@ -301,13 +484,10 @@ class OrderService
             'product_description' => $product->description,
             'price' => $product->price,
             'quantity' => $cartItem->quantity,
-            'subtotal' => $subtotal,
+            'subtotal' => $line,
         ]);
     }
 
-    /**
-     * Cancel an order.
-     */
     public function cancelOrder(Order $order): Order
     {
         $isAdmin = auth()->user()?->isAdmin() ?? false;
@@ -316,43 +496,33 @@ class OrderService
         }
 
         DB::transaction(function () use ($order) {
-            // Restore stock
             $this->stockService->restoreStockFromOrder($order->items);
 
-            // Update order status
             $order->update(['status' => 'cancelled']);
         });
 
-        // Send notification
         $this->notificationService->notifyOrderCancelled($order);
 
         return $order->fresh();
     }
 
-    /**
-     * Mark order as completed.
-     */
     public function completeOrder(Order $order): Order
     {
-        if (!$order->canBeCompleted()) {
-            throw new \Exception("Order cannot be completed at this time.");
+        if (! $order->canBeCompleted()) {
+            throw new \Exception('Order cannot be completed at this time.');
         }
 
         $order->update(['status' => 'completed']);
 
-        // Send notification
         $this->notificationService->notifyOrderCompleted($order);
 
         return $order->fresh();
     }
 
-    /**
-     * Get order statistics for a user.
-     */
     public function getOrderStats(User $user, string $role = 'customer'): array
     {
-        $query = $role === 'customer' 
-            ? $user->orders() 
+        $query = $role === 'customer'
+            ? $user->orders()
             : $user->artisanOrders();
 
         return [
@@ -369,13 +539,10 @@ class OrderService
         ];
     }
 
-    /**
-     * Get recent orders.
-     */
     public function getRecentOrders(User $user, string $role = 'customer', int $limit = 10): Collection
     {
-        $query = $role === 'customer' 
-            ? $user->orders() 
+        $query = $role === 'customer'
+            ? $user->orders()
             : $user->artisanOrders();
 
         return $query->with(['artisan.artisanProfile', 'customer', 'items.product', 'payment'])
@@ -384,9 +551,6 @@ class OrderService
             ->get();
     }
 
-    /**
-     * Get pending orders requiring action.
-     */
     public function getPendingOrders(int $artisanId): Collection
     {
         return Order::where('artisan_id', $artisanId)
@@ -398,31 +562,27 @@ class OrderService
     }
 
     /**
-     * Calculate order totals.
+     * @param  Collection<int, \App\Models\Cart>|Collection<int,\App\Models\OrderItem>  $items
      */
-    public function calculateOrderTotals(Collection $items): array
+    public function calculateOrderTotals(Collection $items, ?string $voucherCode = null): array
     {
         $subtotal = $items->sum(function ($item) {
             return $item->product->price * $item->quantity;
         });
 
-        $platformFeeRate = (float) config('fees.platform_fee_rate', self::PLATFORM_FEE_RATE);
-        $platformFee = round($subtotal * $platformFeeRate, 2);
+        $subtotal = round((float) $subtotal, 2);
+        $resolution = app(VoucherService::class)->resolve($voucherCode, $subtotal);
+        $discount = $resolution['voucher'] ? $resolution['discount'] : 0.0;
 
-        // Future: Add shipping, taxes, discounts
-        $shipping = 0;
-        $tax = 0;
-        $discount = 0;
-
-        $total = $subtotal + $platformFee + $shipping + $tax - $discount;
+        $financials = $this->computeFinancialsForSlice($subtotal, $discount);
 
         return [
             'subtotal' => $subtotal,
-            'platform_fee' => $platformFee,
-            'shipping' => $shipping,
-            'tax' => $tax,
-            'discount' => $discount,
-            'total' => $total,
+            'discount' => $financials['discount_amount'],
+            'shipping' => $financials['shipping_amount'],
+            'tax' => $financials['tax_amount'],
+            'platform_fee' => $financials['platform_fee'],
+            'total' => $financials['total'],
         ];
     }
 }

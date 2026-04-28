@@ -12,7 +12,7 @@ class UpdateCartRequest extends FormRequest
     public function authorize(): bool
     {
         $cart = $this->route('cart');
-        
+
         return $this->user() && $cart->user_id === $this->user()->id;
     }
 
@@ -22,13 +22,13 @@ class UpdateCartRequest extends FormRequest
     public function rules(): array
     {
         $cart = $this->route('cart');
-        
+
         return [
             'quantity' => [
                 'required',
                 'integer',
                 'min:1',
-                'max:' . ($cart ? $cart->product->stock : 1),
+                'max:'.($cart ? $cart->product->stock : 1),
             ],
         ];
     }
@@ -39,12 +39,12 @@ class UpdateCartRequest extends FormRequest
     public function messages(): array
     {
         $cart = $this->route('cart');
-        
+
         return [
             'quantity.required' => 'Please specify a quantity.',
             'quantity.integer' => 'Quantity must be a whole number.',
             'quantity.min' => 'Quantity must be at least 1.',
-            'quantity.max' => $cart 
+            'quantity.max' => $cart
                 ? "Only {$cart->product->stock} item(s) available in stock."
                 : 'Requested quantity exceeds available stock.',
         ];

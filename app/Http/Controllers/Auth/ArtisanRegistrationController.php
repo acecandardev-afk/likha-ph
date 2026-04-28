@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\ArtisanProfile;
 use App\Models\Barangay;
 use App\Models\User;
+use App\Support\Guihulngan;
+use App\Support\SignupEmailValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Log;
-use App\Support\Guihulngan;
-use App\Support\SignupEmailValidation;
 
 class ArtisanRegistrationController extends Controller
 {
@@ -168,7 +168,7 @@ class ArtisanRegistrationController extends Controller
     {
         $user = request()->user();
 
-        if (!$user || !$user->isArtisan()) {
+        if (! $user || ! $user->isArtisan()) {
             return redirect()->route('home');
         }
 

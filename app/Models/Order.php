@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Services\DeliveryService;
+use App\Services\LedgerPostingService;
+use App\Support\PublicMediaUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Support\PublicMediaUrl;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Order extends Model
@@ -18,6 +20,10 @@ class Order extends Model
         'artisan_id',
         'subtotal',
         'platform_fee',
+        'shipping_amount',
+        'tax_amount',
+        'discount_amount',
+        'voucher_code',
         'total',
         'status',
         'customer_notes',
@@ -41,6 +47,9 @@ class Order extends Model
     protected $casts = [
         'subtotal' => 'decimal:2',
         'platform_fee' => 'decimal:2',
+        'shipping_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'total' => 'decimal:2',
         'approved_at' => 'datetime',
         'delivery_assigned_at' => 'datetime',
@@ -81,6 +90,11 @@ class Order extends Model
     public function packages()
     {
         return $this->hasMany(OrderPackage::class)->orderBy('sequence');
+    }
+
+    public function ledgerJournals()
+    {
+        return $this->hasMany(LedgerJournal::class);
     }
 
     public function messages()
@@ -249,6 +263,16 @@ class Order extends Model
         return $this->isShipped();
     }
 
+    /**
+     * Merchant portion of product sales after promotions and service fee (before delivery/tax lines).
+     */
+    public function artisanMerchandiseShare(): float
+    {
+        $discount = (float) ($this->discount_amount ?? 0);
+
+        return round(max(0, (float) $this->subtotal - $discount - (float) $this->platform_fee), 2);
+    }
+
     public function deliveryStatusLabel(): string
     {
         return match ($this->delivery_status) {
@@ -279,7 +303,7 @@ class Order extends Model
 
         static::creating(function ($order) {
             if (empty($order->order_number)) {
-                $order->order_number = 'ORD-' . strtoupper(uniqid());
+                $order->order_number = 'ORD-'.strtoupper(uniqid());
             }
         });
 
@@ -308,7 +332,7 @@ class Order extends Model
             return $earliest->format('M j, Y');
         }
 
-        return $earliest->format('M j') . '–' . $latest->format('M j, Y');
+        return $earliest->format('M j').'–'.$latest->format('M j, Y');
     }
 
     public function formattedShippingAddress(): string
@@ -332,7 +356,7 @@ class Order extends Model
         }
 
         if ($this->barangay) {
-            $addressParts[] = 'Barangay ' . $this->barangay;
+            $addressParts[] = 'Barangay '.$this->barangay;
         }
 
         if ($this->street_address) {
@@ -385,5 +409,18 @@ class Order extends Model
         }
 
         $this->update($updates);
+
+        if ($allDelivered) {
+            try {
+                app(LedgerPostingService::class)->postDeliverySettlementIfNeeded(
+                    $this->fresh(['packages', 'payment'])
+                );
+            } catch (\Throwable $e) {
+                Log::error('ledger_post_failed', [
+                    'order_id' => $this->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 }

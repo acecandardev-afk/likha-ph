@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Artisan;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ProductImage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use App\Services\ImageUploadService;
 use App\Services\NotificationService;
 use App\Services\StockService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends ArtisanController
 {
@@ -207,5 +207,4 @@ class ProductController extends ArtisanController
             ->route('artisan.products.index')
             ->with('success', 'Product deleted successfully.');
     }
-
 }

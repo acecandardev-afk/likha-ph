@@ -43,9 +43,16 @@
                         @elseif(auth()->user()->isArtisan())
                             <li class="mb-2"><a href="{{ route('artisan.dashboard') }}">Dashboard</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
+                            <li class="mb-2"><a href="{{ route('artisan.earnings.index') }}">After delivery</a></li>
+                            <li class="mb-2"><a href="{{ route('artisan.ledger.index') }}">Settlement ledger</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.products.index') }}">My products</a></li>
+                        @elseif(auth()->user()->isRider())
+                            <li class="mb-2"><a href="{{ route('rider.dashboard') }}">Dashboard</a></li>
+                            <li class="mb-2"><a href="{{ route('rider.deliveries.index') }}">Deliveries</a></li>
                         @endif
-                        <li class="mb-2"><a href="{{ route('account.edit') }}">Shipping address</a></li>
+                        @if(! auth()->user()->isRider())
+                            <li class="mb-2"><a href="{{ route('account.edit') }}">Shipping address</a></li>
+                        @endif
                     @endguest
                 </ul>
             </div>

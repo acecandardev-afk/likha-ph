@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\ProductApproval;
 use App\Services\NotificationService;
@@ -67,7 +68,10 @@ class ProductApprovalController extends AdminController
             ]);
         });
 
-        $this->notificationService->notifyProductApproved($product->fresh());
+        $product = $product->fresh();
+        AuditLog::record('listing.approved', 'Published '.$product->name.' to the shop.', $product);
+
+        $this->notificationService->notifyProductApproved($product);
 
         return redirect()
             ->route('admin.products.pending')
@@ -100,7 +104,10 @@ class ProductApprovalController extends AdminController
             ]);
         });
 
-        $this->notificationService->notifyProductRejected($product->fresh());
+        $product = $product->fresh();
+        AuditLog::record('listing.rejected', 'Sent '.$product->name.' back to the seller for updates.', $product);
+
+        $this->notificationService->notifyProductRejected($product);
 
         return redirect()
             ->route('admin.products.pending')

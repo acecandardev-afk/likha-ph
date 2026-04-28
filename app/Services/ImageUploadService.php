@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Http\UploadedFile;
 use App\Support\PublicMediaUrl;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;

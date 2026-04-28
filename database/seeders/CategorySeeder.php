@@ -28,6 +28,6 @@ class CategorySeeder extends Seeder
             );
         }
 
-        $this->command->info('✓ Categories seeded: ' . count($categories));
+        $this->command->info('✓ Categories seeded: '.count($categories));
     }
 }

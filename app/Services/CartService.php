@@ -30,16 +30,16 @@ class CartService
     {
         // Prevent sellers from purchasing their own products
         if ($user->isArtisan() && $product->artisan_id === $user->id) {
-            throw new \Exception("You cannot purchase your own products.");
+            throw new \Exception('You cannot purchase your own products.');
         }
 
         // Validate product availability
-        if (!$product->isAvailable()) {
+        if (! $product->isAvailable()) {
             throw new \Exception("Product '{$product->name}' is not available.");
         }
 
         // Validate stock
-        if (!$this->stockService->hasStock($product, $quantity)) {
+        if (! $this->stockService->hasStock($product, $quantity)) {
             throw new \Exception("Insufficient stock for '{$product->name}'. Available: {$product->stock}");
         }
 
@@ -50,11 +50,12 @@ class CartService
             $newQuantity = $cartItem->quantity + $quantity;
 
             // Validate total quantity
-            if (!$this->stockService->hasStock($product, $newQuantity)) {
+            if (! $this->stockService->hasStock($product, $newQuantity)) {
                 throw new \Exception("Cannot add more. Maximum available: {$product->stock}");
             }
 
             $cartItem->update(['quantity' => $newQuantity]);
+
             return $cartItem;
         }
 
@@ -72,15 +73,16 @@ class CartService
     public function updateQuantity(Cart $cartItem, int $quantity): Cart
     {
         if ($quantity < 1) {
-            throw new \Exception("Quantity must be at least 1.");
+            throw new \Exception('Quantity must be at least 1.');
         }
 
         // Validate stock
-        if (!$this->stockService->hasStock($cartItem->product, $quantity)) {
+        if (! $this->stockService->hasStock($cartItem->product, $quantity)) {
             throw new \Exception("Insufficient stock. Available: {$cartItem->product->stock}");
         }
 
         $cartItem->update(['quantity' => $quantity]);
+
         return $cartItem->fresh();
     }
 
@@ -144,12 +146,12 @@ class CartService
             }
 
             // Check if product is still available
-            if (!$item->product->isAvailable()) {
+            if (! $item->product->isAvailable()) {
                 $errors[] = "Product '{$item->product->name}' is no longer available.";
             }
 
             // Check stock
-            if (!$this->stockService->hasStock($item->product, $item->quantity)) {
+            if (! $this->stockService->hasStock($item->product, $item->quantity)) {
                 $errors[] = "Insufficient stock for '{$item->product->name}'. Available: {$item->product->stock}";
             }
         }

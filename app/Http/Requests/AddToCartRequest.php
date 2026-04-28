@@ -20,13 +20,13 @@ class AddToCartRequest extends FormRequest
     public function rules(): array
     {
         $product = $this->route('product');
-        
+
         return [
             'quantity' => [
                 'required',
                 'integer',
                 'min:1',
-                'max:' . ($product ? $product->stock : 1),
+                'max:'.($product ? $product->stock : 1),
             ],
         ];
     }
@@ -37,12 +37,12 @@ class AddToCartRequest extends FormRequest
     public function messages(): array
     {
         $product = $this->route('product');
-        
+
         return [
             'quantity.required' => 'Please specify a quantity.',
             'quantity.integer' => 'Quantity must be a whole number.',
             'quantity.min' => 'Quantity must be at least 1.',
-            'quantity.max' => $product 
+            'quantity.max' => $product
                 ? "Only {$product->stock} item(s) available in stock."
                 : 'Requested quantity exceeds available stock.',
         ];
@@ -55,8 +55,8 @@ class AddToCartRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $product = $this->route('product');
-            
-            if (!$product->isAvailable()) {
+
+            if (! $product->isAvailable()) {
                 $validator->errors()->add('product', 'This product is not available for purchase.');
             }
         });

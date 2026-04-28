@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Services\DeliveryService;
+use App\Support\SafeUserMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -60,6 +61,13 @@ class DeliveryController extends AdminController
 
     public function updateStatus(Request $request, OrderPackage $orderPackage)
     {
+        $orderPackage->refresh();
+        if ($orderPackage->isDelivered()) {
+            return back()->withErrors([
+                'delivery' => 'Delivered packages can no longer be updated.',
+            ]);
+        }
+
         $validated = $request->validate([
             'delivery_status' => 'required|string',
             'note' => 'nullable|string|max:255',
@@ -72,6 +80,8 @@ class DeliveryController extends AdminController
                 $request->user(),
                 $validated['note'] ?? null
             );
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['delivery' => SafeUserMessage::forDeliveryInvalidArgument($e)]);
         } catch (\Throwable $e) {
             Log::warning('admin_delivery_status_update_failed', ['message' => $e->getMessage()]);
 

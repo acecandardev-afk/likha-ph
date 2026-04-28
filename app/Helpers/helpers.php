@@ -1,16 +1,16 @@
 <?php
 
-if (!function_exists('format_currency')) {
+if (! function_exists('format_currency')) {
     /**
      * Format amount as Philippine Peso
      */
     function format_currency($amount, $decimals = 2): string
     {
-        return '₱' . number_format($amount, $decimals);
+        return '₱'.number_format($amount, $decimals);
     }
 }
 
-if (!function_exists('format_date')) {
+if (! function_exists('format_date')) {
     /**
      * Format date in human-readable format
      */
@@ -20,7 +20,7 @@ if (!function_exists('format_date')) {
     }
 }
 
-if (!function_exists('format_datetime')) {
+if (! function_exists('format_datetime')) {
     /**
      * Format datetime in human-readable format
      */
@@ -30,13 +30,13 @@ if (!function_exists('format_datetime')) {
     }
 }
 
-if (!function_exists('cart_count')) {
+if (! function_exists('cart_count')) {
     /**
      * Get current user's cart count
      */
     function cart_count(): int
     {
-        if (!auth()->check() || !auth()->user()->isCustomer()) {
+        if (! auth()->check() || ! auth()->user()->isCustomer()) {
             return 0;
         }
 
@@ -44,13 +44,13 @@ if (!function_exists('cart_count')) {
     }
 }
 
-if (!function_exists('order_status_color')) {
+if (! function_exists('order_status_color')) {
     /**
      * Get Bootstrap color class for order status
      */
     function order_status_color(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             'pending' => 'warning',
             'confirmed' => 'info',
             'completed' => 'success',
@@ -60,13 +60,13 @@ if (!function_exists('order_status_color')) {
     }
 }
 
-if (!function_exists('payment_status_color')) {
+if (! function_exists('payment_status_color')) {
     /**
      * Get Bootstrap color class for payment status
      */
     function payment_status_color(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             'awaiting_proof' => 'secondary',
             'pending' => 'warning',
             'verified' => 'success',
@@ -76,7 +76,7 @@ if (!function_exists('payment_status_color')) {
     }
 }
 
-if (!function_exists('truncate_text')) {
+if (! function_exists('truncate_text')) {
     /**
      * Truncate text with ellipsis
      */
@@ -86,7 +86,7 @@ if (!function_exists('truncate_text')) {
     }
 }
 
-if (!function_exists('storage_url')) {
+if (! function_exists('storage_url')) {
     /**
      * Get storage URL for a file
      */
@@ -104,25 +104,25 @@ if (!function_exists('storage_url')) {
     }
 }
 
-if (!function_exists('active_link')) {
+if (! function_exists('active_link')) {
     /**
      * Check if current route matches and return 'active' class
      */
     function active_link(string|array $routes): string
     {
         $routes = is_array($routes) ? $routes : [$routes];
-        
+
         foreach ($routes as $route) {
             if (request()->routeIs($route)) {
                 return 'active';
             }
         }
-        
+
         return '';
     }
 }
 
-if (!function_exists('user_avatar')) {
+if (! function_exists('user_avatar')) {
     /**
      * Get user avatar URL or default
      */
@@ -131,9 +131,10 @@ if (!function_exists('user_avatar')) {
         if ($user->isArtisan() && $user->artisanProfile?->profile_image) {
             return $user->artisanProfile->profile_image_url;
         }
-        
+
         // Default avatar using UI Avatars
         $name = urlencode($user->name);
+
         return "https://ui-avatars.com/api/?name={$name}&size={$size}&background=random";
     }
 }

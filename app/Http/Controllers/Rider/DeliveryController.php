@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Rider;
 use App\Models\OrderPackage;
 use App\Services\DeliveryService;
 use App\Services\ImageUploadService;
+use App\Support\SafeUserMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class DeliveryController extends RiderController
 {
@@ -49,8 +51,9 @@ class DeliveryController extends RiderController
         ]);
         $order = $orderPackage->order;
         $statusOptions = $this->deliveryService->deliveryStatusOptions();
+        $progressStatusOptions = $this->deliveryService->riderProgressStatusOptions();
 
-        return view('rider.deliveries.show', compact('orderPackage', 'order', 'statusOptions'));
+        return view('rider.deliveries.show', compact('orderPackage', 'order', 'statusOptions', 'progressStatusOptions'));
     }
 
     public function updateStatus(Request $request, OrderPackage $orderPackage)
@@ -58,18 +61,49 @@ class DeliveryController extends RiderController
         $rider = $this->getRiderUser()->riderProfile;
         abort_unless($orderPackage->rider_id === $rider?->id, 403);
 
-        $validated = $request->validate([
-            'delivery_status' => 'required|string',
-            'note' => 'nullable|string|max:255',
-            'proof_image' => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
-        ]);
+        $orderPackage->refresh();
+        if ($orderPackage->isDelivered()) {
+            return back()->withErrors([
+                'delivery' => 'This package is delivered. Progress can no longer be changed.',
+            ]);
+        }
 
-        if (($validated['delivery_status'] ?? null) === DeliveryService::STATUS_DELIVERED && $request->hasFile('proof_image')) {
+        if ($request->boolean('mark_delivered')) {
+            $validated = $request->validate([
+                'confirm_handoff' => 'accepted',
+                'proof_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:4096',
+                'note' => 'nullable|string|max:255',
+            ]);
+
             $filename = $this->imageUploadService->uploadDeliveryProof($request->file('proof_image'), $orderPackage->order_id);
             $orderPackage->update([
                 'delivery_proof_image' => $filename,
             ]);
+
+            try {
+                $this->deliveryService->updateDeliveryStatus(
+                    $orderPackage->fresh(),
+                    DeliveryService::STATUS_DELIVERED,
+                    $request->user(),
+                    $validated['note'] ?? null
+                );
+            } catch (\InvalidArgumentException $e) {
+                return back()->withErrors(['delivery' => SafeUserMessage::forDeliveryInvalidArgument($e)]);
+            } catch (\Throwable $e) {
+                Log::warning('rider_delivery_status_update_failed', ['message' => $e->getMessage()]);
+
+                return back()->with('error', 'Unable to complete delivery. Please try again.');
+            }
+
+            return back()->with('success', 'Package marked as delivered. Thank you.');
         }
+
+        $progressKeys = array_keys($this->deliveryService->riderProgressStatusOptions());
+
+        $validated = $request->validate([
+            'delivery_status' => ['required', 'string', Rule::in($progressKeys)],
+            'note' => 'nullable|string|max:255',
+        ]);
 
         try {
             $this->deliveryService->updateDeliveryStatus(
@@ -78,6 +112,8 @@ class DeliveryController extends RiderController
                 $request->user(),
                 $validated['note'] ?? null
             );
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['delivery' => SafeUserMessage::forDeliveryInvalidArgument($e)]);
         } catch (\Throwable $e) {
             Log::warning('rider_delivery_status_update_failed', ['message' => $e->getMessage()]);
 

@@ -5,7 +5,11 @@
 @section('content')
 <div class="container py-2 py-md-3">
     <h1 class="h3 mb-3">Delivery Monitoring</h1>
-    <p class="text-muted small mb-4">Each row is one physical package. Riders may carry up to {{ \App\Services\DeliveryService::MAX_ACTIVE_PACKAGES_PER_RIDER }} active deliveries.</p>
+    <p class="text-muted small mb-4">Each row is one physical package. Riders may carry up to {{ \App\Services\DeliveryService::MAX_ACTIVE_PACKAGES_PER_RIDER }} active deliveries. Delivered packages are locked for editing.</p>
+
+    @if ($errors->has('delivery'))
+        <div class="alert alert-danger">{{ $errors->first('delivery') }}</div>
+    @endif
 
     <form method="GET" class="row g-2 mb-3">
         <div class="col-md-3">
@@ -44,7 +48,7 @@
                 </thead>
                 <tbody>
                     @forelse($packages as $pkg)
-                        <tr>
+                        <tr @class(['table-secondary' => $pkg->isDelivered(), 'opacity-75' => $pkg->isDelivered()])>
                             <td>
                                 <span class="fw-semibold">{{ $pkg->order->order_number }}</span>
                                 <span class="text-muted small">· Pkg {{ $pkg->sequence }}</span>
@@ -61,15 +65,20 @@
                             <td>{{ $pkg->delivery_assigned_at?->format('M d, Y h:i A') ?? '—' }}</td>
                             <td>{{ $pkg->delivery_completed_at?->format('M d, Y h:i A') ?? '—' }}</td>
                             <td class="text-end">
-                                @if(!$pkg->rider_id)
+                                @if(!$pkg->rider_id && !$pkg->isDelivered())
                                     <form action="{{ route('admin.deliveries.assign', $pkg) }}" method="POST" class="d-inline">@csrf @method('PATCH')<button class="btn btn-sm btn-success">Assign rider</button></form>
                                 @endif
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#status-{{ $pkg->id }}">Update</button>
+                                @if($pkg->isDelivered())
+                                    <span class="badge text-bg-secondary">Locked</span>
+                                @else
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#status-{{ $pkg->id }}">Update</button>
+                                @endif
                             </td>
                         </tr>
+                        @if(!$pkg->isDelivered())
                         <tr class="collapse" id="status-{{ $pkg->id }}">
-                            <td colspan="7">
-                                <form action="{{ route('admin.deliveries.status', $pkg) }}" method="POST" class="row g-2">
+                            <td colspan="7" class="bg-light">
+                                <form action="{{ route('admin.deliveries.status', $pkg) }}" method="POST" class="row g-2 p-2">
                                     @csrf
                                     @method('PATCH')
                                     <div class="col-md-4">
@@ -86,6 +95,7 @@
                                 </form>
                             </td>
                         </tr>
+                        @endif
                     @empty
                         <tr><td colspan="7" class="text-center text-muted py-4">No packages found.</td></tr>
                     @endforelse

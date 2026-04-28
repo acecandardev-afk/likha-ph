@@ -185,14 +185,14 @@ class User extends Authenticatable
         }
 
         if ($this->barangay) {
-            $addressParts[] = 'Barangay ' . $this->barangay;
+            $addressParts[] = 'Barangay '.$this->barangay;
         }
 
         if ($this->street_address) {
             $addressParts[] = $this->street_address;
         }
 
-        if (!empty($addressParts)) {
+        if (! empty($addressParts)) {
             return implode(', ', $addressParts);
         }
 
@@ -201,7 +201,7 @@ class User extends Authenticatable
                 'Philippines',
                 config('guihulngan.province'),
                 config('guihulngan.city_name'),
-                'Barangay ' . $this->shipping_barangay,
+                'Barangay '.$this->shipping_barangay,
             ];
 
             if ($this->shipping_address) {

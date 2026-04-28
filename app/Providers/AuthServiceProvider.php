@@ -2,16 +2,16 @@
 
 namespace App\Providers;
 
-use App\Models\Product;
-use App\Models\Order;
 use App\Models\ArtisanProfile;
-use App\Models\Review;
 use App\Models\Message;
-use App\Policies\ProductPolicy;
-use App\Policies\OrderPolicy;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Review;
 use App\Policies\ArtisanProfilePolicy;
-use App\Policies\ReviewPolicy;
 use App\Policies\MessagePolicy;
+use App\Policies\OrderPolicy;
+use App\Policies\ProductPolicy;
+use App\Policies\ReviewPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider

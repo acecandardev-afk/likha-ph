@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Payment;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -20,13 +20,13 @@ class PaymentService
      */
     public function uploadPaymentProof(Payment $payment, UploadedFile $proofImage): Payment
     {
-        if (!$payment->isAwaitingProof()) {
-            throw new \Exception("Payment proof cannot be uploaded at this time.");
+        if (! $payment->isAwaitingProof()) {
+            throw new \Exception('Payment proof cannot be uploaded at this time.');
         }
 
         // Validate image
         $errors = $this->imageUploadService->validateImage($proofImage);
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             throw new \Exception(implode(', ', $errors));
         }
 
@@ -60,8 +60,8 @@ class PaymentService
      */
     public function verifyPayment(Payment $payment, User $admin, ?string $notes = null): Payment
     {
-        if (!$payment->isPending()) {
-            throw new \Exception("Payment is not pending verification.");
+        if (! $payment->isPending()) {
+            throw new \Exception('Payment is not pending verification.');
         }
 
         DB::transaction(function () use ($payment, $admin, $notes) {
@@ -86,8 +86,8 @@ class PaymentService
      */
     public function rejectPayment(Payment $payment, User $admin, string $reason): Payment
     {
-        if (!$payment->isPending()) {
-            throw new \Exception("Payment is not pending verification.");
+        if (! $payment->isPending()) {
+            throw new \Exception('Payment is not pending verification.');
         }
 
         DB::transaction(function () use ($payment, $admin, $reason) {
@@ -144,6 +144,7 @@ class PaymentService
     public function getPaymentMethodDetails(string $method): ?array
     {
         $methods = $this->getPaymentMethods();
+
         return $methods[$method] ?? null;
     }
 
@@ -152,7 +153,7 @@ class PaymentService
      */
     public function generatePaymentReference(Order $order): string
     {
-        return 'PAY-' . $order->order_number . '-' . strtoupper(uniqid());
+        return 'PAY-'.$order->order_number.'-'.strtoupper(uniqid());
     }
 
     /**

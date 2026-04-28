@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\User;
-use App\Models\Region;
-use App\Models\Province;
-use App\Models\City;
 use App\Models\Barangay;
+use App\Models\Category;
+use App\Models\City;
+use App\Models\Product;
+use App\Models\Province;
+use App\Models\Region;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PublicApiController extends Controller

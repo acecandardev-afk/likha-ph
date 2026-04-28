@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\AuditLog;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,9 +50,16 @@ class PaymentVerificationController extends AdminController
             ]);
         });
 
+        $payment->load('order');
+        AuditLog::record(
+            'payment.verified',
+            'Confirmed a buyer payment for order '.$payment->order?->order_number.'.',
+            $payment
+        );
+
         return redirect()
             ->route('admin.payments.pending')
-            ->with('success', "Payment for order {$payment->order->order_number} has been verified.");
+            ->with('success', "Payment for order {$payment->order?->order_number} has been verified.");
     }
 
     /**
@@ -77,9 +85,16 @@ class PaymentVerificationController extends AdminController
             }
         });
 
+        $payment->load('order');
+        AuditLog::record(
+            'payment.rejected',
+            'Marked a buyer payment as not usable for order '.$payment->order?->order_number.'.',
+            $payment
+        );
+
         return redirect()
             ->route('admin.payments.pending')
-            ->with('success', "Payment for order {$payment->order->order_number} has been rejected.");
+            ->with('success', "Payment for order {$payment->order?->order_number} has been rejected.");
     }
 
     /**

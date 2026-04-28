@@ -20,7 +20,7 @@ class VerifyPaymentRequest extends FormRequest
     public function rules(): array
     {
         $action = $this->route()->getActionMethod();
-        
+
         if ($action === 'reject') {
             return [
                 'reason' => [
@@ -31,7 +31,7 @@ class VerifyPaymentRequest extends FormRequest
                 ],
             ];
         }
-        
+
         // For verify action
         return [
             'notes' => [
@@ -62,8 +62,8 @@ class VerifyPaymentRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $payment = $this->route('payment');
-            
-            if (!$payment->isPending()) {
+
+            if (! $payment->isPending()) {
                 $validator->errors()->add('payment', 'This payment is not pending verification.');
             }
         });

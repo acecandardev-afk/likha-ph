@@ -32,7 +32,7 @@ class CheckoutController extends CustomerController
 
         // Validate cart
         $errors = $this->cartService->validateCart($customer);
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return redirect()->route('customer.cart.index')
                 ->withErrors($errors);
         }
@@ -57,8 +57,15 @@ class CheckoutController extends CustomerController
             $selectedBarangayId = Barangay::query()->where('name', $customer->barangay)->value('id');
         }
 
+        $vc = old('voucher_code');
+        $checkoutPreview = $this->orderService->previewCheckoutTotals(
+            $customer,
+            ($vc !== null && trim((string) $vc) !== '') ? trim((string) $vc) : null
+        );
+
         return view('customer.checkout.index', compact(
             'summary',
+            'checkoutPreview',
             'selectedRegionId',
             'selectedProvinceId',
             'selectedCityId',
@@ -84,12 +91,28 @@ class CheckoutController extends CustomerController
                 $resolvedAddress['street_address'] ?? null,
                 $resolvedAddress['phone'],
                 $resolvedAddress['customer_notes'] ?? null,
-                $validated['package_split'] ?? null
+                $validated['package_split'] ?? null,
+                $validated['voucher_code'] ?? null
             );
 
             return redirect()
                 ->route('customer.orders.index')
-                ->with('success', count($orders) . ' order(s) placed successfully!');
+                ->with('success', count($orders).' order(s) placed successfully!');
+        } catch (\InvalidArgumentException $e) {
+            if ($e->getMessage() === 'online_checkout_cod_only') {
+                return back()->withInput()->with('error', 'Pay when your order arrives is the only option for this checkout.');
+            }
+            if ($e->getMessage() === 'voucher_invalid') {
+                return back()
+                    ->withInput()
+                    ->withErrors(['voucher_code' => 'That promo could not be applied. Please check the code.']);
+            }
+
+            Log::warning('checkout_failed', ['message' => $e->getMessage()]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'We couldn’t place your order. Please check your details and try again.');
         } catch (\Exception $e) {
             Log::warning('checkout_failed', ['message' => $e->getMessage()]);
 
@@ -101,20 +124,20 @@ class CheckoutController extends CustomerController
 
     protected function resolveLocationNames(array $validated): array
     {
-        if (!empty($validated['region'])) {
-            $validated['region'] = Region::find($validated['region'])->name ?? $validated['region'];
+        if (! empty($validated['region'])) {
+            $validated['region'] = Region::find($validated['region'])?->name ?? (string) $validated['region'];
         }
 
-        if (!empty($validated['province'])) {
-            $validated['province'] = Province::find($validated['province'])->name ?? $validated['province'];
+        if (! empty($validated['province'])) {
+            $validated['province'] = Province::find($validated['province'])?->name ?? (string) $validated['province'];
         }
 
-        if (!empty($validated['city'])) {
-            $validated['city'] = City::find($validated['city'])->name ?? $validated['city'];
+        if (! empty($validated['city'])) {
+            $validated['city'] = City::find($validated['city'])?->name ?? (string) $validated['city'];
         }
 
-        if (!empty($validated['barangay'])) {
-            $validated['barangay'] = Barangay::find($validated['barangay'])->name ?? $validated['barangay'];
+        if (! empty($validated['barangay'])) {
+            $validated['barangay'] = Barangay::find($validated['barangay'])?->name ?? (string) $validated['barangay'];
         }
 
         return $validated;

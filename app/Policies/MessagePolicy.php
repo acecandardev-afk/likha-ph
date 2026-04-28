@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Models\Message;
-use App\Models\User;
 use App\Models\Order;
+use App\Models\User;
 
 class MessagePolicy
 {
@@ -27,7 +27,7 @@ class MessagePolicy
     {
         return (($user->isCustomer() && $order->customer_id === $user->id)
             || ($user->isArtisan() && $order->artisan_id === $user->id))
-            && !$user->isSuspended();
+            && ! $user->isSuspended();
     }
 
     /**
@@ -36,7 +36,7 @@ class MessagePolicy
     public function delete(User $user, Message $message): bool
     {
         // User can delete their own messages within 5 minutes
-        if ($message->sender_id === $user->id 
+        if ($message->sender_id === $user->id
             && $message->created_at->diffInMinutes(now()) <= 5) {
             return true;
         }

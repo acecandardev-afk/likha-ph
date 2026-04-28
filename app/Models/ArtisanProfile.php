@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\PublicMediaUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class ArtisanProfile extends Model
@@ -54,6 +54,7 @@ class ArtisanProfile extends Model
     public function getFullLocationAttribute(): string
     {
         $parts = array_filter([$this->barangay, $this->city]);
+
         return implode(', ', $parts);
     }
 

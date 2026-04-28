@@ -16,10 +16,10 @@ class EnsureUserIsActive
     {
         if ($request->user() && $request->user()->isSuspended()) {
             Auth::logout();
-            
+
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            
+
             return redirect()->route('login')
                 ->withErrors(['email' => 'Your account has been suspended. Please contact support.']);
         }

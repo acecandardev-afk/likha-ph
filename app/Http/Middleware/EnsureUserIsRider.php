@@ -26,6 +26,7 @@ class EnsureUserIsRider
 
         if ($user->isSuspended()) {
             Auth::logout();
+
             return redirect()->route('login')->withErrors(['email' => 'Your rider account is currently suspended.']);
         }
 

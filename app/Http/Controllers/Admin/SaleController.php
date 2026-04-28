@@ -54,7 +54,7 @@ class SaleController extends AdminController
 
         foreach ($validated['items'] as $row) {
             $product = $products->get($row['product_id']);
-            if (!$product) {
+            if (! $product) {
                 return back()->withErrors(['items' => 'One or more selected products are not available.'])->withInput();
             }
             if ($product->stock < $row['quantity']) {
@@ -108,7 +108,7 @@ class SaleController extends AdminController
 
         return redirect()
             ->route('admin.sales.show', $sale)
-            ->with('success', 'Sale recorded. Receipt #' . $sale->receipt_number);
+            ->with('success', 'Sale recorded. Receipt #'.$sale->receipt_number);
     }
 
     public function show(Sale $sale)

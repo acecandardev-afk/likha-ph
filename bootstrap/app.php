@@ -1,16 +1,16 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsArtisan;
 use App\Http\Middleware\EnsureUserIsCustomer;
-use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsRider;
 use App\Http\Middleware\ShareUiState;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -53,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if (str_starts_with($path, 'customer/cart') || str_starts_with($path, 'customer/checkout')) {
                     return Route::has('login') ? route('login', ['intended' => '/customer/cart']) : url('/login');
                 }
+
                 return Route::has('login') ? route('login') : url('/login');
             },
             users: function ($request) {
@@ -60,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if (is_string($intended) && $intended !== '' && (str_starts_with($intended, '/') || str_starts_with($intended, config('app.url', '')))) {
                     return $intended;
                 }
+
                 return Route::has('home') ? route('home') : '/';
             }
         );

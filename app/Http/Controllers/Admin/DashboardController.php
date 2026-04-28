@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminController;
-use App\Models\Product;
+use App\Models\DeliveryReport;
 use App\Models\Order;
+use App\Models\OrderPackage;
 use App\Models\Payment;
-use App\Models\User;
+use App\Models\Product;
 use App\Models\Review;
 use App\Models\Rider;
-use App\Models\OrderPackage;
-use App\Models\DeliveryReport;
+use App\Models\User;
 use App\Services\DeliveryService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\Request;
 
 class DashboardController extends AdminController
 {
@@ -22,7 +20,7 @@ class DashboardController extends AdminController
      */
     public function index()
     {
-        $stats = Cache::remember('dashboard:admin:stats:v3', 60, function () {
+        $stats = Cache::remember('dashboard:admin:stats:v4', 60, function () {
             return [
                 'pending_products' => Product::pending()->count(),
                 'pending_payments' => Payment::pending()->count(),

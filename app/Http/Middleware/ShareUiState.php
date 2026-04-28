@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use App\Models\Cart;
 use App\Models\UserNotification;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
@@ -22,7 +22,7 @@ class ShareUiState
     {
         $root = $request->getSchemeAndHttpHost().rtrim($request->getBasePath(), '/');
         if ($root !== '') {
-            URL::forceRootUrl($root);
+            URL::useOrigin($root);
         }
 
         $userId = $request->user()?->id;
@@ -32,9 +32,11 @@ class ShareUiState
         $applicationBanner = null;
 
         if ($userId) {
-            $cartCount = Cache::remember("ui:cartCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
-                return (int) Cart::where('user_id', $userId)->sum('quantity');
-            });
+            if (! $request->user()->isRider()) {
+                $cartCount = Cache::remember("ui:cartCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
+                    return (int) Cart::where('user_id', $userId)->sum('quantity');
+                });
+            }
 
             $unreadNotificationsCount = Cache::remember("ui:unreadNotificationsCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
                 return (int) UserNotification::where('user_id', $userId)->where('is_read', false)->count();

@@ -46,7 +46,7 @@ class CartController extends CustomerController
                 ->with('error', 'You cannot purchase your own products.');
         }
 
-        if (!$product->isAvailable()) {
+        if (! $product->isAvailable()) {
             // Even on error, send the customer to the cart so they
             // clearly see the problem instead of just reloading the page.
             return redirect()
@@ -56,7 +56,7 @@ class CartController extends CustomerController
         }
 
         $validated = $request->validate([
-            'quantity' => 'required|integer|min:1|max:' . $product->stock,
+            'quantity' => 'required|integer|min:1|max:'.$product->stock,
         ]);
 
         $customer = $this->getCustomer();
@@ -99,7 +99,7 @@ class CartController extends CustomerController
         }
 
         $validated = $request->validate([
-            'quantity' => 'required|integer|min:1|max:' . $cart->product->stock,
+            'quantity' => 'required|integer|min:1|max:'.$cart->product->stock,
         ]);
 
         try {

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -28,10 +28,10 @@ class ProductController extends Controller
         // Search (case-insensitive: "a" and "A" match the same in name and description)
         if ($request->filled('search')) {
             $keyword = mb_strtolower(trim($request->search));
-            $pattern = '%' . addcslashes($keyword, '%_\\') . '%';
+            $pattern = '%'.addcslashes($keyword, '%_\\').'%';
             $query->where(function ($q) use ($pattern) {
                 $q->whereRaw('LOWER(name) LIKE ?', [$pattern])
-                  ->orWhereRaw('LOWER(description) LIKE ?', [$pattern]);
+                    ->orWhereRaw('LOWER(description) LIKE ?', [$pattern]);
             });
         }
 
@@ -75,7 +75,7 @@ class ProductController extends Controller
             'artisan.artisanProfile',
             'category',
             'images',
-            'approvedReviews.customer'
+            'approvedReviews.customer',
         ]);
 
         $relatedProducts = Product::public()

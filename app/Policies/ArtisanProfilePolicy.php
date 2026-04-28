@@ -31,7 +31,7 @@ class ArtisanProfilePolicy
     public function create(User $user): bool
     {
         // Only artisans without existing profile can create
-        return $user->isArtisan() && !$user->artisanProfile;
+        return $user->isArtisan() && ! $user->artisanProfile;
     }
 
     /**
@@ -40,9 +40,9 @@ class ArtisanProfilePolicy
     public function update(User $user, ArtisanProfile $artisanProfile): bool
     {
         // Only the artisan who owns the profile can update it
-        return $user->isArtisan() 
-            && $artisanProfile->user_id === $user->id 
-            && !$user->isSuspended();
+        return $user->isArtisan()
+            && $artisanProfile->user_id === $user->id
+            && ! $user->isSuspended();
     }
 
     /**

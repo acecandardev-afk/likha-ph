@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
-use App\Models\User;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
@@ -18,12 +18,14 @@ class OrderSeeder extends Seeder
 
         if ($customers->isEmpty() || $products->isEmpty()) {
             $this->command->error('Please run UserSeeder and ProductSeeder first!');
+
             return;
         }
 
         $admin = User::query()->where('role', 'admin')->orderBy('id')->first();
         if (! $admin) {
             $this->command->error('No admin user found. Run UserSeeder first.');
+
             return;
         }
 
@@ -59,20 +61,24 @@ class OrderSeeder extends Seeder
 
         foreach ($orderScenarios as $scenario) {
             $customer = $customers->firstWhere('email', $scenario['customer_email']);
-            
-            if (!$customer) continue;
+
+            if (! $customer) {
+                continue;
+            }
 
             // Group products by artisan
             $ordersByArtisan = [];
 
             foreach ($scenario['products'] as $productData) {
                 $product = $products->firstWhere('name', $productData['name']);
-                
-                if (!$product) continue;
+
+                if (! $product) {
+                    continue;
+                }
 
                 $artisanId = $product->artisan_id;
-                
-                if (!isset($ordersByArtisan[$artisanId])) {
+
+                if (! isset($ordersByArtisan[$artisanId])) {
                     $ordersByArtisan[$artisanId] = [];
                 }
 

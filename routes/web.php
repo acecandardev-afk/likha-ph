@@ -1,49 +1,51 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ArtisanProfileController;
-use App\Http\Controllers\HealthController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\DirectMessageController;
-use App\Http\Controllers\Auth\ArtisanRegistrationController;
-
-// Admin Controllers
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\ProductApprovalController;
-use App\Http\Controllers\Admin\PaymentVerificationController;
-use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\SaleController as AdminSaleController;
-use App\Http\Controllers\Admin\RiderController as AdminRiderController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\DeliveryReportController as AdminDeliveryReportController;
-
-// Artisan Controllers
+use App\Http\Controllers\Admin\LedgerController as AdminLedgerController;
+use App\Http\Controllers\Admin\PaymentVerificationController;
+// Admin Controllers
+use App\Http\Controllers\Admin\ProductApprovalController;
+use App\Http\Controllers\Admin\RiderController as AdminRiderController;
+use App\Http\Controllers\Admin\SaleController as AdminSaleController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Artisan\DashboardController as ArtisanDashboardController;
-use App\Http\Controllers\Artisan\ProductController as ArtisanProductController;
+use App\Http\Controllers\Artisan\EarningsController as ArtisanEarningsController;
+use App\Http\Controllers\Artisan\LedgerController as ArtisanLedgerController;
 use App\Http\Controllers\Artisan\OrderController as ArtisanOrderController;
+use App\Http\Controllers\Artisan\ProductController as ArtisanProductController;
 use App\Http\Controllers\Artisan\ProfileController as ArtisanProfileEditController;
-
-// Customer Controllers
-use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
-use App\Http\Controllers\Customer\CartController;
-use App\Http\Controllers\Customer\CheckoutController;
-use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
-use App\Http\Controllers\Customer\ReviewController;
-use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryReportController;
-use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
-use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
-use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ArtisanProfileController;
+use App\Http\Controllers\Auth\ArtisanRegistrationController;
+// Artisan Controllers
+use App\Http\Controllers\Auth\ConfirmPasswordController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\GoogleAuthController;
-use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
+// Customer Controllers
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryReportController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\ReviewController;
+use App\Http\Controllers\DirectMessageController;
+use App\Http\Controllers\HealthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
+use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,6 +121,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/insights', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/activity', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('/ledger', [AdminLedgerController::class, 'index'])->name('ledger.index');
+    Route::get('/ledger/journals/{journal}', [AdminLedgerController::class, 'show'])->name('ledger.show');
 
     // Product Approval
     Route::prefix('products')->name('products.')->group(function () {
@@ -189,6 +195,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [ArtisanDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/after-delivery', [ArtisanEarningsController::class, 'index'])->name('earnings.index');
+    Route::get('/ledger', [ArtisanLedgerController::class, 'index'])->name('ledger.index');
+    Route::get('/ledger/journals/{journal}', [ArtisanLedgerController::class, 'show'])->name('ledger.show');
 
     // Products
     Route::resource('products', ArtisanProductController::class);

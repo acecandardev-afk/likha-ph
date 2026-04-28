@@ -84,7 +84,11 @@
                         Set your quantity below, then use <strong>Proceed to checkout</strong> when you are ready.
                     </div>
                 @endif
-                @if(auth()->check())
+                @if(auth()->check() && auth()->user()->isRider())
+                    <div class="alert alert-light border mb-3" role="status">
+                        <p class="mb-0 small">Courier accounts cannot place orders or use the cart. Log in with a customer account to shop.</p>
+                    </div>
+                @elseif(auth()->check())
                     @if($product->stock > 0)
                         <form action="{{ route('customer.cart.add', $product) }}" method="POST">
                             @csrf
@@ -109,10 +113,10 @@
                     @endif
                 @else
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ route('login', ['intended' => url()->full()]) }}" class="btn btn-outline-primary btn-lg">
+                        <a href="{{ route('login', ['intended' => request()->fullUrl()]) }}" class="btn btn-outline-primary btn-lg">
                             <i class="bi bi-cart-plus me-1"></i> Add to cart
                         </a>
-                        <a href="{{ route('login', ['intended' => url()->full()]) }}" class="btn btn-primary btn-lg">
+                        <a href="{{ route('login', ['intended' => request()->fullUrl()]) }}" class="btn btn-primary btn-lg">
                             <i class="bi bi-bag-check me-1"></i> Proceed to checkout
                         </a>
                     </div>

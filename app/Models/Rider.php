@@ -10,7 +10,9 @@ class Rider extends Model
     use HasFactory;
 
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_BUSY = 'busy';
+
     public const STATUS_OFFLINE = 'offline';
 
     protected $fillable = [

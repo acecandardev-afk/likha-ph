@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\PublicMediaUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Support\PublicMediaUrl;
 use Illuminate\Support\Facades\Storage;
 
 class Payment extends Model
@@ -57,7 +57,7 @@ class Payment extends Model
     // Accessors
     public function getProofImageUrlAttribute(): ?string
     {
-        if (!$this->proof_image) {
+        if (! $this->proof_image) {
             return null;
         }
 

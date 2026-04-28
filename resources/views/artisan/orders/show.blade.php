@@ -71,10 +71,10 @@
                     <h5 class="mb-0 fw-semibold">Order summary</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2"><span>Subtotal</span><span>₱{{ number_format($order->subtotal, 2) }}</span></div>
-                    <div class="d-flex justify-content-between mb-2"><span>Platform fee</span><span>₱{{ number_format($order->platform_fee ?? 0, 2) }}</span></div>
-                    <div class="d-flex justify-content-between mb-2"><span>Total</span><span class="fw-semibold">₱{{ number_format($order->total, 2) }}</span></div>
-                    <div class="d-flex justify-content-between mb-2"><span>Est. delivery</span><span>{{ $order->estimated_delivery_date }}</span></div>
+                    @include('partials.order-totals')
+                    <div class="d-flex justify-content-between mb-1 mt-2"><span>Your estimated share from items</span><span class="fw-semibold">₱{{ number_format($order->artisanMerchandiseShare(), 2) }}</span></div>
+                    <p class="small text-muted mb-3">Rough guide after any promo savings and marketplace fee.</p>
+                    <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
                     <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
                     @if($order->rider)

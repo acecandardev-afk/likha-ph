@@ -12,7 +12,7 @@ class SendMessageRequest extends FormRequest
     public function authorize(): bool
     {
         $order = $this->route('order');
-        
+
         return $this->user() && $this->user()->can('sendMessage', $order);
     }
 

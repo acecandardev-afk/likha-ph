@@ -88,7 +88,7 @@ class OrderController extends CustomerController
 
         $payment = $order->payment;
 
-        if (!$payment || !$payment->isAwaitingProof()) {
+        if (! $payment || ! $payment->isAwaitingProof()) {
             return back()->withErrors(['error' => 'Payment proof cannot be uploaded at this time.']);
         }
 
@@ -112,7 +112,7 @@ class OrderController extends CustomerController
     {
         $this->authorize('view', $order);
 
-        if (!$order->canBeReceived()) {
+        if (! $order->canBeReceived()) {
             return back()->withErrors(['error' => 'Order cannot be marked as received at this time.']);
         }
 

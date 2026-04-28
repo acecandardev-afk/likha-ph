@@ -32,7 +32,7 @@ class Sale extends Model
         static::creating(function ($sale) {
             if (empty($sale->receipt_number)) {
                 $todayCount = Sale::whereDate('created_at', today())->count();
-                $sale->receipt_number = 'RCP-' . date('Ymd') . '-' . str_pad($todayCount + 1, 4, '0', STR_PAD_LEFT);
+                $sale->receipt_number = 'RCP-'.date('Ymd').'-'.str_pad($todayCount + 1, 4, '0', STR_PAD_LEFT);
             }
         });
     }

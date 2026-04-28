@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PublicApiController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(PublicApiController::class)->group(function () {
     Route::get('/products', 'products');

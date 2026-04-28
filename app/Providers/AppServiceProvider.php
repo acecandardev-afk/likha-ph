@@ -2,17 +2,19 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Services\CartService;
-use App\Services\OrderService;
-use App\Services\ImageUploadService;
 use App\Services\AddressService;
-use App\Services\PaymentService;
-use App\Services\NotificationService;
-use App\Services\StockService;
+use App\Services\CartService;
 use App\Services\DeliveryService;
+use App\Services\ImageUploadService;
+use App\Services\LedgerPostingService;
+use App\Services\NotificationService;
+use App\Services\OrderService;
+use App\Services\PaymentService;
+use App\Services\StockService;
+use App\Services\VoucherService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,22 +23,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register as singletons
-        $this->app->singleton(ImageUploadService::class);
+        $this->app->singleton(LedgerPostingService::class);
         $this->app->singleton(StockService::class);
         $this->app->singleton(NotificationService::class);
-        
+
         // Register with dependencies
         $this->app->singleton(CartService::class, function ($app) {
             return new CartService($app->make(StockService::class));
         });
+
+        $this->app->singleton(VoucherService::class);
 
         $this->app->singleton(OrderService::class, function ($app) {
             return new OrderService(
                 $app->make(StockService::class),
                 $app->make(CartService::class),
                 $app->make(NotificationService::class),
-                $app->make(DeliveryService::class)
+                $app->make(DeliveryService::class),
+                $app->make(VoucherService::class)
             );
         });
 

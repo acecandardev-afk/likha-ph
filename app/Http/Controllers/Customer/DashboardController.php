@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends CustomerController

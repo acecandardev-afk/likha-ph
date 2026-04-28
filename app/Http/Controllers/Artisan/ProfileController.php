@@ -6,7 +6,6 @@ use App\Models\ArtisanProfile;
 use App\Services\ImageUploadService;
 use App\Support\Guihulngan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends ArtisanController
 {
@@ -24,7 +23,7 @@ class ProfileController extends ArtisanController
         $artisan = $this->getArtisan();
         $profile = $artisan->artisanProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             $profile = new ArtisanProfile(['user_id' => $artisan->id]);
         }
 
@@ -90,7 +89,7 @@ class ProfileController extends ArtisanController
         $artisan = $this->getArtisan();
         $profile = $artisan->artisanProfile;
 
-        if (!$profile || !$profile->profile_image) {
+        if (! $profile || ! $profile->profile_image) {
             return back()->with('error', 'No profile picture to remove.');
         }
 

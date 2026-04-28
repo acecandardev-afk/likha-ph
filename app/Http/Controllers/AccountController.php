@@ -67,7 +67,7 @@ class AccountController extends Controller
                 'nullable',
                 'string',
                 'regex:/^(09\d{9}|\+63\d{10})$/',
-                'max:13'
+                'max:13',
             ],
         ]);
 
@@ -78,19 +78,19 @@ class AccountController extends Controller
 
     protected function resolveLocationNames(array $validated): array
     {
-        if (!empty($validated['region'])) {
+        if (! empty($validated['region'])) {
             $validated['region'] = Region::find($validated['region'])->name ?? $validated['region'];
         }
 
-        if (!empty($validated['province'])) {
+        if (! empty($validated['province'])) {
             $validated['province'] = Province::find($validated['province'])->name ?? $validated['province'];
         }
 
-        if (!empty($validated['city'])) {
+        if (! empty($validated['city'])) {
             $validated['city'] = City::find($validated['city'])->name ?? $validated['city'];
         }
 
-        if (!empty($validated['barangay'])) {
+        if (! empty($validated['barangay'])) {
             $validated['barangay'] = Barangay::find($validated['barangay'])->name ?? $validated['barangay'];
         }
 

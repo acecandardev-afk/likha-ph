@@ -12,7 +12,7 @@ class UploadPaymentProofRequest extends FormRequest
     public function authorize(): bool
     {
         $order = $this->route('order');
-        
+
         return $this->user() && $this->user()->can('view', $order);
     }
 
@@ -52,8 +52,8 @@ class UploadPaymentProofRequest extends FormRequest
         $validator->after(function ($validator) {
             $order = $this->route('order');
             $payment = $order->payment;
-            
-            if (!$payment || !$payment->isAwaitingProof()) {
+
+            if (! $payment || ! $payment->isAwaitingProof()) {
                 $validator->errors()->add('proof_image', 'Payment proof cannot be uploaded at this time.');
             }
         });

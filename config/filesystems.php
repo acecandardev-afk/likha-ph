@@ -7,6 +7,7 @@ $objectRoot = function (string $dir) use ($mediaPrefix) {
     if ($mediaPrefix === '') {
         return $dir;
     }
+
     return $mediaPrefix.'/'.$dir;
 };
 

@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Region;
-use App\Models\Province;
-use App\Models\City;
 use App\Models\Barangay;
+use App\Models\City;
+use App\Models\Province;
+use App\Models\Region;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
 class PhilippineAddressSeeder extends Seeder
@@ -24,19 +24,19 @@ class PhilippineAddressSeeder extends Seeder
         foreach ($regionsData as $region) {
             $regions[$region['psgcCode']] = Region::create([
                 'name' => $region['regDesc'],
-                'code' => $region['psgcCode']
+                'code' => $region['psgcCode'],
             ]);
         }
 
         // Insert provinces
         $provinces = [];
         foreach ($provincesData as $province) {
-            $regionId = $regions[$province['regCode'] . '000000']->id ?? null;
+            $regionId = $regions[$province['regCode'].'000000']->id ?? null;
             if ($regionId) {
                 $provinces[$province['psgcCode']] = Province::create([
                     'name' => $province['provDesc'],
                     'code' => $province['psgcCode'],
-                    'region_id' => $regionId
+                    'region_id' => $regionId,
                 ]);
             }
         }
@@ -44,11 +44,11 @@ class PhilippineAddressSeeder extends Seeder
         // Insert cities
         $cities = [];
         foreach ($citiesData as $city) {
-            $provinceId = $provinces[$city['provCode'] . '000']->id ?? null;
+            $provinceId = $provinces[$city['provCode'].'000']->id ?? null;
             if ($provinceId) {
                 $cities[$city['psgcCode']] = City::create([
                     'name' => $city['citymunDesc'],
-                    'province_id' => $provinceId
+                    'province_id' => $provinceId,
                 ]);
             }
         }
@@ -56,12 +56,12 @@ class PhilippineAddressSeeder extends Seeder
         // Insert barangays in chunks
         $barangayInserts = [];
         foreach ($barangaysData as $barangay) {
-            $cityId = $cities[$barangay['citymunCode'] . '000']->id ?? null;
+            $cityId = $cities[$barangay['citymunCode'].'000']->id ?? null;
             if ($cityId) {
                 $barangayInserts[] = [
                     'name' => $barangay['brgyDesc'],
                     'code' => $barangay['psgcCode'],
-                    'city_id' => $cityId
+                    'city_id' => $cityId,
                 ];
             }
             // Insert in chunks of 1000
@@ -71,7 +71,7 @@ class PhilippineAddressSeeder extends Seeder
             }
         }
         // Insert remaining
-        if (!empty($barangayInserts)) {
+        if (! empty($barangayInserts)) {
             Barangay::insert($barangayInserts);
         }
 

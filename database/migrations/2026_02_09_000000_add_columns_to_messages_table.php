@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('messages', function (Blueprint $table) {
-            if (!Schema::hasColumn('messages', 'order_id')) {
+            if (! Schema::hasColumn('messages', 'order_id')) {
                 $table->foreignId('order_id')->after('id')->constrained()->cascadeOnDelete();
             }
-            if (!Schema::hasColumn('messages', 'sender_id')) {
+            if (! Schema::hasColumn('messages', 'sender_id')) {
                 $table->foreignId('sender_id')->after('order_id')->constrained('users')->cascadeOnDelete();
             }
-            if (!Schema::hasColumn('messages', 'message')) {
+            if (! Schema::hasColumn('messages', 'message')) {
                 $table->text('message')->after('sender_id');
             }
-            if (!Schema::hasColumn('messages', 'is_read')) {
+            if (! Schema::hasColumn('messages', 'is_read')) {
                 $table->boolean('is_read')->default(false)->after('message');
             }
         });

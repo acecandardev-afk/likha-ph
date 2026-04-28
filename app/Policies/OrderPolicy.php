@@ -41,7 +41,7 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        return !$user->isSuspended();
+        return ! $user->isSuspended();
     }
 
     /**
@@ -50,9 +50,9 @@ class OrderPolicy
     public function update(User $user, Order $order): bool
     {
         // Only artisan can update order status (for fulfillment)
-        return $user->isArtisan() 
-            && $order->artisan_id === $user->id 
-            && !$user->isSuspended();
+        return $user->isArtisan()
+            && $order->artisan_id === $user->id
+            && ! $user->isSuspended();
     }
 
     /**
@@ -112,6 +112,6 @@ class OrderPolicy
     {
         return ($order->customer_id === $user->id
             || ($user->isArtisan() && $order->artisan_id === $user->id))
-            && !$user->isSuspended();
+            && ! $user->isSuspended();
     }
 }

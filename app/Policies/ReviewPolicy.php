@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\Product;
-use App\Models\Order;
 
 class ReviewPolicy
 {
@@ -43,7 +43,7 @@ class ReviewPolicy
     public function create(User $user, Order $order, Product $product): bool
     {
         // Must be a customer
-        if (!$user->isCustomer() || $user->isSuspended()) {
+        if (! $user->isCustomer() || $user->isSuspended()) {
             return false;
         }
 
@@ -53,13 +53,13 @@ class ReviewPolicy
         }
 
         // Order must be completed
-        if (!$order->isCompleted()) {
+        if (! $order->isCompleted()) {
             return false;
         }
 
         // Product must be in the order
         $productInOrder = $order->items()->where('product_id', $product->id)->exists();
-        if (!$productInOrder) {
+        if (! $productInOrder) {
             return false;
         }
 
@@ -69,7 +69,7 @@ class ReviewPolicy
             ->where('customer_id', $user->id)
             ->exists();
 
-        return !$existingReview;
+        return ! $existingReview;
     }
 
     /**
@@ -78,10 +78,10 @@ class ReviewPolicy
     public function update(User $user, Review $review): bool
     {
         // Customer can update their own review within 7 days
-        return $user->isCustomer() 
-            && $review->customer_id === $user->id 
+        return $user->isCustomer()
+            && $review->customer_id === $user->id
             && $review->created_at->diffInDays(now()) <= 7
-            && !$user->isSuspended();
+            && ! $user->isSuspended();
     }
 
     /**

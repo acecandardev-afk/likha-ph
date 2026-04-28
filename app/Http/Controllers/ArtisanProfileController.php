@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\ArtisanProfile;
-use Illuminate\Http\Request;
 
 class ArtisanProfileController extends Controller
 {
@@ -30,7 +28,7 @@ class ArtisanProfileController extends Controller
      */
     public function show(User $artisan)
     {
-        if (!$artisan->isArtisan()) {
+        if (! $artisan->isArtisan()) {
             abort(404);
         }
 

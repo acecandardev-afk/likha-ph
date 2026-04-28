@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Artisan;
 
-use App\Models\Product;
 use App\Models\Order;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\Request;
 
 class DashboardController extends ArtisanController
 {
@@ -16,7 +14,7 @@ class DashboardController extends ArtisanController
     {
         $artisan = $this->getArtisan();
 
-        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v2", 60, function () use ($artisan) {
+        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v4", 60, function () use ($artisan) {
             return [
                 'total_products' => $artisan->products()->count(),
                 'approved_products' => $artisan->products()->approved()->count(),
@@ -29,11 +27,18 @@ class DashboardController extends ArtisanController
                 'delivered_orders' => $artisan->artisanOrders()->delivered()->count(),
                 'confirmed_orders' => $artisan->artisanOrders()->wherePaymentVerified()->count(),
                 'completed_orders' => $artisan->artisanOrders()->completed()->count(),
-                'total_revenue' => $artisan->artisanOrders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
-                'monthly_revenue' => $artisan->artisanOrders()
+                'estimated_share_total' => (float) Order::query()
+                    ->where('artisan_id', $artisan->id)
+                    ->whereIn('status', ['delivered', 'completed'])
+                    ->get()
+                    ->sum(fn (Order $order) => $order->artisanMerchandiseShare()),
+                'estimated_share_month' => (float) Order::query()
+                    ->where('artisan_id', $artisan->id)
                     ->whereIn('status', ['delivered', 'completed'])
                     ->whereMonth('created_at', now()->month)
-                    ->sum('total'),
+                    ->whereYear('created_at', now()->year)
+                    ->get()
+                    ->sum(fn (Order $order) => $order->artisanMerchandiseShare()),
             ];
         });
 

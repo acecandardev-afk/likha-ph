@@ -4,8 +4,10 @@ namespace App\Http\Requests;
 
 use App\Models\Barangay;
 use App\Models\Order;
-use Illuminate\Validation\Rule;
+use App\Services\CartService;
+use App\Services\VoucherService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CheckoutRequest extends FormRequest
 {
@@ -49,6 +51,13 @@ class CheckoutRequest extends FormRequest
         $this->merge([
             'payment_method' => 'cod',
         ]);
+
+        $vc = $this->input('voucher_code');
+        if (is_string($vc) && trim($vc) !== '') {
+            $this->merge(['voucher_code' => strtoupper(trim($vc))]);
+        } else {
+            $this->merge(['voucher_code' => null]);
+        }
     }
 
     /**
@@ -112,7 +121,7 @@ class CheckoutRequest extends FormRequest
                 'required',
                 'string',
                 'regex:/^(09\d{9}|\+63\d{10})$/',
-                'max:13'
+                'max:13',
             ],
             'payment_method' => [
                 'required',
@@ -127,6 +136,7 @@ class CheckoutRequest extends FormRequest
                 'string',
                 'max:500',
             ],
+            'voucher_code' => ['nullable', 'string', 'max:40'],
         ];
     }
 
@@ -165,6 +175,17 @@ class CheckoutRequest extends FormRequest
                     }
                 }
             }
+
+            $code = $this->input('voucher_code');
+            if ($code === null || trim((string) $code) === '') {
+                return;
+            }
+
+            $subtotal = app(CartService::class)->getCartTotal($user);
+            $resolution = app(VoucherService::class)->resolve($code, $subtotal);
+            if ($resolution['error'] !== null) {
+                $validator->errors()->add('voucher_code', $resolution['error']);
+            }
         });
     }
 
@@ -193,6 +214,7 @@ class CheckoutRequest extends FormRequest
             'phone' => 'contact number',
             'payment_method' => 'payment method',
             'customer_notes' => 'order notes',
+            'voucher_code' => 'promo code',
         ];
     }
 }

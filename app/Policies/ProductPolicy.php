@@ -44,7 +44,7 @@ class ProductPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isArtisan() && !$user->isSuspended();
+        return $user->isArtisan() && ! $user->isSuspended();
     }
 
     /**
@@ -53,9 +53,9 @@ class ProductPolicy
     public function update(User $user, Product $product): bool
     {
         // Only the artisan who owns the product can update it
-        return $user->isArtisan() 
-            && $product->artisan_id === $user->id 
-            && !$user->isSuspended();
+        return $user->isArtisan()
+            && $product->artisan_id === $user->id
+            && ! $user->isSuspended();
     }
 
     /**
@@ -85,8 +85,8 @@ class ProductPolicy
      */
     public function manageImages(User $user, Product $product): bool
     {
-        return $user->isArtisan() 
-            && $product->artisan_id === $user->id 
-            && !$user->isSuspended();
+        return $user->isArtisan()
+            && $product->artisan_id === $user->id
+            && ! $user->isSuspended();
     }
 }

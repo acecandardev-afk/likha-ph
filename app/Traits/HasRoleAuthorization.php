@@ -11,7 +11,7 @@ trait HasRoleAuthorization
      */
     protected function ensureIsAdmin(): void
     {
-        if (!auth()->user()?->isAdmin()) {
+        if (! auth()->user()?->isAdmin()) {
             throw new AuthorizationException('Admin access required.');
         }
     }
@@ -21,7 +21,7 @@ trait HasRoleAuthorization
      */
     protected function ensureIsArtisan(): void
     {
-        if (!auth()->user()?->isArtisan()) {
+        if (! auth()->user()?->isArtisan()) {
             throw new AuthorizationException('Artisan access required.');
         }
     }
@@ -31,7 +31,7 @@ trait HasRoleAuthorization
      */
     protected function ensureIsCustomer(): void
     {
-        if (!auth()->user()?->isCustomer()) {
+        if (! auth()->user()?->isCustomer()) {
             throw new AuthorizationException('Customer access required.');
         }
     }

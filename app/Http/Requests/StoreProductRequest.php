@@ -11,7 +11,7 @@ class StoreProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->isArtisan() && !$this->user()->isSuspended();
+        return $this->user() && $this->user()->isArtisan() && ! $this->user()->isSuspended();
     }
 
     /**

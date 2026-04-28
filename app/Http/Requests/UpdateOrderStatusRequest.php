@@ -12,7 +12,7 @@ class UpdateOrderStatusRequest extends FormRequest
     public function authorize(): bool
     {
         $order = $this->route('order');
-        
+
         return $this->user() && $this->user()->can('update', $order);
     }
 
@@ -55,7 +55,7 @@ class UpdateOrderStatusRequest extends FormRequest
         $validator->after(function ($validator) {
             $order = $this->route('order');
             $newStatus = $this->input('status');
-            
+
             // Validate status transitions
             $validTransitions = [
                 'pending' => ['shipped', 'cancelled'],
@@ -66,10 +66,10 @@ class UpdateOrderStatusRequest extends FormRequest
                 'completed' => [],
                 'cancelled' => [],
             ];
-            
+
             $currentStatus = $order->status;
-            
-            if (!in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
+
+            if (! in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
                 $validator->errors()->add('status', "Cannot change order status from {$currentStatus} to {$newStatus}.");
             }
         });

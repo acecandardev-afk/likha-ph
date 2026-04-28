@@ -12,8 +12,8 @@ class UpdateProductRequest extends FormRequest
     public function authorize(): bool
     {
         $product = $this->route('product');
-        
-        return $this->user() 
+
+        return $this->user()
             && $this->user()->can('update', $product);
     }
 
@@ -99,18 +99,18 @@ class UpdateProductRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $product = $this->route('product');
-            
+
             // Ensure at least one image remains
             $currentImages = $product->images()->count();
             $removing = count($this->input('remove_images', []));
             $adding = count($this->file('new_images', []));
-            
+
             $finalCount = $currentImages - $removing + $adding;
-            
+
             if ($finalCount < 1) {
                 $validator->errors()->add('images', 'Product must have at least one image.');
             }
-            
+
             if ($finalCount > 5) {
                 $validator->errors()->add('new_images', 'Total images cannot exceed 5.');
             }

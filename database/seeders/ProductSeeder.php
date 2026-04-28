@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Product;
-use App\Models\ProductImage;
-use App\Models\ProductApproval;
-use App\Models\User;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\ProductApproval;
+use App\Models\ProductImage;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,12 +20,14 @@ class ProductSeeder extends Seeder
 
         if ($artisans->isEmpty() || $categories->isEmpty()) {
             $this->command->error('Please run UserSeeder and CategorySeeder first!');
+
             return;
         }
 
         $admin = User::query()->where('role', 'admin')->orderBy('id')->first();
         if (! $admin) {
             $this->command->error('No admin user found. Run UserSeeder first (creates admin@guihulngan-handicrafts.local).');
+
             return;
         }
 
@@ -159,17 +161,19 @@ class ProductSeeder extends Seeder
 
         foreach ($productsData as $artisanEmail => $products) {
             $artisan = $artisans->firstWhere('email', $artisanEmail);
-            
-            if (!$artisan) {
+
+            if (! $artisan) {
                 $this->command->warn("Artisan not found: {$artisanEmail}");
+
                 continue;
             }
 
             foreach ($products as $productData) {
                 $category = $categories->firstWhere('name', $productData['category']);
-                
-                if (!$category) {
+
+                if (! $category) {
                     $this->command->warn("Category not found: {$productData['category']}");
+
                     continue;
                 }
 
@@ -190,8 +194,8 @@ class ProductSeeder extends Seeder
                     'status' => $productData['approval_status'],
                     'reviewed_by' => $productData['approval_status'] === 'approved' ? $admin->id : null,
                     'reviewed_at' => $productData['approval_status'] === 'approved' ? now() : null,
-                    'notes' => $productData['approval_status'] === 'approved' 
-                        ? 'Product meets quality standards and accurately represents local craftsmanship.' 
+                    'notes' => $productData['approval_status'] === 'approved'
+                        ? 'Product meets quality standards and accurately represents local craftsmanship.'
                         : null,
                 ]);
 
@@ -204,7 +208,7 @@ class ProductSeeder extends Seeder
                     'is_primary' => true,
                     'sort_order' => 0,
                 ]);
-                
+
                 $totalProducts++;
                 if ($productData['approval_status'] === 'approved') {
                     $approvedCount++;

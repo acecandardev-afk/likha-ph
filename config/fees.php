@@ -13,4 +13,3 @@ return [
      */
     'rider_fee_per_package' => (float) env('RIDER_FEE_PER_PACKAGE', 50),
 ];
-

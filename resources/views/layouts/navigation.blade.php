@@ -22,6 +22,7 @@
 
             <ul class="navbar-nav ms-auto align-items-lg-center flex-row flex-wrap gap-1 gap-lg-0">
                 @php
+                    $showCartNav = ! auth()->check() || ! auth()->user()->isRider();
                     $cartLink = auth()->check()
                         ? route('customer.cart.index')
                         : route('login', ['intended' => '/customer/cart']);
@@ -113,6 +114,8 @@
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.dashboard') }}">Dashboard</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.products.index') }}">Products</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.earnings.index') }}">After delivery</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.ledger.index') }}">Settlement ledger</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.profile.edit') }}">Profile</a></li>
                             @elseif(auth()->user()->isCustomer())
                                 <li><a class="dropdown-item py-2" href="{{ route('customer.dashboard') }}">Dashboard</a></li>
@@ -122,7 +125,9 @@
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.deliveries.index') }}">Deliveries</a></li>
                             @endif
                             <li><a class="dropdown-item py-2" href="{{ route('chats.index') }}">Messages</a></li>
-                            <li><a class="dropdown-item py-2" href="{{ route('account.edit') }}">Delivery address</a></li>
+                            @if(! auth()->user()->isRider())
+                                <li><a class="dropdown-item py-2" href="{{ route('account.edit') }}">Delivery address</a></li>
+                            @endif
                             <li><hr class="dropdown-divider my-2"></li>
                             <li>
                                 <a class="dropdown-item py-2 text-danger" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

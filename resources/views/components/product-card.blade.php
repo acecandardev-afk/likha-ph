@@ -46,7 +46,9 @@
         {{-- Add to cart from listing; Buy now opens product page to set quantity, then checkout --}}
         @php($buyNowHref = route('products.show', $product).'?intent=checkout#purchase')
         <div class="mt-3 pt-2 border-top">
-            @if(auth()->check())
+            @if(auth()->check() && auth()->user()->isRider())
+                <p class="text-muted small mb-0">Courier accounts cannot shop. Use a customer account to purchase.</p>
+            @elseif(auth()->check())
                 @if($product->stock > 0)
                     <div class="d-flex flex-wrap gap-2">
                         <form action="{{ route('customer.cart.add', $product) }}" method="POST" class="flex-grow-1 d-flex">

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 
 class StockService
@@ -23,7 +22,7 @@ class StockService
      */
     public function reserveStock(Product $product, int $quantity): bool
     {
-        if (!$this->hasStock($product, $quantity)) {
+        if (! $this->hasStock($product, $quantity)) {
             return false;
         }
 
@@ -37,7 +36,7 @@ class StockService
      */
     public function decrementStock(Product $product, int $quantity): bool
     {
-        if (!$this->hasStock($product, $quantity)) {
+        if (! $this->hasStock($product, $quantity)) {
             throw new \Exception("Insufficient stock for product: {$product->name}");
         }
 
@@ -93,7 +92,7 @@ class StockService
     public function updateStock(Product $product, int $newStock): bool
     {
         if ($newStock < 0) {
-            throw new \Exception("Stock cannot be negative.");
+            throw new \Exception('Stock cannot be negative.');
         }
 
         return $product->update(['stock' => $newStock]);
@@ -136,8 +135,8 @@ class StockService
 
         foreach ($items as $item) {
             $product = Product::find($item['product_id']);
-            
-            if (!$product || !$this->hasStock($product, $item['quantity'])) {
+
+            if (! $product || ! $this->hasStock($product, $item['quantity'])) {
                 $unavailable[] = [
                     'product_id' => $item['product_id'],
                     'product_name' => $product->name ?? 'Unknown',

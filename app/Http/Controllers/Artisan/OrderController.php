@@ -76,7 +76,7 @@ class OrderController extends ArtisanController
     {
         $this->authorize('complete', $order);
 
-        if (!$order->canBeCompleted()) {
+        if (! $order->canBeCompleted()) {
             return back()->withErrors(['error' => 'Order cannot be completed at this time.']);
         }
 

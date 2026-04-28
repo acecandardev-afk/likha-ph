@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\AuditLog;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -39,7 +40,7 @@ class CategoryController extends AdminController
     public function update(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'description' => 'nullable|string|max:500',
             'icon' => 'nullable|string|max:10',
             'is_active' => 'boolean',
@@ -58,6 +59,8 @@ class CategoryController extends AdminController
         if ($category->products()->count() > 0) {
             return back()->withErrors(['error' => 'Cannot delete category with existing products.']);
         }
+
+        AuditLog::record('category.removed', 'Removed the '.$category->name.' category.', $category);
 
         $category->delete();
 

@@ -30,7 +30,7 @@ class DirectMessageController extends Controller
         $byPartner = [];
         foreach ($messages as $m) {
             $otherId = $m->sender_id == $userId ? $m->recipient_id : $m->sender_id;
-            if (!isset($byPartner[$otherId])) {
+            if (! isset($byPartner[$otherId])) {
                 $other = $m->sender_id == $userId ? $m->recipient : $m->sender;
                 $byPartner[$otherId] = [
                     'user' => $other,
@@ -86,6 +86,7 @@ class DirectMessageController extends Controller
         }
 
         $otherName = $user->artisanProfile->workshop_name ?? $user->name;
+
         return view('chats.show', compact('user', 'otherName'));
     }
 

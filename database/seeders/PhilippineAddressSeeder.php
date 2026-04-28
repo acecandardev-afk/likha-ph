@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Region;
-use App\Models\Province;
-use App\Models\City;
 use App\Models\Barangay;
+use App\Models\City;
+use App\Models\Province;
+use App\Models\Region;
 use App\Services\AddressService;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
 
 class PhilippineAddressSeeder extends Seeder

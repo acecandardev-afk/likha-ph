@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Review;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReviewRequest extends FormRequest
 {
@@ -14,7 +14,7 @@ class StoreReviewRequest extends FormRequest
     {
         $order = $this->route('order');
         $product = $this->route('product');
-        
+
         return $this->user() && $this->user()->can('create', [Review::class, $order, $product]);
     }
 

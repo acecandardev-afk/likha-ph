@@ -12,7 +12,7 @@
         </ol>
     </nav>
     <h2 class="h4 fw-semibold mb-2">Checkout</h2>
-    <p class="text-muted small mb-4">Confirm your delivery details, group items into packages if needed (each package may ship separately), and place your order. Payment is cash on delivery (COD).</p>
+    <p class="text-muted small mb-4">Confirm where to send your order, split items into packages if you need more than one box from a seller, then review the total. You’ll pay when your order arrives.</p>
 
     @if(empty($summary['items']) || $summary['total_items'] === 0)
         <div class="alert alert-info">
@@ -201,37 +201,51 @@
 
                 {{-- Step 3: Order summary & place order --}}
                 <div class="col-12 col-lg-4">
-                    <div class="card sticky-top">
+                    <div class="card sticky-top" style="top: 1rem; z-index: 1;">
                         <div class="card-header">
                             <h5 class="mb-0 fw-semibold">Order summary</h5>
                         </div>
                         <div class="card-body">
-                            @php
-                                $platformFeeRate = (float) config('fees.platform_fee_rate', 0.05);
-                                $platformFee = round(($summary['subtotal'] ?? 0) * $platformFeeRate, 2);
-                                $grandTotal = ($summary['subtotal'] ?? 0) + $platformFee;
-                            @endphp
+                            @php $totals = $checkoutPreview ?? []; @endphp
                             @foreach($summary['grouped_by_artisan'] as $artisanId => $items)
                                 <div class="mb-3">
                                     <small class="text-muted fw-semibold">
                                         {{ $items->first()->product->artisan?->artisanProfile?->workshop_name
                                             ?? $items->first()->product->artisan?->name
-                                            ?? 'Unknown Artisan' }}
+                                            ?? 'Seller' }}
                                     </small>
                                     @foreach($items as $item)
                                         <div class="d-flex justify-content-between align-items-start small mt-1">
-                                            <span>{{ $item->product->name }} × {{ $item->quantity }}</span>
-                                            <span>₱{{ number_format($item->product->price * $item->quantity, 2) }}</span>
+                                            <span class="pe-2">{{ $item->product->name }} × {{ $item->quantity }}</span>
+                                            <span class="text-nowrap">₱{{ number_format($item->product->price * $item->quantity, 2) }}</span>
                                         </div>
                                     @endforeach
                                 </div>
                             @endforeach
+                            <div class="mb-3">
+                                <label for="voucher_code" class="form-label small mb-1">Promo code <span class="text-muted">(optional)</span></label>
+                                <input type="text" name="voucher_code" id="voucher_code" class="form-control form-control-sm @error('voucher_code') is-invalid @enderror" value="{{ old('voucher_code') }}" autocomplete="off" placeholder="Enter a code" maxlength="40" inputmode="text">
+                                @error('voucher_code')
+                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
                             <hr>
-                            <div class="d-flex justify-content-between mb-2"><span>Subtotal</span><span>₱{{ number_format($summary['subtotal'], 2) }}</span></div>
-                            <div class="d-flex justify-content-between mb-2"><span>Platform fee ({{ (int) round($platformFeeRate * 100) }}%)</span><span>₱{{ number_format($platformFee, 2) }}</span></div>
-                            <div class="d-flex justify-content-between mb-2"><span>Shipping</span><span class="text-muted small">Calculated later</span></div>
+                            <div class="d-flex justify-content-between mb-2 small"><span>Items</span><span>₱{{ number_format($totals['subtotal'] ?? $summary['subtotal'], 2) }}</span></div>
+                            @if(($totals['discount'] ?? 0) > 0)
+                                <div class="d-flex justify-content-between mb-2 small text-success"><span>Promo</span><span>−₱{{ number_format($totals['discount'], 2) }}</span></div>
+                            @endif
+                            <div class="d-flex justify-content-between mb-2 small"><span>Service fee</span><span>₱{{ number_format($totals['service_fee_total'] ?? 0, 2) }}</span></div>
+                            @if(($totals['delivery_total'] ?? 0) > 0)
+                                <div class="d-flex justify-content-between mb-2 small"><span>Delivery</span><span>₱{{ number_format($totals['delivery_total'], 2) }}</span></div>
+                            @endif
+                            @if(($totals['taxes_total'] ?? 0) > 0)
+                                <div class="d-flex justify-content-between mb-2 small"><span>Taxes</span><span>₱{{ number_format($totals['taxes_total'], 2) }}</span></div>
+                            @endif
                             <hr>
-                            <div class="d-flex justify-content-between mb-4"><span class="fw-semibold">Total</span><span class="fw-bold fs-5">₱{{ number_format($grandTotal, 2) }}</span></div>
+                            <div class="d-flex justify-content-between mb-3"><span class="fw-semibold">Total</span><span class="fw-bold fs-5">₱{{ number_format($totals['grand_total'] ?? 0, 2) }}</span></div>
+                            @if(($totals['seller_count'] ?? 1) > 1 && ($totals['delivery_total'] ?? 0) > 0)
+                                <p class="small text-muted mb-3">Delivery includes one stop per seller in your cart.</p>
+                            @endif
                             <button type="submit" class="btn btn-primary w-100 btn-lg"><i class="bi bi-check-circle me-1"></i> Place order</button>
                         </div>
                     </div>

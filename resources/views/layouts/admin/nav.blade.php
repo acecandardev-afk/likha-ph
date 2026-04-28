@@ -1,6 +1,9 @@
 @php
     $adminLinks = [
         ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'bi-speedometer2'],
+        ['route' => 'admin.analytics.index', 'label' => 'Shop insights', 'icon' => 'bi-graph-up-arrow'],
+        ['route' => 'admin.audit-logs.index', 'label' => 'Activity log', 'icon' => 'bi-journal-text'],
+        ['route' => 'admin.ledger.index', 'label' => 'Settlement ledger', 'icon' => 'bi-journal-richtext'],
         ['route' => 'admin.products.pending', 'label' => 'Product review', 'icon' => 'bi-hourglass-split', 'badge_key' => 'products'],
         ['route' => 'admin.products.approved', 'label' => 'Approved products', 'icon' => 'bi-check2-circle'],
         ['route' => 'admin.products.rejected', 'label' => 'Rejected products', 'icon' => 'bi-x-circle'],

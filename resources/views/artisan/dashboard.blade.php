@@ -44,9 +44,10 @@
         <div class="col">
             <div class="card stat-card h-100 bg-success bg-opacity-10 border-success">
                 <div class="card-body p-3 p-md-4">
-                    <p class="text-muted small fw-medium mb-1">Total revenue</p>
-                    <h2 class="h3 mb-1 text-success">₱{{ number_format($stats['total_revenue'], 0) }}</h2>
-                    <small class="text-muted">₱{{ number_format($stats['monthly_revenue'], 0) }} this month</small>
+                    <p class="text-muted small fw-medium mb-1">Your estimated share from items</p>
+                    <h2 class="h3 mb-1 text-success">₱{{ number_format($stats['estimated_share_total'] ?? 0, 0) }}</h2>
+                    <small class="text-muted">₱{{ number_format($stats['estimated_share_month'] ?? 0, 0) }} this month · settled or delivered orders</small>
+                    <div class="mt-2"><a href="{{ route('artisan.earnings.index') }}" class="small">View details</a></div>
                 </div>
             </div>
         </div>
@@ -242,15 +243,15 @@
                     @endphp
                     <div class="row g-3">
                         <div class="col-6">
-                            <div class="text-muted small fw-medium mb-1">Monthly revenue</div>
-                            <div class="fw-semibold fs-4 text-success">₱{{ number_format($stats['monthly_revenue'], 0) }}</div>
+                            <div class="text-muted small fw-medium mb-1">This month (est. share)</div>
+                            <div class="fw-semibold fs-4 text-success">₱{{ number_format($stats['estimated_share_month'] ?? 0, 0) }}</div>
                         </div>
                         <div class="col-6">
                             <div class="text-muted small fw-medium mb-1">Avg recent order</div>
                             <div class="fw-semibold fs-4">₱{{ number_format($avgOrder, 0) }}</div>
                         </div>
                     </div>
-                    <p class="text-muted small mb-0 mt-3">This dashboard uses your latest orders to show quick signals.</p>
+                    <p class="text-muted small mb-0 mt-3">Share is after promotions and marketplace fee on product lines.</p>
                 </div>
             </div>
         </div>
