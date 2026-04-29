@@ -8,6 +8,7 @@ use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryService
 {
@@ -37,7 +38,8 @@ class DeliveryService
     ];
 
     public function __construct(
-        protected NotificationService $notificationService
+        protected NotificationService $notificationService,
+        protected RiderDailyRemittanceRecorder $riderDailyRemittanceRecorder,
     ) {}
 
     /**
@@ -190,6 +192,16 @@ class DeliveryService
 
             if ($status === self::STATUS_DELIVERED && $package->rider) {
                 $this->syncRiderBusyState($package->rider);
+                try {
+                    $this->riderDailyRemittanceRecorder->accumulateFromDeliveredPackage(
+                        $package->fresh(['order.payment'])
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('rider_daily_remittance_accumulate_failed', [
+                        'order_package_id' => $package->id,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
             }
         });
 

@@ -20,7 +20,7 @@
                                 · {{ number_format($codTotals['packages_count']) }} delivered stops
                             </div>
                         </div>
-                        <span class="btn btn-primary btn-sm px-3">Details &amp; daily turn-in</span>
+                        <span class="btn btn-primary btn-sm px-3">Pay-on-delivery details</span>
                     </div>
                 </a>
             </div>

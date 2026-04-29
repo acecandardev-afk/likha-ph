@@ -11,8 +11,8 @@
         </ol>
     </nav>
 
-    <h1 class="h3 fw-semibold mb-2">Office records vs rider reports</h1>
-    <p class="small text-muted mb-4">Compare what riders say they turned in with what our payment records show for the same dates.</p>
+    <h1 class="h3 fw-semibold mb-2">Office records vs rider COD totals</h1>
+    <p class="small text-muted mb-4">Compare ledger postings with COD amounts recorded automatically when riders complete deliveries.</p>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -34,7 +34,7 @@
             @error('date_to')<div class="text-danger small">{{ $message }}</div>@enderror
             <p class="small text-muted mt-3 mb-0">
                 Payment entries posted {{ $from->format('M j, Y') }}–{{ $to->format('M j, Y') }} ({{ number_format($journalCount) }} orders).
-                Rider daily reports use the same calendar dates.
+                Auto-recorded rider totals use delivery completion dates (same calendar window).
             </p>
         </div>
     </div>
@@ -51,9 +51,9 @@
         <div class="col-md-6">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Riders reported (total)</div>
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Auto-recorded from deliveries (total)</div>
                     <div class="fs-3 fw-bold">₱{{ number_format($remittanceDeclared, 2) }}</div>
-                    <div class="small text-muted mt-2">Large gaps may need a quick follow-up with riders.</div>
+                    <div class="small text-muted mt-2">Large gaps versus ledger may need a staff review.</div>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light small"><tr><th>Date</th><th>Rider</th><th class="text-end">Cash reported</th></tr></thead>
+                    <thead class="table-light small"><tr><th>Date</th><th>Rider</th><th class="text-end">COD recorded</th></tr></thead>
                     <tbody>
                         @forelse($remittanceRows as $row)
                             <tr>
@@ -94,7 +94,7 @@
                                 <td class="text-end font-monospace">₱{{ number_format((float) $row->cod_declared_total, 2) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-muted text-center py-4">No declarations in range.</td></tr>
+                            <tr><td colspan="3" class="text-muted text-center py-4">No rider COD totals in range.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

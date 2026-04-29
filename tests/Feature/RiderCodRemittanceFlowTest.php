@@ -2,8 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\OrderPackage;
+use App\Models\OrderPackageItem;
+use App\Models\Payment;
 use App\Models\Rider;
+use App\Models\RiderRemittanceReport;
 use App\Models\User;
+use App\Services\DeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -49,29 +56,68 @@ class RiderCodRemittanceFlowTest extends TestCase
             ->assertRedirect('/rider/cod-settlement');
     }
 
-    public function test_rider_can_submit_cod_remittance_and_it_is_stored(): void
+    public function test_cod_delivery_auto_accumulates_daily_remittance_report(): void
     {
-        $user = $this->riderUserWithProfile();
-        $rider = $user->riderProfile;
+        $customer = User::factory()->create(['role' => 'customer']);
+        $artisan = User::factory()->create(['role' => 'artisan']);
+        $riderUser = $this->riderUserWithProfile();
+        $rider = $riderUser->riderProfile;
 
-        $this->actingAs($user)->post(route('rider.cod-remittance.store'), [
-            'report_date' => now()->format('Y-m-d'),
-            'cod_declared_total' => '1250.50',
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('rider_remittance_reports', [
-            'rider_id' => $rider->id,
-            'cod_declared_total' => '1250.50',
+        $order = Order::create([
+            'order_number' => 'ORD-RDR-'.strtoupper(substr(uniqid(), -10)),
+            'customer_id' => $customer->id,
+            'artisan_id' => $artisan->id,
+            'subtotal' => 200,
+            'platform_fee' => 10,
+            'shipping_amount' => 0,
+            'tax_amount' => 0,
+            'total' => 210,
+            'status' => 'processing',
+            'country' => 'Philippines',
+            'delivery_status' => DeliveryService::STATUS_OUT_FOR_DELIVERY,
         ]);
-    }
 
-    public function test_future_report_date_is_rejected(): void
-    {
-        $user = $this->riderUserWithProfile();
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => 'cod',
+            'amount' => 210,
+            'verification_status' => 'verified',
+        ]);
 
-        $this->actingAs($user)->post(route('rider.cod-remittance.store'), [
-            'report_date' => now()->addDay()->format('Y-m-d'),
-            'cod_declared_total' => '100',
-        ])->assertSessionHasErrors('report_date');
+        $item = OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => null,
+            'product_name' => 'Test item',
+            'product_description' => null,
+            'price' => 100,
+            'quantity' => 2,
+            'subtotal' => 200,
+        ]);
+
+        $pkg = OrderPackage::create([
+            'order_id' => $order->id,
+            'sequence' => 1,
+            'rider_id' => $rider->id,
+            'delivery_status' => DeliveryService::STATUS_OUT_FOR_DELIVERY,
+            'delivery_assigned_at' => now()->subHour(),
+            'delivery_completed_at' => null,
+        ]);
+
+        OrderPackageItem::create([
+            'order_package_id' => $pkg->id,
+            'order_item_id' => $item->id,
+            'quantity' => 2,
+        ]);
+
+        app(DeliveryService::class)->updateDeliveryStatus($pkg->fresh(), DeliveryService::STATUS_DELIVERED, $riderUser);
+
+        $report = RiderRemittanceReport::query()->where('rider_id', $rider->id)->first();
+        $this->assertNotNull($report);
+
+        $this->assertEqualsWithDelta(210.0, (float) $report->cod_declared_total, 0.01);
+        $this->assertEqualsWithDelta(190.0, (float) $report->seller_pool_declared, 0.01);
+        $this->assertEqualsWithDelta(10.0, (float) $report->platform_pool_declared, 0.01);
+        $this->assertNotNull($report->submitted_at);
+        $this->assertStringContainsString('automatically', strtolower((string) $report->notes));
     }
 }

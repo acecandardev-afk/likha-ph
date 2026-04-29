@@ -53,7 +53,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Rider\CodRemittanceAliasRedirectController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
-use App\Http\Controllers\Rider\RemittanceController as RiderRemittanceController;
 use App\Http\Controllers\Rider\SettlementController as RiderSettlementController;
 use Illuminate\Support\Facades\Route;
 
@@ -339,9 +338,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(function () {
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
     Route::get('/cod-settlement', [RiderSettlementController::class, 'index'])->name('cod-settlement');
-    Route::post('/cod-remittance', [RiderRemittanceController::class, 'store'])
-        ->middleware('throttle:30,1')
-        ->name('cod-remittance.store');
     Route::prefix('deliveries')->name('deliveries.')->group(function () {
         Route::get('/', [RiderDeliveryController::class, 'index'])->name('index');
         Route::get('/package/{orderPackage}', [RiderDeliveryController::class, 'show'])->name('show');

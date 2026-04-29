@@ -16,7 +16,7 @@
             <h1 class="h3 fw-semibold mb-1">Pay when delivered — your amounts</h1>
             <p class="text-muted mb-0 small">
                 See how cash from each drop-off lines up when an order ships in more than one package.
-                The full order total is finalized once every package is delivered — use this page to plan how much cash to turn in each day.
+                Daily COD totals for the office are recorded automatically when you mark each delivery complete — no separate form needed.
             </p>
         </div>
         <a href="{{ route('rider.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to dashboard</a>
@@ -33,7 +33,7 @@
                 @else
                     <p class="mb-2"><strong>Split by package:</strong> Each drop-off carries a fair share based on the items in that package.</p>
                 @endif
-                <p class="mb-0 text-muted">Official amounts for staff are listed under Admin → Payment records. Enter your daily cash turn-in below so the office can match what you handed over.</p>
+                <p class="mb-0 text-muted">Official amounts for staff appear under Admin → Payment records. Your side is updated automatically when you complete COD stops.</p>
             </div>
         </details>
     </div>
@@ -92,41 +92,6 @@
         <strong>All-time totals (every delivery):</strong> cash ₱{{ number_format($lifetimeTotals['cod_total'], 2) }}
         · sellers ₱{{ number_format($lifetimeTotals['seller_share'], 2) }}
         · Likha &amp; fees ₱{{ number_format($lifetimeTotals['company_side_total'], 2) }}
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-            <h2 class="h6 fw-bold mb-1">Daily cash turn-in</h2>
-            <p class="small text-muted mb-0">Tell us how much cash you handed to sellers or the office for that calendar day. We compare this with our payment records.</p>
-        </div>
-        <div class="card-body p-4 pt-3">
-            <form method="POST" action="{{ route('rider.cod-remittance.store') }}" class="row g-3 align-items-end">
-                @csrf
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold mb-1">Date</label>
-                    <input type="date" name="report_date" class="form-control" value="{{ old('report_date', now()->format('Y-m-d')) }}" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold mb-1">Total cash you turned in</label>
-                    <input type="number" step="0.01" min="0" name="cod_declared_total" class="form-control" value="{{ old('cod_declared_total') }}" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold mb-1">Amount for sellers (optional)</label>
-                    <input type="number" step="0.01" min="0" name="seller_pool_declared" class="form-control" value="{{ old('seller_pool_declared') }}">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold mb-1">Amount for Likha office (optional)</label>
-                    <input type="number" step="0.01" min="0" name="platform_pool_declared" class="form-control" value="{{ old('platform_pool_declared') }}">
-                </div>
-                <div class="col-12">
-                    <label class="form-label small fw-semibold mb-1">Notes</label>
-                    <textarea name="notes" class="form-control form-control-sm" rows="2" maxlength="2000" placeholder="Optional">{{ old('notes') }}</textarea>
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <div class="card border-0 shadow-sm">
