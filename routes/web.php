@@ -93,6 +93,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Avoid 500s when /logout is opened directly (GET). Real logout is POST.
 Route::get('/logout', [HomeController::class, 'index']);
 
+// POST-only endpoint used by form on cod-settlement; GET must redirect without requiring rider middleware first.
+Route::get('/rider/cod-remittance', CodRemittanceRedirectController::class)->name('rider.cod-remittance.redirect');
+
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
@@ -336,8 +339,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(function () {
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
     Route::get('/cod-settlement', [RiderSettlementController::class, 'index'])->name('cod-settlement');
-    // Avoid 405 when users/bookmarks hit POST-only URL via GET — send them to the form page.
-    Route::get('/cod-remittance', CodRemittanceRedirectController::class)->name('cod-remittance.redirect');
     Route::post('/cod-remittance', [RiderRemittanceController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('cod-remittance.store');

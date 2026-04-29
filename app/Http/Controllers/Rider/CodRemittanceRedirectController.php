@@ -7,13 +7,14 @@ use Illuminate\Http\RedirectResponse;
 
 /**
  * GET /rider/cod-remittance is not a form page; POST saves the declaration.
- * This redirect avoids 405 errors for bookmarks or direct links without using a
- * route closure (route:cache friendly) and without throttling (avoids cache/Redis failures on thin hosts).
+ *
+ * Uses a plain path redirect (no route() resolution) so cached routes / APP_URL cannot break generation.
+ * Registered outside auth+rider middleware so this hop cannot trip rider middleware edge cases on hosts.
  */
 class CodRemittanceRedirectController extends Controller
 {
     public function __invoke(): RedirectResponse
     {
-        return redirect()->route('rider.cod-settlement');
+        return redirect('/rider/cod-settlement');
     }
 }

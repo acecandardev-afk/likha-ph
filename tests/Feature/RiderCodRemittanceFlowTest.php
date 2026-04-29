@@ -31,9 +31,14 @@ class RiderCodRemittanceFlowTest extends TestCase
         return $user;
     }
 
-    public function test_guest_is_redirected_to_login_when_visiting_cod_remittance(): void
+    public function test_guest_get_cod_remittance_redirects_to_cod_settlement(): void
     {
-        $this->get('/rider/cod-remittance')->assertRedirect(route('login'));
+        $this->get('/rider/cod-remittance')->assertRedirect('/rider/cod-settlement');
+    }
+
+    public function test_guest_requesting_cod_settlement_after_redirect_is_sent_to_login(): void
+    {
+        $this->get('/rider/cod-settlement')->assertRedirect(route('login'));
     }
 
     public function test_authenticated_rider_get_cod_remittance_redirects_to_cod_settlement(): void
@@ -41,7 +46,7 @@ class RiderCodRemittanceFlowTest extends TestCase
         $user = $this->riderUserWithProfile();
 
         $this->actingAs($user)->get('/rider/cod-remittance')
-            ->assertRedirect(route('rider.cod-settlement'));
+            ->assertRedirect('/rider/cod-settlement');
     }
 
     public function test_rider_can_submit_cod_remittance_and_it_is_stored(): void
