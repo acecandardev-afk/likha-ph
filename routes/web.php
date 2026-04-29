@@ -50,6 +50,7 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Rider\CodRemittanceAliasRedirectController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
 use App\Http\Controllers\Rider\RemittanceController as RiderRemittanceController;
@@ -92,8 +93,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Avoid 500s when /logout is opened directly (GET). Real logout is POST.
 Route::get('/logout', [HomeController::class, 'index']);
 
-// POST-only endpoint uses POST route below; GET uses Laravel's built-in redirect (no app controller — avoids deploy/autoload issues).
-Route::redirect('/rider/cod-remittance', '/rider/cod-settlement', 302)->name('rider.cod-remittance.redirect');
+// POST-only endpoint uses POST route below; GET redirects via minimal controller (Symfony RedirectResponse only).
+Route::get('/rider/cod-remittance', CodRemittanceAliasRedirectController::class)->name('rider.cod-remittance.redirect');
 
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);

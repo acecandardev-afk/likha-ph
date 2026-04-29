@@ -14,18 +14,22 @@ class EnsureUserIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->isSuspended()) {
-            try {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-            } catch (\Throwable $e) {
-                report($e);
-                Auth::logout();
-            }
+        try {
+            if ($request->user() && $request->user()->isSuspended()) {
+                try {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                } catch (\Throwable $e) {
+                    report($e);
+                    Auth::logout();
+                }
 
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Your account has been suspended. Please contact support.']);
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Your account has been suspended. Please contact support.']);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         return $next($request);

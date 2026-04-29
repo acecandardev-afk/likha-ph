@@ -20,52 +20,55 @@ class ShareUiState
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $root = $request->getSchemeAndHttpHost().rtrim($request->getBasePath(), '/');
-        if ($root !== '') {
-            URL::useOrigin($root);
-        }
+        $payload = [
+            'uiCartCount' => 0,
+            'uiUnreadNotificationsCount' => 0,
+            'uiApplicationBanner' => null,
+            'uiGoogleSignInAvailable' => filled(config('services.google.client_id'))
+                && filled(config('services.google.client_secret')),
+        ];
 
-        $userId = $request->user()?->id;
-
-        $cartCount = 0;
-        $unreadNotificationsCount = 0;
-        $applicationBanner = null;
-
-        if ($userId) {
+        try {
             try {
-                if (! $request->user()->isRider()) {
-                    $cartCount = Cache::remember("ui:cartCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
-                        return (int) Cart::where('user_id', $userId)->sum('quantity');
-                    });
+                $root = $request->getSchemeAndHttpHost().rtrim($request->getBasePath(), '/');
+                if ($root !== '') {
+                    URL::useOrigin($root);
                 }
-
-                $unreadNotificationsCount = Cache::remember("ui:unreadNotificationsCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
-                    return (int) UserNotification::where('user_id', $userId)->where('is_read', false)->count();
-                });
-
-                // Only look for the artisan application banner if needed.
-                $applicationBanner = Cache::remember("ui:applicationBanner:{$userId}", now()->addSeconds(10), function () use ($userId) {
-                    return UserNotification::where('user_id', $userId)
-                        ->where('is_read', false)
-                        ->whereIn('type', ['artisan_application_approved', 'artisan_application_rejected'])
-                        ->latest()
-                        ->first();
-                });
             } catch (\Throwable $e) {
                 report($e);
             }
+
+            $userId = $request->user()?->id;
+
+            if ($userId) {
+                try {
+                    if (! $request->user()->isRider()) {
+                        $payload['uiCartCount'] = Cache::remember("ui:cartCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
+                            return (int) Cart::where('user_id', $userId)->sum('quantity');
+                        });
+                    }
+
+                    $payload['uiUnreadNotificationsCount'] = Cache::remember("ui:unreadNotificationsCount:{$userId}", now()->addSeconds(5), function () use ($userId) {
+                        return (int) UserNotification::where('user_id', $userId)->where('is_read', false)->count();
+                    });
+
+                    $payload['uiApplicationBanner'] = Cache::remember("ui:applicationBanner:{$userId}", now()->addSeconds(10), function () use ($userId) {
+                        return UserNotification::where('user_id', $userId)
+                            ->where('is_read', false)
+                            ->whereIn('type', ['artisan_application_approved', 'artisan_application_rejected'])
+                            ->latest()
+                            ->first();
+                    });
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+
+            View::share($payload);
+        } catch (\Throwable $e) {
+            report($e);
+            View::share($payload);
         }
-
-        // Server-side only: never expose credentials to the client; views only get a boolean.
-        $googleSignInAvailable = filled(config('services.google.client_id'))
-            && filled(config('services.google.client_secret'));
-
-        View::share([
-            'uiCartCount' => $cartCount,
-            'uiUnreadNotificationsCount' => $unreadNotificationsCount,
-            'uiApplicationBanner' => $applicationBanner,
-            'uiGoogleSignInAvailable' => $googleSignInAvailable,
-        ]);
 
         return $next($request);
     }

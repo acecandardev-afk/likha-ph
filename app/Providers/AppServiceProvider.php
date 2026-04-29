@@ -72,31 +72,42 @@ class AppServiceProvider extends ServiceProvider
         );
 
         View::composer('layouts.admin.nav', function ($view) {
-            // One DB round-trip (same filters as Product::pending(), Payment::pending(), etc.)
-            $t = DB::getTablePrefix();
-            $row = DB::selectOne(
-                "SELECT
-                    (SELECT COUNT(*) FROM {$t}products WHERE approval_status = ?) AS products,
-                    (SELECT COUNT(*) FROM {$t}payments WHERE verification_status = ?) AS payments,
-                    (SELECT COUNT(*) FROM {$t}users WHERE role = ? AND status = ?) AS artisans,
-                    (SELECT COUNT(*) FROM {$t}order_packages WHERE delivery_status = ?) AS deliveries,
-                    (SELECT COUNT(*) FROM {$t}delivery_reports WHERE status = 'open') AS reports",
-                [
-                    'pending',
-                    'pending',
-                    'artisan',
-                    'pending',
-                    DeliveryService::STATUS_PENDING_ASSIGNMENT,
-                ]
-            );
+            try {
+                // One DB round-trip (same filters as Product::pending(), Payment::pending(), etc.)
+                $t = DB::getTablePrefix();
+                $row = DB::selectOne(
+                    "SELECT
+                        (SELECT COUNT(*) FROM {$t}products WHERE approval_status = ?) AS products,
+                        (SELECT COUNT(*) FROM {$t}payments WHERE verification_status = ?) AS payments,
+                        (SELECT COUNT(*) FROM {$t}users WHERE role = ? AND status = ?) AS artisans,
+                        (SELECT COUNT(*) FROM {$t}order_packages WHERE delivery_status = ?) AS deliveries,
+                        (SELECT COUNT(*) FROM {$t}delivery_reports WHERE status = 'open') AS reports",
+                    [
+                        'pending',
+                        'pending',
+                        'artisan',
+                        'pending',
+                        DeliveryService::STATUS_PENDING_ASSIGNMENT,
+                    ]
+                );
 
-            $view->with('adminPendingCounts', [
-                'products' => (int) ($row->products ?? 0),
-                'payments' => (int) ($row->payments ?? 0),
-                'artisans' => (int) ($row->artisans ?? 0),
-                'deliveries' => (int) ($row->deliveries ?? 0),
-                'reports' => (int) ($row->reports ?? 0),
-            ]);
+                $view->with('adminPendingCounts', [
+                    'products' => (int) ($row->products ?? 0),
+                    'payments' => (int) ($row->payments ?? 0),
+                    'artisans' => (int) ($row->artisans ?? 0),
+                    'deliveries' => (int) ($row->deliveries ?? 0),
+                    'reports' => (int) ($row->reports ?? 0),
+                ]);
+            } catch (\Throwable $e) {
+                report($e);
+                $view->with('adminPendingCounts', [
+                    'products' => 0,
+                    'payments' => 0,
+                    'artisans' => 0,
+                    'deliveries' => 0,
+                    'reports' => 0,
+                ]);
+            }
         });
     }
 }
