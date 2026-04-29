@@ -8,10 +8,19 @@
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-BdMT92PD.js",
+    "file": "assets/app-DmsnaDIv.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/pages/admin-insights-chart.js"
+    ]
+  },
+  "resources/js/pages/admin-insights-chart.js": {
+    "file": "assets/admin-insights-chart-B-T4ghZN.js",
+    "name": "admin-insights-chart",
+    "src": "resources/js/pages/admin-insights-chart.js",
+    "isDynamicEntry": true
   },
   "resources/sass/app.scss": {
     "file": "assets/app-BUr8yICE.css",

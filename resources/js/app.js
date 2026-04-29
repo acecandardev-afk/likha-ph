@@ -17,4 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminSalesForm();
     initChatPage();
     initChatModal();
+
+    if (document.getElementById('likhaInsightsOrdersChart')) {
+        import('./pages/admin-insights-chart')
+            .then((mod) => {
+                mod.initAdminInsightsOrdersChart();
+            })
+            .catch(() => {
+                /* Chart is optional; page remains usable */
+            });
+    }
 });

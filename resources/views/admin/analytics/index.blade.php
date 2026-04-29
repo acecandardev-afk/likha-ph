@@ -25,21 +25,72 @@
     </div>
 
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0 fw-semibold">Orders placed per day (last {{ $days }} days)</h5>
+        <div class="card-header d-flex flex-wrap align-items-start justify-content-between gap-2">
+            <div>
+                <h5 class="mb-0 fw-semibold">Orders placed per day (last {{ $days }} days)</h5>
+                <small class="text-muted">Line chart from the same daily counts shown in the summary table.</small>
+            </div>
         </div>
         <div class="card-body">
-            <div class="row g-2">
-                @foreach($ordersByDay as $date => $count)
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                        <div class="border rounded p-2 text-center small">
-                            <div class="text-muted">{{ \Carbon\Carbon::parse($date)->format('M j') }}</div>
-                            <div class="fs-5 fw-semibold">{{ $count }}</div>
-                            <span class="text-muted">orders</span>
-                        </div>
-                    </div>
-                @endforeach
+            <script type="application/json" id="likha-insights-orders-data">@json(['labels' => $chartLabels, 'values' => $chartValues])</script>
+            <div
+                id="insights-chart-mount"
+                class="rounded border bg-body-tertiary p-3"
+                style="min-height: 300px;"
+            >
+                <canvas
+                    id="likhaInsightsOrdersChart"
+                    aria-describedby="insights-chart-table-desc"
+                    aria-label="{{ __('Orders placed per day for the selected period.') }}"
+                    role="img"
+                ></canvas>
             </div>
+
+            <p id="insights-chart-table-desc" class="visually-hidden">
+                {{ __('Detailed day-by-day order counts appear in the table below.') }}
+            </p>
+            <details class="mt-4">
+                <summary class="fw-medium text-body-secondary small">{{ __('Daily totals (table)') }}</summary>
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm table-striped align-middle mb-0">
+                        <caption class="visually-hidden">{{ __('Orders placed each day') }}</caption>
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">{{ __('Date') }}</th>
+                                <th class="text-end" scope="col">{{ __('Orders') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($ordersByDay as $date => $count)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($date)->format('M j, Y') }}</td>
+                                    <td class="text-end fw-semibold">{{ $count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            <noscript>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Date') }}</th>
+                                <th class="text-end">{{ __('Orders') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($ordersByDay as $date => $count)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($date)->format('M j, Y') }}</td>
+                                    <td class="text-end">{{ $count }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </noscript>
         </div>
     </div>
 

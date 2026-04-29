@@ -52,7 +52,9 @@
             @yield('content')
         </main>
 
-        @include('layouts.footer')
+        @unless(request()->routeIs('admin.*'))
+            @include('layouts.footer')
+        @endunless
     </div>
 
     @unless(request()->routeIs('login', 'register', 'register.artisan'))

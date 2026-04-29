@@ -36,13 +36,22 @@ class AnalyticsController extends AdminController
             ->limit(15)
             ->get();
 
+        $chartLabels = [];
+        $chartValues = [];
+        foreach ($ordersByDay as $date => $count) {
+            $chartLabels[] = \Carbon\Carbon::parse((string) $date)->format('M j');
+            $chartValues[] = (int) $count;
+        }
+
         return view('admin.analytics.index', compact(
             'ordersByDay',
             'activityRate',
             'buyerAccounts',
             'buyersWhoOrdered',
             'topItems',
-            'days'
+            'days',
+            'chartLabels',
+            'chartValues',
         ));
     }
 }
