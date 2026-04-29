@@ -154,7 +154,7 @@
                                 <h5 class="mb-0 fw-semibold"><i class="bi bi-box-seam me-2"></i> Delivery packages — {{ $shopItems->first()->product->artisan?->artisanProfile?->workshop_name ?? $shopItems->first()->product->artisan?->name ?? 'Seller' }}</h5>
                             </div>
                             <div class="card-body">
-                                <p class="small text-muted">Change quantity below if needed (updates your cart). Then assign each line to package <strong>1</strong>, <strong>2</strong>, … Separate packages may be assigned to different riders (up to 5 active stops per rider).</p>
+                                <p class="small text-muted">Change quantity below if needed (updates your cart). Then assign each line to package <strong>1</strong>, <strong>2</strong>, … Separate packages may be assigned to different riders.</p>
                                 @foreach($shopItems as $cartItem)
                                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom">
                                         <div class="flex-grow-1 min-w-0">

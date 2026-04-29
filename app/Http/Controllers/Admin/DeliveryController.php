@@ -53,7 +53,7 @@ class DeliveryController extends AdminController
         $rider = $this->deliveryService->assignRandomAvailableRider($orderPackage->fresh(['order.payment']));
 
         if (! $rider) {
-            return back()->with('warning', 'No available rider with capacity. Package remains pending assignment.');
+            return back()->with('warning', 'No rider is available for assignment. Package remains pending assignment.');
         }
 
         return back()->with('success', 'Package assigned to '.$rider->full_name.'.');

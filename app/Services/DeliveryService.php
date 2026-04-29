@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class DeliveryService
 {
-    public const MAX_ACTIVE_PACKAGES_PER_RIDER = 5;
-
     public const STATUS_PENDING_ASSIGNMENT = 'pending_assignment';
 
     public const STATUS_ORDER_CONFIRMED = 'order_confirmed';
@@ -67,7 +65,7 @@ class DeliveryService
     }
 
     /**
-     * Assign a rider to this package if payment allows and rider has capacity (< 5 active packages).
+     * Assign a rider to this package when payment allows. Picks among available/busy riders with the fewest active (non-delivered) stops.
      */
     public function assignRandomAvailableRider(OrderPackage $package): ?Rider
     {
@@ -89,19 +87,17 @@ class DeliveryService
             return null;
         }
 
-        // Prefer lowest active (non-delivered) package count; first rider under capacity.
+        // Prefer lowest active (non-delivered) package count for load balancing.
         // Use a correlated subquery (SQLite-compatible — avoid withCount+having; SQLite rejects HAVING here).
         $prefix = DB::getTablePrefix();
         $ridersTable = $prefix.(new Rider)->getTable();
         $packagesTable = $prefix.(new OrderPackage)->getTable();
         $delivered = self::STATUS_DELIVERED;
-        $cap = self::MAX_ACTIVE_PACKAGES_PER_RIDER;
 
         $activeSql = '(SELECT COUNT(*) FROM '.$packagesTable.' op WHERE op.rider_id = '.$ridersTable.'.id AND op.delivery_status <> ?)';
 
         $rider = Rider::query()
             ->whereIn('status', [Rider::STATUS_AVAILABLE, Rider::STATUS_BUSY])
-            ->whereRaw($activeSql.' < ?', [$delivered, $cap])
             ->orderByRaw($activeSql.' asc', [$delivered])
             ->orderBy($ridersTable.'.id')
             ->first();
@@ -220,13 +216,9 @@ class DeliveryService
     protected function syncRiderBusyState(Rider $rider): void
     {
         $active = $this->activePackageCountForRider($rider->fresh());
-        if ($active >= self::MAX_ACTIVE_PACKAGES_PER_RIDER) {
-            $rider->update(['status' => Rider::STATUS_BUSY]);
-        } elseif ($active === 0) {
-            $rider->update(['status' => Rider::STATUS_AVAILABLE]);
-        } else {
-            $rider->update(['status' => Rider::STATUS_BUSY]);
-        }
+        $rider->update([
+            'status' => $active === 0 ? Rider::STATUS_AVAILABLE : Rider::STATUS_BUSY,
+        ]);
     }
 
     public function deliveryStatusOptions(): array

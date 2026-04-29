@@ -5,7 +5,7 @@
 @section('content')
 <div class="container py-2 py-md-3">
     <h1 class="h3 mb-3">Delivery Monitoring</h1>
-    <p class="text-muted small mb-4">Each row is one physical package. Riders may carry up to {{ \App\Services\DeliveryService::MAX_ACTIVE_PACKAGES_PER_RIDER }} active deliveries. Delivered packages are locked for editing.</p>
+    <p class="text-muted small mb-4">Each row is one physical package. Riders can carry multiple concurrent deliveries as operations allow. Delivered packages are locked for editing.</p>
 
     @if ($errors->has('delivery'))
         <div class="alert alert-danger">{{ $errors->first('delivery') }}</div>
