@@ -28,6 +28,9 @@ class LedgerLine extends Model
     /** Payable to delivery partners recorded on packages */
     public const BUCKET_RIDER_PAYABLE = 'rider_payable';
 
+    /** Reconcile stored order.total with merchandise + fees + freight + tax (legacy or rounding drift) */
+    public const BUCKET_BOOKING_ADJUSTMENT = 'booking_adjustment';
+
     public static function labelForBucket(string $bucket): string
     {
         return match ($bucket) {
@@ -38,6 +41,7 @@ class LedgerLine extends Model
             self::BUCKET_SHIPPING_TRUST => 'Buyer delivery portion',
             self::BUCKET_TAX_PAYABLE => 'Buyer taxes collected',
             self::BUCKET_RIDER_PAYABLE => 'Due to riders (delivery pay)',
+            self::BUCKET_BOOKING_ADJUSTMENT => 'Balance to order total',
             default => ucfirst(str_replace('_', ' ', $bucket)),
         };
     }

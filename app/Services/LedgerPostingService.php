@@ -50,16 +50,28 @@ class LedgerPostingService
         $riderTotal = round($riderFees, 2);
 
         $creditCore = round($artisan + $platformFee + $shipping + $tax, 2);
-        if (abs($creditCore - $total) > 0.02) {
-            Log::warning('ledger_amount_mismatch', [
+        $bookingImbalance = round($total - $creditCore, 2);
+        if (abs($bookingImbalance) > 0.02) {
+            Log::notice('ledger_amount_mismatch_reconciled', [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'credit_core' => $creditCore,
                 'total' => $total,
+                'booking_adjustment' => abs($bookingImbalance),
+                'adjustment_side' => $bookingImbalance > 0 ? 'credit' : 'debit',
             ]);
         }
 
-        DB::transaction(function () use ($order, $total, $artisan, $platformFee, $shipping, $tax, $riderTotal) {
+        DB::transaction(function () use (
+            $order,
+            $total,
+            $artisan,
+            $platformFee,
+            $shipping,
+            $tax,
+            $bookingImbalance,
+            $riderTotal,
+        ) {
             $journal = LedgerJournal::create([
                 'order_id' => $order->id,
                 'kind' => LedgerJournal::KIND_DELIVERY_SETTLEMENT,
@@ -99,6 +111,26 @@ class LedgerPostingService
                     'memo' => 'Tax collected on the receipt',
                 ],
             ];
+
+            $adjMemo = 'Reconcile billed total with merchant, fee, freight, and tax lines';
+
+            if (abs($bookingImbalance) >= 0.01) {
+                if ($bookingImbalance > 0) {
+                    $lines[] = [
+                        'side' => 'credit',
+                        'bucket' => LedgerLine::BUCKET_BOOKING_ADJUSTMENT,
+                        'amount' => $bookingImbalance,
+                        'memo' => $adjMemo,
+                    ];
+                } else {
+                    $lines[] = [
+                        'side' => 'debit',
+                        'bucket' => LedgerLine::BUCKET_BOOKING_ADJUSTMENT,
+                        'amount' => abs($bookingImbalance),
+                        'memo' => $adjMemo,
+                    ];
+                }
+            }
 
             if ($riderTotal > 0) {
                 $lines[] = [
