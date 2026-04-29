@@ -131,6 +131,10 @@ class OrderService
             $this->notificationService->notifyOrderCreated($order);
         }
 
+        if ($appliedVoucher !== null && $orders->isNotEmpty()) {
+            $this->notificationService->notifyPromoAppliedForAdmins($appliedVoucher->fresh(), $orders, $customer);
+        }
+
         return $orders;
     }
 

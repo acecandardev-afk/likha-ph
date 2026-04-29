@@ -51,8 +51,10 @@ class ArtisanRegistrationController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'barangay' => Guihulngan::artisanBarangayIdRules(),
             'id_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+            'seller_terms_accepted' => ['accepted'],
         ], [
             'email.unique' => 'This email address is already registered.',
+            'seller_terms_accepted.accepted' => 'You must agree to the seller terms before submitting your application.',
         ]);
 
         $barangayName = Barangay::query()->findOrFail($validated['barangay'])->name;
@@ -129,8 +131,10 @@ class ArtisanRegistrationController extends Controller
             'workshop_name' => ['required', 'string', 'max:255'],
             'barangay' => Guihulngan::artisanBarangayIdRules(),
             'id_photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+            'seller_terms_accepted' => ['accepted'],
         ], [
             'workshop_name.required' => 'Please enter your workshop / business name.',
+            'seller_terms_accepted.accepted' => 'You must agree to the seller terms before submitting your application.',
         ]);
 
         $barangayName = Barangay::query()->findOrFail($validated['barangay'])->name;

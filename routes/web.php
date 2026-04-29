@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProductApprovalController;
 use App\Http\Controllers\Admin\RiderController as AdminRiderController;
 use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Artisan\DashboardController as ArtisanDashboardController;
 use App\Http\Controllers\Artisan\EarningsController as ArtisanEarningsController;
 use App\Http\Controllers\Artisan\LedgerController as ArtisanLedgerController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\DirectMessageController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProductController;
@@ -54,6 +56,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/legal/seller-agreement', [LegalController::class, 'sellerAgreement'])->name('legal.seller-agreement');
 
 Route::get('/up', [HealthController::class, 'index']);
 
@@ -125,6 +129,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/activity', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/ledger', [AdminLedgerController::class, 'index'])->name('ledger.index');
     Route::get('/ledger/journals/{journal}', [AdminLedgerController::class, 'show'])->name('ledger.show');
+
+    Route::resource('vouchers', AdminVoucherController::class)->except(['show']);
 
     // Product Approval
     Route::prefix('products')->name('products.')->group(function () {
@@ -241,6 +247,9 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Checkout
     Route::prefix('checkout')->name('checkout.')->group(function () {
         Route::get('/', [CheckoutController::class, 'index'])->name('index');
+        Route::post('/preview-totals', [CheckoutController::class, 'previewTotals'])
+            ->middleware('throttle:60,1')
+            ->name('preview-totals');
         Route::post('/', [CheckoutController::class, 'store'])->name('store');
     });
 

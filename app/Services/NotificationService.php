@@ -11,7 +11,9 @@ use App\Models\Product;
 use App\Models\Rider;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Models\Voucher;
 use App\Support\ProductNotificationUrl;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -24,12 +26,22 @@ class NotificationService
 
         $num = $order->order_number;
         $total = number_format((float) $order->total, 2);
+        $discount = (float) ($order->discount_amount ?? 0);
+        $code = $order->voucher_code ? (string) $order->voucher_code : null;
+        $promoCustomer = '';
+        $promoArtisan = '';
+        if ($discount > 0.009 && $code) {
+            $da = number_format($discount, 2);
+            $promoCustomer = " Promo {$code} saved ₱{$da} on merchandise.";
+            $merchShare = number_format(max(0, (float) $order->subtotal - $discount - (float) $order->platform_fee), 2);
+            $promoArtisan = " Promo {$code} applied (₱{$da} off merchandise). Estimated merchandise share after promo & service fee: ₱{$merchShare}.";
+        }
 
         $this->notifyUser(
             $order->customer_id,
             'order_created_customer',
             'Order placed',
-            "Order {$num} was placed successfully. Total: ₱{$total}.",
+            "Order {$num} was placed successfully. Total: ₱{$total}.{$promoCustomer}",
             route('customer.orders.show', $order)
         );
 
@@ -37,11 +49,43 @@ class NotificationService
             $order->artisan_id,
             'order_created_artisan',
             'New order received',
-            "You have a new order {$num} (₱{$total}).",
+            "You have a new order {$num} (₱{$total}).{$promoArtisan}",
             route('artisan.orders.show', $order)
         );
 
         Log::info('Order created (in-app notifications sent)', ['order_id' => $order->id]);
+    }
+
+    /**
+     * Inform admins once per checkout when a promo voucher was applied (possibly multi-order cart).
+     *
+     * @param  Collection<int, Order>  $orders
+     */
+    public function notifyPromoAppliedForAdmins(Voucher $voucher, Collection $orders, User $customer): void
+    {
+        $nums = $orders->pluck('order_number')->filter()->implode(', ');
+        $discountSum = round((float) $orders->sum(fn ($o) => (float) ($o->discount_amount ?? 0)), 2);
+        $discStr = number_format($discountSum, 2);
+
+        $this->notifyAdmins(
+            'checkout_promo_applied',
+            'Promo code used at checkout',
+            "Customer {$customer->name} applied promo {$voucher->code}. Order(s): {$nums}. Total merchandise discount allocated: ₱{$discStr}.",
+            route('admin.vouchers.index')
+        );
+    }
+
+    /**
+     * Notify admins when a voucher definition is created or materially updated (audit visibility).
+     */
+    public function notifyVoucherManagedByAdmin(User $admin, string $action, string $code): void
+    {
+        $this->notifyAdmins(
+            'voucher_managed',
+            'Promo voucher '.$action,
+            "Admin {$admin->name} {$action} voucher {$code}.",
+            route('admin.vouchers.index')
+        );
     }
 
     public function notifyOrderCancelled(Order $order): void

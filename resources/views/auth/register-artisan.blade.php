@@ -209,6 +209,16 @@
                                 Your application will be reviewed before your shop becomes active.
                             </div>
 
+                            <div class="form-check mb-4 px-1">
+                                <input type="checkbox" class="form-check-input @error('seller_terms_accepted') is-invalid @enderror" name="seller_terms_accepted" id="seller_terms_accepted_guest" value="1" {{ old('seller_terms_accepted') ? 'checked' : '' }} required>
+                                <label class="form-check-label small" for="seller_terms_accepted_guest">
+                                    I have read and agree to the <a href="{{ route('legal.seller-agreement') }}" target="_blank" rel="noopener noreferrer">seller terms &amp; marketplace policies</a>, including how promotional vouchers may affect seller payouts.
+                                </label>
+                                @error('seller_terms_accepted')
+                                    <span class="invalid-feedback d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
+
                             <button type="submit" class="btn btn-auth-primary btn-lg w-100">
                                 <i class="bi bi-person-plus me-2"></i>Submit application
                             </button>

@@ -15,6 +15,7 @@
         ['route' => 'admin.deliveries.index', 'label' => 'Deliveries', 'icon' => 'bi-truck', 'badge_key' => 'deliveries'],
         ['route' => 'admin.delivery-reports.index', 'label' => 'Delivery reports', 'icon' => 'bi-flag', 'badge_key' => 'reports'],
         ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => 'bi-tags'],
+        ['route' => 'admin.vouchers.index', 'label' => 'Promo vouchers', 'icon' => 'bi-ticket-perforated'],
         ['route' => 'admin.sales.index', 'label' => 'Sales', 'icon' => 'bi-receipt-cutoff'],
     ];
 @endphp

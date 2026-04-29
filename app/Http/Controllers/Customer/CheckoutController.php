@@ -9,6 +9,8 @@ use App\Models\Province;
 use App\Models\Region;
 use App\Services\CartService;
 use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends CustomerController
@@ -71,6 +73,46 @@ class CheckoutController extends CustomerController
             'selectedCityId',
             'selectedBarangayId'
         ));
+    }
+
+    /**
+     * AJAX preview for promo totals (matches checkout placement logic).
+     */
+    public function previewTotals(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'voucher_code' => ['nullable', 'string', 'max:40'],
+        ]);
+
+        $customer = $this->getCustomer();
+
+        $summary = $this->cartService->getCartSummary($customer);
+        if (($summary['total_items'] ?? 0) === 0) {
+            return response()->json(['message' => 'Your cart is empty.'], 422);
+        }
+
+        $cartErrors = $this->cartService->validateCart($customer);
+        if (! empty($cartErrors)) {
+            return response()->json(['message' => implode(' ', $cartErrors)], 422);
+        }
+
+        $codeRaw = isset($validated['voucher_code']) ? trim((string) $validated['voucher_code']) : '';
+        $code = $codeRaw !== '' ? strtoupper($codeRaw) : null;
+
+        $preview = $this->orderService->previewCheckoutTotals($customer, $code);
+
+        return response()->json([
+            'subtotal' => $preview['subtotal'],
+            'discount' => $preview['discount'],
+            'merchandise_after_discount' => $preview['merchandise_after_discount'],
+            'service_fee_total' => $preview['service_fee_total'],
+            'delivery_total' => $preview['delivery_total'],
+            'taxes_total' => $preview['taxes_total'],
+            'grand_total' => $preview['grand_total'],
+            'seller_count' => $preview['seller_count'],
+            'voucher_error' => $preview['voucher_error'],
+            'voucher_label' => $preview['voucher_label'],
+        ]);
     }
 
     public function store(CheckoutRequest $request)

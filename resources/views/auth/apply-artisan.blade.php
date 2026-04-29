@@ -96,6 +96,16 @@
                     @enderror
                 </div>
 
+                <div class="form-check mb-4 px-1 mt-3">
+                    <input type="checkbox" class="form-check-input @error('seller_terms_accepted') is-invalid @enderror" name="seller_terms_accepted" id="seller_terms_accepted" value="1" {{ old('seller_terms_accepted') ? 'checked' : '' }} required>
+                    <label class="form-check-label small" for="seller_terms_accepted">
+                        I have read and agree to the <a href="{{ route('legal.seller-agreement') }}" target="_blank" rel="noopener noreferrer">seller terms &amp; marketplace policies</a>, including how promotional vouchers may affect seller payouts.
+                    </label>
+                    @error('seller_terms_accepted')
+                        <span class="invalid-feedback d-block">{{ $message }}</span>
+                    @enderror
+                </div>
+
                 <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 mt-4">
                     <button type="submit" class="btn btn-primary btn-lg">
                         Submit application

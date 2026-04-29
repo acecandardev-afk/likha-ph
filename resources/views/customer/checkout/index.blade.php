@@ -224,25 +224,23 @@
                             @endforeach
                             <div class="mb-3">
                                 <label for="voucher_code" class="form-label small mb-1">Promo code <span class="text-muted">(optional)</span></label>
-                                <input type="text" name="voucher_code" id="voucher_code" class="form-control form-control-sm @error('voucher_code') is-invalid @enderror" value="{{ old('voucher_code') }}" autocomplete="off" placeholder="Enter a code" maxlength="40" inputmode="text">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="voucher_code" id="voucher_code" class="form-control @error('voucher_code') is-invalid @enderror" value="{{ old('voucher_code') }}" autocomplete="off" placeholder="Enter a code" maxlength="40" inputmode="text">
+                                    <button type="button" class="btn btn-outline-secondary" id="checkout-apply-promo">Apply</button>
+                                </div>
                                 @error('voucher_code')
                                     <span class="invalid-feedback d-block">{{ $message }}</span>
                                 @enderror
+                                <div id="checkout-promo-feedback" class="small mt-1 text-muted" aria-live="polite"></div>
                             </div>
                             <hr>
-                            <div class="d-flex justify-content-between mb-2 small"><span>Items</span><span>₱{{ number_format($totals['subtotal'] ?? $summary['subtotal'], 2) }}</span></div>
-                            @if(($totals['discount'] ?? 0) > 0)
-                                <div class="d-flex justify-content-between mb-2 small text-success"><span>Promo</span><span>−₱{{ number_format($totals['discount'], 2) }}</span></div>
-                            @endif
-                            <div class="d-flex justify-content-between mb-2 small"><span>Service fee</span><span>₱{{ number_format($totals['service_fee_total'] ?? 0, 2) }}</span></div>
-                            @if(($totals['delivery_total'] ?? 0) > 0)
-                                <div class="d-flex justify-content-between mb-2 small"><span>Delivery</span><span>₱{{ number_format($totals['delivery_total'], 2) }}</span></div>
-                            @endif
-                            @if(($totals['taxes_total'] ?? 0) > 0)
-                                <div class="d-flex justify-content-between mb-2 small"><span>Taxes</span><span>₱{{ number_format($totals['taxes_total'], 2) }}</span></div>
-                            @endif
+                            <div class="d-flex justify-content-between mb-2 small"><span>Items</span><span class="text-nowrap">₱<span id="checkout-summary-subtotal">{{ number_format($totals['subtotal'] ?? $summary['subtotal'], 2) }}</span></span></div>
+                            <div id="checkout-summary-discount-row" class="d-flex justify-content-between mb-2 small text-success {{ ($totals['discount'] ?? 0) > 0 ? '' : 'd-none' }}"><span id="checkout-summary-promo-label">Promo</span><span class="text-nowrap">−₱<span id="checkout-summary-discount">{{ number_format($totals['discount'] ?? 0, 2) }}</span></span></div>
+                            <div class="d-flex justify-content-between mb-2 small"><span>Service fee</span><span class="text-nowrap">₱<span id="checkout-summary-service">{{ number_format($totals['service_fee_total'] ?? 0, 2) }}</span></span></div>
+                            <div id="checkout-summary-delivery-row" class="d-flex justify-content-between mb-2 small {{ ($totals['delivery_total'] ?? 0) > 0 ? '' : 'd-none' }}"><span>Delivery</span><span class="text-nowrap">₱<span id="checkout-summary-delivery">{{ number_format($totals['delivery_total'] ?? 0, 2) }}</span></span></div>
+                            <div id="checkout-summary-tax-row" class="d-flex justify-content-between mb-2 small {{ ($totals['taxes_total'] ?? 0) > 0 ? '' : 'd-none' }}"><span>Taxes</span><span class="text-nowrap">₱<span id="checkout-summary-tax">{{ number_format($totals['taxes_total'] ?? 0, 2) }}</span></span></div>
                             <hr>
-                            <div class="d-flex justify-content-between mb-3"><span class="fw-semibold">Total</span><span class="fw-bold fs-5">₱{{ number_format($totals['grand_total'] ?? 0, 2) }}</span></div>
+                            <div class="d-flex justify-content-between mb-3"><span class="fw-semibold">Total</span><span class="fw-bold fs-5 text-nowrap">₱<span id="checkout-summary-grand">{{ number_format($totals['grand_total'] ?? 0, 2) }}</span></span></div>
                             @if(($totals['seller_count'] ?? 1) > 1 && ($totals['delivery_total'] ?? 0) > 0)
                                 <p class="small text-muted mb-3">Delivery includes one stop per seller in your cart.</p>
                             @endif
@@ -271,6 +269,110 @@ document.addEventListener('DOMContentLoaded', function() {
             street: @json(auth()->user()->street_address ?? ''),
             phone: @json(auth()->user()->phone ?? '')
         }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('checkout-apply-promo');
+    var input = document.getElementById('voucher_code');
+    var feedback = document.getElementById('checkout-promo-feedback');
+    var previewUrl = @json(route('customer.checkout.preview-totals'));
+    var token = document.querySelector('meta[name="csrf-token"]');
+    if (!btn || !input || !previewUrl || !token) return;
+
+    function pesoFmt(n) {
+        try {
+            return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n || 0));
+        } catch (e) {
+            return Number(n || 0).toFixed(2);
+        }
+    }
+
+    function applyTotals(data) {
+        function setText(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = pesoFmt(val);
+        }
+        setText('checkout-summary-subtotal', data.subtotal);
+        setText('checkout-summary-discount', data.discount);
+        setText('checkout-summary-service', data.service_fee_total);
+        setText('checkout-summary-delivery', data.delivery_total);
+        setText('checkout-summary-tax', data.taxes_total);
+        setText('checkout-summary-grand', data.grand_total);
+
+        var dr = document.getElementById('checkout-summary-discount-row');
+        if (dr) {
+            if (Number(data.discount || 0) > 0) dr.classList.remove('d-none');
+            else dr.classList.add('d-none');
+        }
+        var lbl = document.getElementById('checkout-summary-promo-label');
+        if (lbl && data.voucher_label) {
+            lbl.textContent = 'Promo (' + String(data.voucher_label) + ')';
+        } else if (lbl) {
+            lbl.textContent = 'Promo';
+        }
+
+        var delRow = document.getElementById('checkout-summary-delivery-row');
+        if (delRow) {
+            if (Number(data.delivery_total || 0) > 0) delRow.classList.remove('d-none');
+            else delRow.classList.add('d-none');
+        }
+        var taxRow = document.getElementById('checkout-summary-tax-row');
+        if (taxRow) {
+            if (Number(data.taxes_total || 0) > 0) taxRow.classList.remove('d-none');
+            else taxRow.classList.add('d-none');
+        }
+    }
+
+    btn.addEventListener('click', function () {
+        feedback.textContent = '';
+        btn.disabled = true;
+        fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ voucher_code: input.value.trim() })
+        }).then(function (res) {
+            return res.json().then(function (data) {
+                return { ok: res.ok, status: res.status, data: data };
+            });
+        }).then(function (payload) {
+            if (!payload.ok) {
+                var msg = (payload.data && payload.data.message) ? payload.data.message : 'Could not update totals.';
+                feedback.textContent = msg;
+                feedback.classList.remove('text-success');
+                feedback.classList.add('text-danger');
+                return;
+            }
+
+            applyTotals(payload.data);
+
+            if (payload.data.voucher_error) {
+                feedback.textContent = payload.data.voucher_error;
+                feedback.classList.remove('text-success');
+                feedback.classList.add('text-danger');
+                return;
+            }
+
+            if (input.value.trim() !== '') {
+                feedback.textContent = payload.data.voucher_label ? ('Applied: ' + payload.data.voucher_label) : 'Promo applied.';
+                feedback.classList.remove('text-danger');
+                feedback.classList.add('text-success');
+            } else {
+                feedback.textContent = '';
+            }
+        }).catch(function () {
+            feedback.textContent = 'Could not reach the server. Try again.';
+            feedback.classList.remove('text-success');
+            feedback.classList.add('text-danger');
+        }).finally(function () {
+            btn.disabled = false;
+        });
     });
 });
 </script>
