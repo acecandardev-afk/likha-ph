@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\RiderController as AdminRiderController;
 use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
+use App\Http\Controllers\Artisan\CodHandoffRedirectController;
 use App\Http\Controllers\Artisan\DashboardController as ArtisanDashboardController;
 use App\Http\Controllers\Artisan\EarningsController as ArtisanEarningsController;
 use App\Http\Controllers\Artisan\LedgerController as ArtisanLedgerController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryReportController;
+use App\Http\Controllers\Customer\FinancialDisputeRedirectController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\OrderFinancialDisputeController as CustomerOrderFinancialDisputeController;
 use App\Http\Controllers\Customer\ReviewController;
@@ -48,11 +50,11 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Rider\CodRemittanceRedirectController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
 use App\Http\Controllers\Rider\RemittanceController as RiderRemittanceController;
 use App\Http\Controllers\Rider\SettlementController as RiderSettlementController;
-use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -224,8 +226,7 @@ Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->gro
     // Orders
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [ArtisanOrderController::class, 'index'])->name('index');
-        Route::get('/{order}/cod-handoff', fn (Order $order) => redirect()->route('artisan.orders.show', $order))
-            ->middleware('throttle:120,1')
+        Route::get('/{order}/cod-handoff', CodHandoffRedirectController::class)
             ->name('cod-handoff.redirect');
         Route::post('/{order}/cod-handoff', [ArtisanOrderController::class, 'storeCodHandoff'])
             ->middleware('throttle:15,1')
@@ -276,8 +277,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
         Route::get('/', [CustomerOrderController::class, 'index'])->name('index');
         Route::get('/{order}', [CustomerOrderController::class, 'show'])->name('show');
         Route::get('/{order}/tracking', [CustomerOrderController::class, 'tracking'])->name('tracking');
-        Route::get('/{order}/financial-disputes', fn (Order $order) => redirect()->route('customer.orders.show', $order))
-            ->middleware('throttle:120,1')
+        Route::get('/{order}/financial-disputes', FinancialDisputeRedirectController::class)
             ->name('financial-disputes.redirect');
         Route::post('/{order}/payment-proof', [CustomerOrderController::class, 'uploadPaymentProof'])->name('payment-proof');
         Route::patch('/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('cancel');
@@ -337,9 +337,7 @@ Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(fun
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
     Route::get('/cod-settlement', [RiderSettlementController::class, 'index'])->name('cod-settlement');
     // Avoid 405 when users/bookmarks hit POST-only URL via GET — send them to the form page.
-    Route::get('/cod-remittance', fn () => redirect()->route('rider.cod-settlement'))
-        ->middleware('throttle:120,1')
-        ->name('cod-remittance.redirect');
+    Route::get('/cod-remittance', CodRemittanceRedirectController::class)->name('cod-remittance.redirect');
     Route::post('/cod-remittance', [RiderRemittanceController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('cod-remittance.store');
