@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Rider;
 
 use App\Models\RiderRemittanceReport;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RemittanceController extends RiderController
@@ -13,7 +14,12 @@ class RemittanceController extends RiderController
         abort_unless($rider, 403);
 
         $validated = $request->validate([
-            'report_date' => ['required', 'date'],
+            'report_date' => [
+                'required',
+                'date',
+                'before_or_equal:today',
+                'after_or_equal:'.Carbon::now()->subYears(5)->startOfDay()->toDateString(),
+            ],
             'cod_declared_total' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'seller_pool_declared' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'platform_pool_declared' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
