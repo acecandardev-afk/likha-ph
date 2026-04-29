@@ -10,7 +10,6 @@
         ['route' => 'admin.products.approved', 'label' => 'Approved products', 'icon' => 'bi-check2-circle'],
         ['route' => 'admin.products.rejected', 'label' => 'Rejected products', 'icon' => 'bi-x-circle'],
         ['route' => 'admin.payments.pending', 'label' => 'Payment review', 'icon' => 'bi-credit-card', 'badge_key' => 'payments'],
-        ['route' => 'admin.payments.verified', 'label' => 'Recorded payments', 'icon' => 'bi-patch-check'],
         ['route' => 'admin.users.artisans', 'label' => 'Artisans', 'icon' => 'bi-person-workspace', 'badge_key' => 'artisans'],
         ['route' => 'admin.users.customers', 'label' => 'Customers', 'icon' => 'bi-people'],
         ['route' => 'admin.riders.index', 'label' => 'Riders', 'icon' => 'bi-bicycle'],

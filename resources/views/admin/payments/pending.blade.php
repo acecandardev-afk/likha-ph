@@ -13,7 +13,7 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <h1 class="h2 fw-semibold mb-0">Pending payments</h1>
-        <a href="{{ route('admin.payments.verified') }}" class="btn btn-outline-success btn-sm">Recorded</a>
+        <a href="{{ route('admin.ledger.index') }}" class="btn btn-outline-success btn-sm">Payment records</a>
     </div>
 
     @if($pendingPayments->isEmpty())
