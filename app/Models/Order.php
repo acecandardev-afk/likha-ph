@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\DeliveryService;
 use App\Services\LedgerPostingService;
 use App\Support\PublicMediaUrl;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -411,6 +412,22 @@ class Order extends Model
         $this->update($updates);
 
         if ($allDelivered) {
+            $recordedAt = $updates['delivery_completed_at'] ?? null;
+            if ($recordedAt !== null) {
+                $cod = Payment::query()
+                    ->where('order_id', $this->id)
+                    ->where('payment_method', 'cod')
+                    ->first();
+
+                if ($cod && $cod->verification_status === 'verified') {
+                    $at = Carbon::parse($recordedAt);
+                    $cod->forceFill([
+                        'verified_at' => $at,
+                        'verified_by' => null,
+                    ])->save();
+                }
+            }
+
             try {
                 app(LedgerPostingService::class)->postDeliverySettlementIfNeeded(
                     $this->fresh(['packages', 'payment'])

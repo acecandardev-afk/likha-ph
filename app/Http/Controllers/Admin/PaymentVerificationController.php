@@ -103,8 +103,12 @@ class PaymentVerificationController extends AdminController
     public function verified()
     {
         $verifiedPayments = Payment::verified()
+            ->where('payment_method', 'cod')
             ->with(['order.customer', 'order.artisan'])
-            ->latest('verified_at')
+            ->join('orders', 'orders.id', '=', 'payments.order_id')
+            ->orderByDesc('orders.delivery_completed_at')
+            ->orderByDesc('payments.verified_at')
+            ->select('payments.*')
             ->paginate(20);
 
         return view('admin.payments.verified', compact('verifiedPayments'));
