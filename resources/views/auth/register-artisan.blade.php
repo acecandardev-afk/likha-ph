@@ -219,7 +219,7 @@
                                 @enderror
                             </div>
 
-                            <button type="submit" class="btn btn-auth-primary btn-lg w-100">
+                            <button type="submit" id="artisan-register-submit" class="btn btn-auth-primary btn-lg w-100" @disabled(! old('seller_terms_accepted'))>
                                 <i class="bi bi-person-plus me-2"></i>Submit application
                             </button>
                         </form>
@@ -255,6 +255,18 @@
 
 @push('scripts')
 <script>
+function initArtisanTermsSubmitGate(checkboxId, submitId) {
+    var cb = document.getElementById(checkboxId);
+    var btn = document.getElementById(submitId);
+    if (!cb || !btn) return;
+    function sync() {
+        var on = cb.checked;
+        btn.disabled = !on;
+        btn.setAttribute('aria-disabled', on ? 'false' : 'true');
+    }
+    cb.addEventListener('change', sync);
+    sync();
+}
 document.addEventListener('DOMContentLoaded', function () {
     initIdPhotoPreview();
     initLocationSelectors({
@@ -265,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
         savedCity: @json(old('city')),
         savedBarangay: @json(old('barangay')),
     });
+    initArtisanTermsSubmitGate('seller_terms_accepted_guest', 'artisan-register-submit');
 });
 
 function initIdPhotoPreview() {

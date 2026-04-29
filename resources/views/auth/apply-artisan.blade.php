@@ -107,7 +107,7 @@
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" id="artisan-apply-submit" class="btn btn-primary btn-lg" @disabled(! old('seller_terms_accepted'))>
                         Submit application
                     </button>
                     <a href="{{ route('customer.dashboard') }}" class="btn btn-outline-secondary btn-lg">
@@ -121,6 +121,18 @@
 
 @push('scripts')
 <script>
+function initArtisanTermsSubmitGate(checkboxId, submitId) {
+    var cb = document.getElementById(checkboxId);
+    var btn = document.getElementById(submitId);
+    if (!cb || !btn) return;
+    function sync() {
+        var on = cb.checked;
+        btn.disabled = !on;
+        btn.setAttribute('aria-disabled', on ? 'false' : 'true');
+    }
+    cb.addEventListener('change', sync);
+    sync();
+}
 document.addEventListener('DOMContentLoaded', function () {
     initLocationSelectors({
         bootstrap: @json($phAddressBootstrap),
@@ -130,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         savedCity: @json(old('city', auth()->user()->city ?? '')),
         savedBarangay: @json(old('barangay', auth()->user()->barangay ?? '')),
     });
+    initArtisanTermsSubmitGate('seller_terms_accepted', 'artisan-apply-submit');
 });
 </script>
 @endpush
