@@ -32,7 +32,8 @@
                                 <th>Customer</th>
                                 <th>Artisan</th>
                                 <th>Amount</th>
-                                <th>Verified at</th>
+                                <th>Delivered at</th>
+                                <th>Payment verified at</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -42,6 +43,7 @@
                                     <td>{{ $payment->order?->customer?->name ?? 'Unknown Customer' }}</td>
                                     <td>{{ $payment->order?->artisan?->artisanProfile?->workshop_name ?? $payment->order?->artisan?->name ?? 'Unknown Artisan' }}</td>
                                     <td>₱{{ number_format($payment->amount, 2) }}</td>
+                                    <td>{{ $payment->order?->delivery_completed_at?->format('M d, Y H:i') ?? '—' }}</td>
                                     <td>{{ $payment->verified_at?->format('M d, Y H:i') }}</td>
                                 </tr>
                             @endforeach
