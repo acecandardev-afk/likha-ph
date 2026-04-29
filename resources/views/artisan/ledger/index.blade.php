@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Settlement ledger')
+@section('title', 'Payment records')
 
 @section('content')
 <div class="container py-2 py-md-3">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-4">
         <div>
-            <h1 class="h2 fw-semibold mb-1">Your settlements</h1>
-            <p class="text-muted small mb-0">Official breakdown after orders are handed off — same wording we use internally.</p>
+            <h1 class="h2 fw-semibold mb-1">Your payment records</h1>
+            <p class="text-muted small mb-0">Official breakdown after delivery — same numbers the team uses.</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('artisan.earnings.index') }}" class="btn btn-outline-secondary btn-sm">After delivery totals</a>
@@ -24,7 +24,7 @@
                             <th scope="col">Posted</th>
                             <th scope="col">Order</th>
                             <th scope="col">Buyer</th>
-                            <th class="text-end" scope="col">Totals check</th>
+                            <th class="text-end" scope="col">Cash in · Out</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,7 +40,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No settlements yet — they appear after completed delivery.</td>
+                                <td colspan="4" class="text-center text-muted py-4">No payment records yet — they appear after delivery is complete.</td>
                             </tr>
                         @endforelse
                     </tbody>

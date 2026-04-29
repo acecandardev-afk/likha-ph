@@ -8,7 +8,7 @@
         <div>
             <h1 class="h2 fw-semibold mb-1">After delivery</h1>
             <p class="text-muted small mb-2">A simple view of settled orders and how much stays with you from sales after fees. Courier amounts are what the platform pays riders from its side — not taken from your prices.</p>
-            <p class="small mb-0"><a href="{{ route('artisan.ledger.index') }}">Line-by-line settlements</a> match the official ledger after each completed delivery.</p>
+            <p class="small mb-0"><a href="{{ route('artisan.ledger.index') }}">Payment records</a> are the official line-by-line breakdown; each order page shows how cash is split for riders vs what was posted.</p>
         </div>
         <a href="{{ route('artisan.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to dashboard</a>
     </div>

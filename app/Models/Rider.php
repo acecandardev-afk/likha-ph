@@ -57,6 +57,11 @@ class Rider extends Model
         return $this->hasMany(OrderPackage::class);
     }
 
+    public function remittanceReports()
+    {
+        return $this->hasMany(RiderRemittanceReport::class);
+    }
+
     public function scopeAvailable($query)
     {
         return $query->where('status', self::STATUS_AVAILABLE);

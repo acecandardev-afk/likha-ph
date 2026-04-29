@@ -75,7 +75,12 @@
                 </div>
                 <div class="card-body">
                     @include('partials.order-totals')
-                    <p class="small text-muted mb-0">Pay your rider the total shown above when they arrive.</p>
+                    @if($order->payment && strtolower((string) $order->payment->payment_method) === 'cod' && $order->packages->count() > 1)
+                        <p class="small text-muted mb-2 border-start border-primary border-3 ps-2">You may receive more than one delivery. Pay the <strong>same full order total</strong> shown here at each rider stop (it matches your receipt). The order is financially complete when every package is delivered.</p>
+                        <p class="small text-muted mb-0">Have the exact total ready for your rider.</p>
+                    @else
+                        <p class="small text-muted mb-0">Pay your rider the total shown above when they arrive.</p>
+                    @endif
                     <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
                     <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
@@ -134,6 +139,41 @@
                 </div>
             </div>
             @endif
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-semibold">Need help with payment or delivery?</h5>
+                </div>
+                <div class="card-body small">
+                    <p class="text-muted mb-3">Tell us if cash didn’t match, something arrived incomplete, or you need staff to review.</p>
+                    <form method="POST" action="{{ route('customer.orders.financial-disputes.store', $order) }}">
+                        @csrf
+                        <div class="mb-2">
+                            <label class="form-label mb-1">Topic</label>
+                            <select name="category" class="form-select form-select-sm" required>
+                                <option value="cod_partial_delivery">Cash-on-delivery or partial delivery</option>
+                                <option value="refund_request">Refund request</option>
+                                <option value="rider_payment_issue">Rider / payment issue</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label mb-1">Details</label>
+                            <textarea name="description" class="form-control form-control-sm" rows="4" required maxlength="5000" placeholder="Describe what happened"></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label mb-1">Related package (optional)</label>
+                            <select name="order_package_id" class="form-select form-select-sm">
+                                <option value="">—</option>
+                                @foreach($order->packages as $pkg)
+                                    <option value="{{ $pkg->id }}">Package {{ $pkg->sequence }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Submit concern</button>
+                    </form>
+                </div>
+            </div>
 
             @if($order->country || $order->region || $order->province || $order->city || $order->barangay || $order->street_address || $order->shipping_phone)
             <div class="card mb-3">

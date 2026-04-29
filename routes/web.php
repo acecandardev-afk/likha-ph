@@ -4,9 +4,11 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CodTreasuryController as AdminCodTreasuryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\DeliveryReportController as AdminDeliveryReportController;
+use App\Http\Controllers\Admin\FinancialDisputeController as AdminFinancialDisputeController;
 use App\Http\Controllers\Admin\LedgerController as AdminLedgerController;
 use App\Http\Controllers\Admin\PaymentVerificationController;
 // Admin Controllers
@@ -37,6 +39,7 @@ use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryReportController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\OrderFinancialDisputeController as CustomerOrderFinancialDisputeController;
 use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\DirectMessageController;
 use App\Http\Controllers\HealthController;
@@ -47,6 +50,8 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
+use App\Http\Controllers\Rider\RemittanceController as RiderRemittanceController;
+use App\Http\Controllers\Rider\SettlementController as RiderSettlementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -130,6 +135,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/ledger', [AdminLedgerController::class, 'index'])->name('ledger.index');
     Route::get('/ledger/journals/{journal}', [AdminLedgerController::class, 'show'])->name('ledger.show');
 
+    Route::get('/cod-treasury', [AdminCodTreasuryController::class, 'index'])->name('cod-treasury.index');
+    Route::get('/financial-disputes', [AdminFinancialDisputeController::class, 'index'])->name('financial-disputes.index');
+    Route::patch('/financial-disputes/{dispute}', [AdminFinancialDisputeController::class, 'resolve'])
+        ->middleware('throttle:120,1')
+        ->name('financial-disputes.resolve');
+
     Route::resource('vouchers', AdminVoucherController::class)->except(['show']);
 
     // Product Approval
@@ -212,6 +223,9 @@ Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->gro
     // Orders
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [ArtisanOrderController::class, 'index'])->name('index');
+        Route::post('/{order}/cod-handoff', [ArtisanOrderController::class, 'storeCodHandoff'])
+            ->middleware('throttle:15,1')
+            ->name('cod-handoff.store');
         Route::get('/{order}', [ArtisanOrderController::class, 'show'])->name('show');
         Route::patch('/{order}/approve', [ArtisanOrderController::class, 'approve'])->name('approve');
         Route::patch('/{order}/complete', [ArtisanOrderController::class, 'complete'])->name('complete');
@@ -261,6 +275,9 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
         Route::post('/{order}/payment-proof', [CustomerOrderController::class, 'uploadPaymentProof'])->name('payment-proof');
         Route::patch('/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('cancel');
         Route::patch('/{order}/mark-received', [CustomerOrderController::class, 'markReceived'])->name('mark-received');
+        Route::post('/{order}/financial-disputes', [CustomerOrderFinancialDisputeController::class, 'store'])
+            ->middleware('throttle:8,1')
+            ->name('financial-disputes.store');
     });
 
     Route::prefix('delivery-reports')->name('delivery-reports.')->group(function () {
@@ -311,6 +328,10 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(function () {
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/cod-settlement', [RiderSettlementController::class, 'index'])->name('cod-settlement');
+    Route::post('/cod-remittance', [RiderRemittanceController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('cod-remittance.store');
     Route::prefix('deliveries')->name('deliveries.')->group(function () {
         Route::get('/', [RiderDeliveryController::class, 'index'])->name('index');
         Route::get('/package/{orderPackage}', [RiderDeliveryController::class, 'show'])->name('show');

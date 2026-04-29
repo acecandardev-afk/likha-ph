@@ -98,6 +98,21 @@ class Order extends Model
         return $this->hasMany(LedgerJournal::class);
     }
 
+    public function deliverySettlementJournal()
+    {
+        return $this->hasOne(LedgerJournal::class)->where('kind', LedgerJournal::KIND_DELIVERY_SETTLEMENT);
+    }
+
+    public function sellerCodHandoff()
+    {
+        return $this->hasOne(SellerCodHandoff::class);
+    }
+
+    public function financialDisputes()
+    {
+        return $this->hasMany(OrderFinancialDispute::class)->latest();
+    }
+
     public function messages()
     {
         return $this->hasMany(Message::class);

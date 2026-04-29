@@ -65,8 +65,8 @@ class AdminRiderSalesProfileTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Profile Test Rider');
-        $response->assertSee('COD goods delivered');
-        $response->assertSee('Delivery history');
+        $response->assertSee('COD attributed');
+        $response->assertSee('Delivery breakdown');
     }
 
     public function test_delivered_package_records_rider_fee_and_shows_on_profile(): void

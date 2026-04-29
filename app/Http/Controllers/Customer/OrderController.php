@@ -68,6 +68,7 @@ class OrderController extends CustomerController
         $order->load([
             'artisan.artisanProfile',
             'rider',
+            'payment',
             'deliveryHistory.actor',
             'packages.rider',
         ]);

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Artisan;
 
 use App\Models\Order;
+use App\Models\SellerCodHandoff;
+use App\Services\LedgerSettlementReader;
 use App\Services\OrderService;
+use App\Services\RiderSettlementService;
 use Illuminate\Http\Request;
 
 class OrderController extends ArtisanController
@@ -31,7 +34,7 @@ class OrderController extends ArtisanController
     /**
      * Show order details.
      */
-    public function show(Order $order)
+    public function show(Order $order, LedgerSettlementReader $ledgerReader, RiderSettlementService $riderSettlement)
     {
         $this->authorize('view', $order);
 
@@ -43,9 +46,50 @@ class OrderController extends ArtisanController
             'rider',
             'packages.rider',
             'packages.items.orderItem',
+            'sellerCodHandoff',
+            'deliverySettlementJournal.lines',
         ]);
 
-        return view('artisan.orders.show', compact('order'));
+        $ledgerSnapshot = $ledgerReader->snapshotForOrder($order);
+
+        $packageAllocations = [];
+        foreach ($order->packages as $pkg) {
+            $packageAllocations[$pkg->id] = $riderSettlement->allocatePackage($pkg);
+        }
+
+        return view('artisan.orders.show', compact('order', 'ledgerSnapshot', 'packageAllocations'));
+    }
+
+    /**
+     * Seller confirms physical receipt of goods share from rider handoff (aligned with ledger when posted).
+     */
+    public function storeCodHandoff(Request $request, Order $order, LedgerSettlementReader $ledgerReader)
+    {
+        $this->authorize('view', $order);
+
+        if (! $order->isDelivered()) {
+            return back()->withErrors(['cod' => 'You can confirm rider handoff after the order is fully delivered.']);
+        }
+
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $ledger = $ledgerReader->snapshotForOrder($order);
+        $expected = $ledger['artisan_payable'] ?? round((float) $order->artisanMerchandiseShare(), 2);
+
+        SellerCodHandoff::query()->updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'artisan_user_id' => $order->artisan_id,
+                'ledger_journal_id' => $ledger['journal_id'] ?? null,
+                'expected_artisan_payable' => $expected,
+                'acknowledged_at' => now(),
+                'note' => $validated['note'] ?? null,
+            ]
+        );
+
+        return back()->with('success', 'Recorded your confirmation about rider settlement for your goods.');
     }
 
     /**

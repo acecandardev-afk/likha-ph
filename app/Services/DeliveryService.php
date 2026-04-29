@@ -195,6 +195,13 @@ class DeliveryService
 
         $package->order->refreshAggregateDeliveryFromPackages();
 
+        if ($status === self::STATUS_DELIVERED) {
+            $freshPkg = $package->fresh(['order.customer', 'order.artisan', 'order.payment', 'order.packages']);
+            if ($freshPkg) {
+                $this->notificationService->notifyOrderPackageDelivered($freshPkg);
+            }
+        }
+
         return $package->fresh(['rider', 'order']);
     }
 

@@ -115,13 +115,14 @@
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.products.index') }}">Products</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.earnings.index') }}">After delivery</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('artisan.ledger.index') }}">Settlement ledger</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.ledger.index') }}">Payment records</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.profile.edit') }}">Profile</a></li>
                             @elseif(auth()->user()->isCustomer())
                                 <li><a class="dropdown-item py-2" href="{{ route('customer.dashboard') }}">Dashboard</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('customer.orders.index') }}">Orders</a></li>
                             @elseif(auth()->user()->isRider())
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('rider.cod-settlement') }}">Pay-on-delivery summary</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.deliveries.index') }}">Deliveries</a></li>
                             @endif
                             <li><a class="dropdown-item py-2" href="{{ route('chats.index') }}">Messages</a></li>

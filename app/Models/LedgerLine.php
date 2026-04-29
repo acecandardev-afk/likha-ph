@@ -34,14 +34,14 @@ class LedgerLine extends Model
     public static function labelForBucket(string $bucket): string
     {
         return match ($bucket) {
-            self::BUCKET_COD_COLLECTIBLE => 'Collected from buyer',
-            self::BUCKET_COURIER_EXPENSE => 'Delivery partner cost',
-            self::BUCKET_ARTISAN_PAYABLE => 'Due to maker (items)',
-            self::BUCKET_PLATFORM_SERVICE_FEE => 'Marketplace fee',
-            self::BUCKET_SHIPPING_TRUST => 'Buyer delivery portion',
-            self::BUCKET_TAX_PAYABLE => 'Buyer taxes collected',
-            self::BUCKET_RIDER_PAYABLE => 'Due to riders (delivery pay)',
-            self::BUCKET_BOOKING_ADJUSTMENT => 'Balance to order total',
+            self::BUCKET_COD_COLLECTIBLE => 'Cash from buyer (COD total)',
+            self::BUCKET_COURIER_EXPENSE => 'Rider delivery cost',
+            self::BUCKET_ARTISAN_PAYABLE => 'Seller share from items',
+            self::BUCKET_PLATFORM_SERVICE_FEE => 'Likha service fee',
+            self::BUCKET_SHIPPING_TRUST => 'Shipping fee (from buyer)',
+            self::BUCKET_TAX_PAYABLE => 'Tax (from buyer)',
+            self::BUCKET_RIDER_PAYABLE => 'Rider delivery pay',
+            self::BUCKET_BOOKING_ADJUSTMENT => 'Small rounding adjustment',
             default => ucfirst(str_replace('_', ' ', $bucket)),
         };
     }

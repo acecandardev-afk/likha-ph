@@ -12,6 +12,9 @@
         </div>
         <div class="card-body">
             <p class="small text-muted mb-0">Overall status reflects the slowest package still in progress. Each package may have its own rider and delivery photo.</p>
+            @if($order->payment && strtolower((string) $order->payment->payment_method) === 'cod')
+                <p class="small mb-0 mt-2 alert alert-light border py-2 mb-0"><strong>Cash on delivery:</strong> keep your full order total ready (shown on order details). If there are multiple packages, each rider collects toward that same receipt total until everything is delivered.</p>
+            @endif
         </div>
     </div>
 

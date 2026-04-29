@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DirectMessage;
 use App\Models\Message;
 use App\Models\Order;
+use App\Models\OrderFinancialDispute;
 use App\Models\OrderPackage;
 use App\Models\Payment;
 use App\Models\Product;
@@ -319,6 +320,65 @@ class NotificationService
                 route('rider.deliveries.show', $package)
             );
         }
+    }
+
+    /**
+     * Buyer/seller clarity when a package is marked delivered (COD wording when multiple packages exist).
+     */
+    public function notifyOrderPackageDelivered(OrderPackage $package): void
+    {
+        $package->loadMissing(['order.customer', 'order.artisan', 'order.payment', 'order.packages']);
+        $order = $package->order;
+        $num = $order->order_number;
+        $seq = $package->sequence;
+        $pkgCount = $order->packages->count();
+        $method = strtolower((string) ($order->payment?->payment_method ?? ''));
+
+        $codSentence = '';
+        if ($method === 'cod') {
+            $codSentence = $pkgCount > 1
+                ? ' Pay cash on delivery using your full order total when your rider completes each drop — amounts match your receipt across packages.'
+                : ' Pay cash on delivery when your rider arrives (same total as your order summary).';
+        }
+
+        $this->notifyUser(
+            (int) $order->customer_id,
+            'delivery_package_delivered_customer',
+            "Package #{$seq} delivered",
+            "Package #{$seq} for order {$num} was marked delivered.{$codSentence}",
+            route('customer.orders.tracking', $order)
+        );
+
+        if ($order->artisan_id) {
+            $ledgerHint = '';
+            $order->loadMissing('deliverySettlementJournal');
+            if ($order->deliverySettlementJournal) {
+                $ledgerHint = ' Settlement journal posted for this order — check After delivery / Settlement ledger.';
+            } elseif ($pkgCount > 1) {
+                $ledgerHint = ' If this order has more packages still moving, ledger settlement posts after every package is delivered.';
+            }
+
+            $this->notifyUser(
+                (int) $order->artisan_id,
+                'delivery_package_delivered_artisan',
+                "Package #{$seq} delivered",
+                "Package #{$seq} for order {$num} was marked delivered.{$ledgerHint}",
+                route('artisan.orders.show', $order)
+            );
+        }
+    }
+
+    public function notifyFinancialDisputeOpened(OrderFinancialDispute $dispute): void
+    {
+        $dispute->loadMissing('order');
+        $num = $dispute->order?->order_number ?? 'Order';
+
+        $this->notifyAdmins(
+            'financial_dispute_opened',
+            'Financial / COD concern opened',
+            "Dispute on {$num}: {$dispute->category}. Review in Admin.",
+            route('admin.financial-disputes.index')
+        );
     }
 
     protected function notifyUser(int $userId, string $type, string $title, ?string $body, ?string $actionUrl = null): void

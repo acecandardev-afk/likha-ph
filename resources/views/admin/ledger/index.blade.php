@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Settlement ledger')
+@section('title', 'Payment records')
 
 @section('content')
 <div class="container py-2 py-md-3">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-4">
         <div>
-            <h1 class="h2 fw-semibold mb-1">Settlement ledger</h1>
-            <p class="text-muted small mb-0">Each row is recorded after delivery completes. Debit and credit totals match for every settlement.</p>
+            <h1 class="h2 fw-semibold mb-1">Payment records</h1>
+            <p class="text-muted small mb-0">Each row is saved after delivery. Collected cash and payouts should match on every order.</p>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to dashboard</a>
     </div>
@@ -22,7 +22,7 @@
                             <th scope="col">Order</th>
                             <th scope="col">Buyer</th>
                             <th scope="col">Seller</th>
-                            <th class="text-end" scope="col">Totals check</th>
+                            <th class="text-end" scope="col">Cash in · Out</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,7 +38,7 @@
                                 <td class="text-end small">
                                     ₱{{ number_format($t['debit'], 2) }} / ₱{{ number_format($t['credit'], 2) }}
                                     @if(abs($t['debit'] - $t['credit']) > 0.02)
-                                        <span class="badge bg-danger ms-1">Uneven</span>
+                                        <span class="badge bg-danger ms-1">Mismatch</span>
                                     @else
                                         <span class="text-success">✓</span>
                                     @endif

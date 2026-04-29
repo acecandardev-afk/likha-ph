@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Rider;
 
 use App\Models\OrderPackage;
 use App\Services\DeliveryService;
+use App\Services\RiderSettlementService;
 
 class DashboardController extends RiderController
 {
-    public function index()
+    public function index(RiderSettlementService $settlementService)
     {
         $user = $this->getRiderUser();
         $rider = $user->riderProfile;
@@ -36,6 +37,11 @@ class DashboardController extends RiderController
             'pending_assignment' => OrderPackage::where('delivery_status', DeliveryService::STATUS_PENDING_ASSIGNMENT)->count(),
         ];
 
-        return view('rider.dashboard', compact('rider', 'stats'));
+        $codTotals = null;
+        if ($rider) {
+            $codTotals = $settlementService->totalsForRider((int) $rider->id);
+        }
+
+        return view('rider.dashboard', compact('rider', 'stats', 'codTotals'));
     }
 }

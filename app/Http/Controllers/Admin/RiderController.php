@@ -6,6 +6,8 @@ use App\Models\OrderPackage;
 use App\Models\Rider;
 use App\Models\User;
 use App\Services\DeliveryService;
+use App\Services\RiderSettlementService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -28,41 +30,75 @@ class RiderController extends AdminController
     }
 
     /**
-     * Rider profile: delivered packages, merchandise totals, rider fees, delivery timestamps.
+     * Rider profile: delivered packages, COD attribution, seller vs marketplace splits, optional date range.
      */
-    public function show(Rider $rider)
+    public function show(Request $request, Rider $rider, RiderSettlementService $settlementService)
     {
         $rider->load('user');
 
-        $stats = [
-            'deliveries_count' => OrderPackage::query()
-                ->where('rider_id', $rider->id)
-                ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
-                ->count(),
-            'total_rider_fees' => (float) OrderPackage::query()
-                ->where('rider_id', $rider->id)
-                ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
-                ->sum('rider_fee_amount'),
-            'total_merchandise' => (float) DB::table('order_packages')
-                ->join('order_package_items', 'order_packages.id', '=', 'order_package_items.order_package_id')
-                ->join('order_items', 'order_package_items.order_item_id', '=', 'order_items.id')
-                ->where('order_packages.rider_id', $rider->id)
-                ->where('order_packages.delivery_status', DeliveryService::STATUS_DELIVERED)
-                ->sum(DB::raw('order_items.price * order_package_items.quantity')),
-        ];
+        $validated = $request->validate([
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+        ]);
+
+        $fromInput = $validated['date_from'] ?? null;
+        $toInput = $validated['date_to'] ?? null;
+
+        $from = null;
+        $to = null;
+
+        if ($fromInput !== null && $toInput !== null) {
+            $from = Carbon::parse($fromInput)->startOfDay();
+            $to = Carbon::parse($toInput)->endOfDay();
+            if ($from->greaterThan($to)) {
+                return back()->withErrors(['date_from' => 'Start date must be on or before end date.']);
+            }
+            if ($from->diffInDays($to) > 366) {
+                return back()->withErrors(['date_to' => 'Choose a range of one year or less.']);
+            }
+        } elseif ($fromInput !== null || $toInput !== null) {
+            return back()->withErrors(['date_from' => 'Provide both start and end dates, or leave both blank for all time.']);
+        }
+
+        $stats = $settlementService->totalsForRider((int) $rider->id, $from, $to);
+        $stats['deliveries_count'] = $stats['packages_count'];
+
+        $stats['total_rider_fees'] = (float) OrderPackage::query()
+            ->where('rider_id', $rider->id)
+            ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
+            ->when($from && $to, fn ($q) => $q->whereBetween('delivery_completed_at', [$from, $to]))
+            ->sum('rider_fee_amount');
+
+        $sellerBreakdown = $settlementService->sellerTotalsForRider((int) $rider->id, $from, $to);
 
         $packages = OrderPackage::query()
             ->where('rider_id', $rider->id)
             ->where('delivery_status', DeliveryService::STATUS_DELIVERED)
+            ->when($from && $to, fn ($q) => $q->whereBetween('delivery_completed_at', [$from, $to]))
             ->with([
                 'order.customer',
+                'order.artisan.artisanProfile',
                 'items.orderItem.product',
+                'order.packages.items.orderItem',
             ])
             ->orderByDesc('delivery_completed_at')
             ->paginate(12)
             ->withQueryString();
 
-        return view('admin.riders.show', compact('rider', 'stats', 'packages'));
+        $allocationByPackageId = [];
+        foreach ($packages as $pkg) {
+            $allocationByPackageId[$pkg->id] = $settlementService->allocatePackage($pkg);
+        }
+
+        return view('admin.riders.show', compact(
+            'rider',
+            'stats',
+            'packages',
+            'sellerBreakdown',
+            'allocationByPackageId',
+            'from',
+            'to'
+        ));
     }
 
     public function store(Request $request)

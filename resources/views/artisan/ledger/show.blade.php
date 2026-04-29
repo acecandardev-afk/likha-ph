@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Settlement details')
+@section('title', 'Payment breakdown')
 
 @section('content')
 <div class="container py-2 py-md-3">
@@ -11,10 +11,15 @@
     <p class="text-muted small mb-4">Posted {{ $journal->posted_at?->format('M j, Y g:i a') ?? '' }}</p>
 
     @php $t = $journal->totalsBySide(); @endphp
-    <p class="small text-muted mb-4">Your line for item sales appears as “Due to maker (items)” under credits.</p>
+    <p class="small text-muted mb-4">Look for “Seller share from items” — that’s what Likha owes you for items sold.</p>
 
     <div class="alert alert-{{ abs($t['debit'] - $t['credit']) > 0.02 ? 'warning' : 'light' }} small mb-4">
-        Debits ₱{{ number_format($t['debit'], 2) }} · Credits ₱{{ number_format($t['credit'], 2) }}
+        Cash collected ₱{{ number_format($t['debit'], 2) }} · Cash allocated ₱{{ number_format($t['credit'], 2) }}
+        @if(abs($t['debit'] - $t['credit']) <= 0.02)
+            <span class="text-muted">— totals balance.</span>
+        @else
+            <span class="text-muted">— staff may review.</span>
+        @endif
     </div>
 
     <div class="card">
@@ -23,7 +28,7 @@
                 <table class="table table-sm mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col">Side</th>
+                            <th scope="col">Direction</th>
                             <th scope="col">Details</th>
                             <th class="text-end" scope="col">Amount (₱)</th>
                         </tr>
@@ -31,7 +36,7 @@
                     <tbody>
                         @foreach($journal->lines as $line)
                             <tr>
-                                <td class="text-capitalize">{{ $line->side }}</td>
+                                <td>{{ $line->side === 'debit' ? 'From buyer' : 'Paid out / owed' }}</td>
                                 <td>{{ \App\Models\LedgerLine::labelForBucket($line->bucket) }}</td>
                                 <td class="text-end fw-semibold">{{ number_format((float) $line->amount, 2) }}</td>
                             </tr>

@@ -83,6 +83,59 @@
                 </div>
             </div>
 
+            @php($payCod = $order->payment && strtolower((string) $order->payment->payment_method) === 'cod')
+
+            @if($payCod || $ledgerSnapshot)
+                <div class="card mb-3 border-primary border-opacity-25">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0 fw-semibold">Pay on delivery — amounts</h5>
+                    </div>
+                    <div class="card-body small">
+                        <p class="text-muted mb-2">Helps you align with riders and the office. Actual cash handoffs follow your usual process; <strong>payment records</strong> are final after delivery is posted.</p>
+                        <p class="mb-2"><span class="text-muted">Allocation display:</span>
+                            @if($order->packages->isNotEmpty())
+                                {{ $packageAllocations[$order->packages->first()->id]['policy_label'] ?? '—' }}
+                            @else
+                                —
+                            @endif
+                        </p>
+                        @if($ledgerSnapshot)
+                            <div class="alert alert-light border mb-2 py-2 mb-3">
+                                <div class="fw-semibold mb-1">Recorded payment (ref #{{ $ledgerSnapshot['journal_id'] }})</div>
+                                <div class="row g-2">
+                                    <div class="col-6">Your share (items)</div><div class="col-6 text-end fw-semibold text-success">₱{{ number_format($ledgerSnapshot['artisan_payable'], 2) }}</div>
+                                    <div class="col-6">From buyer</div><div class="col-6 text-end">₱{{ number_format($ledgerSnapshot['cod_collectible'], 2) }}</div>
+                                    <div class="col-6">Likha service fee</div><div class="col-6 text-end">₱{{ number_format($ledgerSnapshot['platform_service_fee'], 2) }}</div>
+                                    <div class="col-6">Shipping (buyer portion)</div><div class="col-6 text-end">₱{{ number_format($ledgerSnapshot['shipping_trust'], 2) }}</div>
+                                    <div class="col-6">Tax (on receipt)</div><div class="col-6 text-end">₱{{ number_format($ledgerSnapshot['tax_payable'], 2) }}</div>
+                                </div>
+                                <a href="{{ route('artisan.ledger.show', $ledgerSnapshot['journal_id']) }}" class="btn btn-sm btn-outline-primary mt-2">Open full breakdown</a>
+                            </div>
+                        @else
+                            <p class="mb-2"><span class="text-muted">Payment record:</span> not saved yet — appears after every package is delivered.</p>
+                        @endif
+
+                        @if($payCod && $order->isDelivered())
+                            @if($order->sellerCodHandoff?->acknowledged_at)
+                                <div class="alert alert-success py-2 mb-0">
+                                    You confirmed rider handoff on {{ $order->sellerCodHandoff->acknowledged_at->timezone(config('app.timezone'))->format('M j, Y g:i A') }}.
+                                    @if($order->sellerCodHandoff->note)<div class="small mt-1">{{ $order->sellerCodHandoff->note }}</div>@endif
+                                </div>
+                            @else
+                                <form method="POST" action="{{ route('artisan.orders.cod-handoff.store', $order) }}" class="border rounded p-3 bg-light">
+                                    @csrf
+                                    <div class="fw-semibold mb-2">Confirm rider paid your goods portion</div>
+                                    <p class="mb-2">Expected amount for your items (from records if saved): <strong>₱{{ number_format($ledgerSnapshot['artisan_payable'] ?? $order->artisanMerchandiseShare(), 2) }}</strong></p>
+                                    <label class="form-label small mb-1">Optional note</label>
+                                    <input type="text" name="note" class="form-control form-control-sm mb-2" maxlength="500" placeholder="e.g. Received cash today">
+                                    <button type="submit" class="btn btn-success btn-sm">Confirm handoff received</button>
+                                </form>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             @if($order->packages->isNotEmpty())
             <div class="card mb-3">
                 <div class="card-header">
@@ -90,13 +143,26 @@
                 </div>
                 <div class="card-body">
                     @foreach($order->packages as $pkg)
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                            <span class="small fw-semibold">Package {{ $pkg->sequence }}</span>
-                            <x-status-badge :status="$pkg->delivery_status" type="delivery" />
+                        @php($alloc = $packageAllocations[$pkg->id] ?? null)
+                        <div class="border rounded p-2 mb-3 mb-md-2">
+                            <div class="d-flex justify-content-between align-items-center py-1">
+                                <span class="small fw-semibold">Package {{ $pkg->sequence }}</span>
+                                <x-status-badge :status="$pkg->delivery_status" type="delivery" />
+                            </div>
+                            @if($pkg->rider)
+                                <p class="small text-muted mb-1">Rider: {{ $pkg->rider->full_name }}</p>
+                            @endif
+                            @if($alloc && $payCod && $pkg->isDelivered())
+                                <div class="small mt-2 pt-2 border-top">
+                                    <div class="text-muted mb-1">Attributed planning amounts for this stop</div>
+                                    <div class="d-flex justify-content-between"><span>Goods due to you</span><span class="text-success fw-semibold">₱{{ number_format($alloc['seller_share'], 2) }}</span></div>
+                                    <div class="d-flex justify-content-between"><span>COD slice (attrib.)</span><span>₱{{ number_format($alloc['cod_total'], 2) }}</span></div>
+                                    @if(!empty($alloc['physical_cod_hint']))
+                                        <p class="text-muted mb-0 mt-1">{{ $alloc['physical_cod_hint'] }}</p>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
-                        @if($pkg->rider)
-                            <p class="small text-muted mb-0 mt-1">Rider: {{ $pkg->rider->full_name }}</p>
-                        @endif
                     @endforeach
                 </div>
             </div>
