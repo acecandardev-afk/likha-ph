@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\DeliveryReportController as AdminDeliveryReportController;
 use App\Http\Controllers\Admin\FinancialDisputeController as AdminFinancialDisputeController;
 use App\Http\Controllers\Admin\LedgerController as AdminLedgerController;
+use App\Http\Controllers\Admin\MonthlyReportController as AdminMonthlyReportController;
 use App\Http\Controllers\Admin\PaymentVerificationController;
 // Admin Controllers
 use App\Http\Controllers\Admin\ProductApprovalController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Artisan\CodHandoffRedirectController;
 use App\Http\Controllers\Artisan\DashboardController as ArtisanDashboardController;
 use App\Http\Controllers\Artisan\EarningsController as ArtisanEarningsController;
 use App\Http\Controllers\Artisan\LedgerController as ArtisanLedgerController;
+use App\Http\Controllers\Artisan\MonthlyReportController as ArtisanMonthlyReportController;
 use App\Http\Controllers\Artisan\OrderController as ArtisanOrderController;
 use App\Http\Controllers\Artisan\ProductController as ArtisanProductController;
 use App\Http\Controllers\Artisan\ProfileController as ArtisanProfileEditController;
@@ -53,6 +55,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Rider\CodRemittanceAliasRedirectController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
 use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
+use App\Http\Controllers\Rider\MonthlyReportController as RiderMonthlyReportController;
 use App\Http\Controllers\Rider\SettlementController as RiderSettlementController;
 use Illuminate\Support\Facades\Route;
 
@@ -136,6 +139,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/insights', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/reports/monthly', [AdminMonthlyReportController::class, 'index'])
+        ->middleware('throttle:60,1')
+        ->name('reports.monthly');
     Route::get('/activity', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/ledger', [AdminLedgerController::class, 'index'])->name('ledger.index');
     Route::get('/ledger/journals/{journal}', [AdminLedgerController::class, 'show'])->name('ledger.show');
@@ -217,6 +223,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [ArtisanDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/reports/monthly', [ArtisanMonthlyReportController::class, 'index'])
+        ->middleware('throttle:60,1')
+        ->name('reports.monthly');
 
     Route::get('/after-delivery', [ArtisanEarningsController::class, 'index'])->name('earnings.index');
     Route::get('/ledger', [ArtisanLedgerController::class, 'index'])->name('ledger.index');
@@ -337,6 +347,9 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::middleware(['auth', 'rider'])->prefix('rider')->name('rider.')->group(function () {
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/reports/monthly', [RiderMonthlyReportController::class, 'index'])
+        ->middleware('throttle:60,1')
+        ->name('reports.monthly');
     Route::get('/cod-settlement', [RiderSettlementController::class, 'index'])->name('cod-settlement');
     Route::prefix('deliveries')->name('deliveries.')->group(function () {
         Route::get('/', [RiderDeliveryController::class, 'index'])->name('index');

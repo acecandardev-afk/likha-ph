@@ -13,21 +13,24 @@ class DashboardController extends CustomerController
     {
         $customer = $this->getCustomer();
 
-        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats:v2", 60, function () use ($customer) {
+        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats:v4", 60, function () use ($customer) {
+            $scoped = $customer->orders()->notStaleCancelled();
+
             return [
-                'total_orders' => $customer->orders()->count(),
-                'pending_orders' => $customer->orders()->pending()->count(),
-                'shipped_orders' => $customer->orders()->shipped()->count(),
-                'on_delivery_orders' => $customer->orders()->onDelivery()->count(),
-                'delivered_orders' => $customer->orders()->delivered()->count(),
-                'confirmed_orders' => $customer->orders()->wherePaymentVerified()->count(),
-                'completed_orders' => $customer->orders()->completed()->count(),
-                'total_spent' => $customer->orders()->whereIn('status', ['delivered', 'completed'])->sum('total'),
+                'total_orders' => $scoped->clone()->count(),
+                'pending_orders' => $scoped->clone()->pending()->count(),
+                'shipped_orders' => $scoped->clone()->shipped()->count(),
+                'on_delivery_orders' => $scoped->clone()->onDelivery()->count(),
+                'delivered_orders' => $scoped->clone()->delivered()->count(),
+                'confirmed_orders' => $scoped->clone()->wherePaymentVerified()->count(),
+                'completed_orders' => $scoped->clone()->completed()->count(),
+                'total_spent' => $scoped->clone()->whereIn('status', ['delivered', 'completed'])->sum('total'),
             ];
         });
 
         // Recent orders
         $recentOrders = $customer->orders()
+            ->notStaleCancelled()
             ->with(['artisan.artisanProfile', 'items.product.images', 'payment'])
             ->latest()
             ->take(5)

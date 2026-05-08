@@ -502,7 +502,10 @@ class OrderService
         DB::transaction(function () use ($order) {
             $this->stockService->restoreStockFromOrder($order->items);
 
-            $order->update(['status' => 'cancelled']);
+            $order->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
         });
 
         $this->notificationService->notifyOrderCancelled($order);
@@ -549,7 +552,8 @@ class OrderService
             ? $user->orders()
             : $user->artisanOrders();
 
-        return $query->with(['artisan.artisanProfile', 'customer', 'items.product', 'payment'])
+        return $query->notStaleCancelled()
+            ->with(['artisan.artisanProfile', 'customer', 'items.product', 'payment'])
             ->latest()
             ->take($limit)
             ->get();

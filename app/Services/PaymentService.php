@@ -104,7 +104,10 @@ class PaymentService
             }
 
             // Update order status
-            $payment->order->update(['status' => 'cancelled']);
+            $payment->order->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
         });
 
         // Notify customer

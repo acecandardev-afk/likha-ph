@@ -11,12 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // UserSeeder runs AdminSeeder first (admin + Philippine addresses), then demo artisans/customers.
         $this->call([
             UserSeeder::class,
-            AdminSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
-            PhilippineAddressSeeder::class,
             // OrderSeeder::class, // Optional: uncomment for test orders
         ]);
     }

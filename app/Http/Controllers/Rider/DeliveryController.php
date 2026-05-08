@@ -25,6 +25,7 @@ class DeliveryController extends RiderController
 
         $query = OrderPackage::query()
             ->where('rider_id', $rider?->id)
+            ->whereHas('order', fn ($q) => $q->notStaleCancelled())
             ->with(['order.customer', 'order.artisan'])
             ->latest();
 

@@ -5,7 +5,11 @@
 @section('content')
 <div class="container py-2 py-md-3">
     <x-profile-header-nav active="customer-orders" />
-    <h1 class="h2 fw-semibold mb-4">Orders</h1>
+    <h1 class="h2 fw-semibold mb-3">Orders</h1>
+    <p class="text-muted small mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Buyer-cancelled orders are hidden here 24 hours after cancellation.
+    </p>
 
     @if($orders->isEmpty())
         <div class="alert alert-info">

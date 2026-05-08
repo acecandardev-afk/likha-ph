@@ -1,7 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-light nav-editorial">
     <div class="container-fluid px-3 px-lg-5">
         <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2" href="{{ url('/') }}">
-            <span class="nav-editorial__site-name">Home</span>
+            <span class="nav-editorial__site-icon text-primary" aria-hidden="true"><i class="bi bi-compass-fill fs-5"></i></span>
+            <span class="nav-editorial__site-name">{{ config('app.name') }}</span>
         </a>
         <button class="navbar-toggler nav-editorial__toggler border-0 rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -109,9 +110,11 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 rounded-0">
                             @if(auth()->user()->isAdmin())
                                 <li><a class="dropdown-item py-2" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('admin.reports.monthly') }}">Monthly report</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('admin.deliveries.index') }}">Deliveries</a></li>
                             @elseif(auth()->user()->isArtisan())
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('artisan.reports.monthly') }}">Monthly report</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.products.index') }}">Products</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('artisan.earnings.index') }}">After delivery</a></li>
@@ -122,6 +125,7 @@
                                 <li><a class="dropdown-item py-2" href="{{ route('customer.orders.index') }}">Orders</a></li>
                             @elseif(auth()->user()->isRider())
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ route('rider.reports.monthly') }}">Monthly report</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.cod-settlement') }}">Pay-on-delivery summary</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('rider.deliveries.index') }}">Deliveries</a></li>
                             @endif

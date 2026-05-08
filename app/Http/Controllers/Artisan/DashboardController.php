@@ -14,19 +14,21 @@ class DashboardController extends ArtisanController
     {
         $artisan = $this->getArtisan();
 
-        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v4", 60, function () use ($artisan) {
+        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v6", 60, function () use ($artisan) {
+            $scopedOrders = $artisan->artisanOrders()->notStaleCancelled();
+
             return [
                 'total_products' => $artisan->products()->count(),
                 'approved_products' => $artisan->products()->approved()->count(),
                 'pending_products' => $artisan->products()->pending()->count(),
                 'rejected_products' => $artisan->products()->where('approval_status', 'rejected')->count(),
-                'total_orders' => $artisan->artisanOrders()->count(),
-                'pending_orders' => $artisan->artisanOrders()->pending()->count(),
-                'shipped_orders' => $artisan->artisanOrders()->shipped()->count(),
-                'on_delivery_orders' => $artisan->artisanOrders()->onDelivery()->count(),
-                'delivered_orders' => $artisan->artisanOrders()->delivered()->count(),
-                'confirmed_orders' => $artisan->artisanOrders()->wherePaymentVerified()->count(),
-                'completed_orders' => $artisan->artisanOrders()->completed()->count(),
+                'total_orders' => $scopedOrders->clone()->count(),
+                'pending_orders' => $scopedOrders->clone()->pending()->count(),
+                'shipped_orders' => $scopedOrders->clone()->shipped()->count(),
+                'on_delivery_orders' => $scopedOrders->clone()->onDelivery()->count(),
+                'delivered_orders' => $scopedOrders->clone()->delivered()->count(),
+                'confirmed_orders' => $scopedOrders->clone()->wherePaymentVerified()->count(),
+                'completed_orders' => $scopedOrders->clone()->completed()->count(),
                 'estimated_share_total' => (float) Order::query()
                     ->where('artisan_id', $artisan->id)
                     ->whereIn('status', ['delivered', 'completed'])
@@ -51,6 +53,7 @@ class DashboardController extends ArtisanController
 
         // Recent orders
         $recentOrders = $artisan->artisanOrders()
+            ->notStaleCancelled()
             ->with('customer', 'items.product', 'payment')
             ->latest()
             ->take(10)

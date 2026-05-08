@@ -39,6 +39,10 @@
                 >{{ $label }}</a>
             @endforeach
         </div>
+        <p class="text-muted small mt-2 mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            Cancelled orders disappear from this list 24 hours after cancellation (you can still open them from your email or support if needed).
+        </p>
     </div>
 
     @if($orders->isEmpty())

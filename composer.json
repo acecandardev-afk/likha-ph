@@ -18,6 +18,7 @@
         "barryvdh/laravel-debugbar": "^4.0",
         "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
+        "laravel/dusk": "^8.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
@@ -57,6 +58,12 @@
             "@php artisan optimize:clear --ansi",
             "@php artisan test"
         ],
+        "dusk:prepare": [
+            "@php -r \"file_exists('database/dusk.sqlite') || touch('database/dusk.sqlite');\"",
+            "@php artisan migrate:fresh --env=dusk --force --no-interaction"
+        ],
+        "dusk:chrome": "php artisan dusk:chrome-driver --detect",
+        "dusk:run": "php artisan dusk",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

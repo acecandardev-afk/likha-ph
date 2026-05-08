@@ -43,6 +43,7 @@ class Order extends Model
         'delivery_assigned_at',
         'delivery_completed_at',
         'delivery_proof_image',
+        'cancelled_at',
     ];
 
     protected $casts = [
@@ -55,7 +56,23 @@ class Order extends Model
         'approved_at' => 'datetime',
         'delivery_assigned_at' => 'datetime',
         'delivery_completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
+
+    /**
+     * Exclude cancelled orders that were cancelled more than 24 hours ago (hidden from shopper/seller lists).
+     */
+    public function scopeNotStaleCancelled($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('status', '!=', 'cancelled')
+                ->orWhere(function ($q2) {
+                    $q2->where('status', 'cancelled')
+                        ->whereNotNull('cancelled_at')
+                        ->where('cancelled_at', '>=', now()->subHours(24));
+                });
+        });
+    }
 
     // Relationships
     public function customer()

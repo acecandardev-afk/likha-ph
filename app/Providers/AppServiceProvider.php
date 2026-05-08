@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if (class_exists(\Laravel\Dusk\Dusk::class)) {
+            \Laravel\Dusk\Dusk::register(['environments' => ['local', 'dusk']]);
+        }
+
         $this->app->singleton(LedgerPostingService::class);
         $this->app->singleton(StockService::class);
         $this->app->singleton(NotificationService::class);

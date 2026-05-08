@@ -56,7 +56,9 @@ class DashboardController extends AdminController
             ->take(5)
             ->get();
 
-        $recentOrders = Order::with('customer', 'artisan')
+        $recentOrders = Order::query()
+            ->notStaleCancelled()
+            ->with('customer', 'artisan')
             ->latest()
             ->take(10)
             ->get();

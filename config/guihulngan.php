@@ -50,4 +50,13 @@ return [
         'Trinidad',
         'Villegas',
     ],
+
+    /**
+     * Public storefront branding (Guihulngan + tourism + local crafts).
+     */
+    'site' => [
+        'tagline' => 'Explore Guihulngan — discover handcrafted souvenirs & cultural keepsakes.',
+        'hero_lead' => 'Shop local makers, plan your visit, and take home a piece of Negros Oriental.',
+        'stats_region' => 'Heart of Guihulngan City',
+    ],
 ];

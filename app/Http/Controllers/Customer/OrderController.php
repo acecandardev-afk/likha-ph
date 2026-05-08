@@ -25,11 +25,17 @@ class OrderController extends CustomerController
         $customer = $this->getCustomer();
 
         $query = $customer->orders()
-            ->with(['artisan.artisanProfile', 'items.product', 'payment', 'rider']);
+            ->with(['artisan.artisanProfile', 'items.product', 'payment', 'rider'])
+            ->notStaleCancelled();
 
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            if ($request->status === 'cancelled') {
+                $query->where('status', 'cancelled')
+                    ->where('cancelled_at', '>=', now()->subHours(24));
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         $orders = $query->latest()->paginate(20)->withQueryString();

@@ -19,11 +19,17 @@ class OrderController extends ArtisanController
         $artisan = $this->getArtisan();
 
         $query = $artisan->artisanOrders()
-            ->with(['customer', 'items.product', 'payment', 'rider']);
+            ->with(['customer', 'items.product', 'payment', 'rider'])
+            ->notStaleCancelled();
 
         // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            if ($request->status === 'cancelled') {
+                $query->where('status', 'cancelled')
+                    ->where('cancelled_at', '>=', now()->subHours(24));
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         $orders = $query->latest()->paginate(20);

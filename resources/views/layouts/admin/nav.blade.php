@@ -2,6 +2,7 @@
     $adminLinks = [
         ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'bi-speedometer2'],
         ['route' => 'admin.analytics.index', 'label' => 'Shop insights', 'icon' => 'bi-graph-up-arrow'],
+        ['route' => 'admin.reports.monthly', 'label' => 'Monthly report', 'icon' => 'bi-calendar-month'],
         ['route' => 'admin.audit-logs.index', 'label' => 'Activity log', 'icon' => 'bi-journal-text'],
         ['route' => 'admin.ledger.index', 'label' => 'Payment records', 'icon' => 'bi-journal-richtext'],
         ['route' => 'admin.cod-treasury.index', 'label' => 'Cash vs rider reports', 'icon' => 'bi-cash-stack'],

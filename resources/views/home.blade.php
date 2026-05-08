@@ -5,23 +5,26 @@
 @section('main_class', 'pt-0 pb-0')
 
 @section('content')
-<div class="home-storefront home-storefront--neo">
-    <section class="lk-min-hero" aria-labelledby="home-hero-heading">
+<div class="home-storefront home-storefront--neo home-storefront--tourism">
+    <section class="lk-min-hero tourism-hero-backdrop" aria-labelledby="home-hero-heading">
         <div class="container-fluid px-3 px-lg-5">
             <div class="lk-min-hero__inner">
                 <div class="lk-min-hero__copy">
-                    <h1 id="home-hero-heading" class="lk-min-hero__title">Handmade products from local makers</h1>
-                    <p class="lk-min-hero__text">Shop trusted products, chat with sellers, and track your delivery in one place.</p>
+                    <h1 id="home-hero-heading" class="lk-min-hero__title">Guihulngan Tourism &amp; Local Crafts</h1>
+                    <p class="lk-min-hero__text">{{ config('guihulngan.site.hero_lead', 'Shop local makers and take home a piece of Negros Oriental.') }}</p>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-dark" href="{{ route('products.index') }}">Shop now</a>
-                        <a class="btn btn-outline-dark" href="{{ route('artisans.index') }}">Meet artisans</a>
+                        <a class="btn btn-warning text-dark fw-semibold" href="{{ route('products.index') }}"><i class="bi bi-bag-heart me-1"></i> Shop souvenirs</a>
+                        <a class="btn btn-outline-light" href="{{ route('artisans.index') }}"><i class="bi bi-people me-1"></i> Meet artisans</a>
                     </div>
                 </div>
                 <div class="lk-min-hero__media">
                     @if($heroImageUrl)
                         <img src="{{ $heroImageUrl }}" alt="Featured product" class="lk-min-hero__img" width="860" height="520" loading="eager">
                     @else
-                        <div class="lk-min-hero__placeholder">Featured product image</div>
+                        <div class="lk-min-hero__placeholder d-flex flex-column align-items-center justify-content-center text-white-50 border border-white border-opacity-25 rounded-3 bg-white bg-opacity-10 p-4">
+                            <i class="bi bi-water display-4 mb-2"></i>
+                            <span>Featured product image</span>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -52,7 +55,7 @@
                 <div class="col-6 col-lg-3 home-stats-strip__cell">
                     <div class="home-stats-strip__inner home-stats-strip__inner--text">
                         <span class="home-stats-strip__num">PH</span>
-                        <span class="home-stats-strip__label">Based in Guihulngan</span>
+                        <span class="home-stats-strip__label">{{ config('guihulngan.site.stats_region', 'Guihulngan City') }}</span>
                     </div>
                 </div>
             </div>
@@ -62,32 +65,36 @@
     <section class="home-section home-section--neo-muted" aria-labelledby="home-why-heading">
         <div class="container-fluid px-3 px-lg-5">
             <div class="home-section-head text-center mx-auto mb-4 mb-lg-5">
-                <h2 id="home-why-heading" class="home-section-title home-section-title--serif mb-2">Why Likha PH</h2>
-                <p class="home-section-sub text-muted mb-0">A simple marketplace for handmade products.</p>
+                <h2 id="home-why-heading" class="home-section-title home-section-title--serif mb-2">Discover Guihulngan</h2>
+                <p class="home-section-sub text-muted mb-0">{{ config('guihulngan.site.tagline') }}</p>
             </div>
             <div class="row g-3 g-md-4 justify-content-center">
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="home-feature-card home-feature-card--neo h-100">
-                        <h3 class="home-feature-card__title">Handmade products</h3>
-                        <p class="home-feature-card__text mb-0">Each listing comes from local artisans.</p>
+                        <div class="tourism-icon-badge"><i class="bi bi-globe2" aria-hidden="true"></i></div>
+                        <h3 class="home-feature-card__title">Local destination finds</h3>
+                        <p class="home-feature-card__text mb-0">Souvenirs and keepsakes rooted in Guihulngan culture.</p>
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="home-feature-card home-feature-card--neo h-100">
-                        <h3 class="home-feature-card__title">Clear pricing</h3>
-                        <p class="home-feature-card__text mb-0">Product prices and stock are shown clearly.</p>
+                        <div class="tourism-icon-badge"><i class="bi bi-geo-alt" aria-hidden="true"></i></div>
+                        <h3 class="home-feature-card__title">Meet the makers</h3>
+                        <p class="home-feature-card__text mb-0">Chat with artisans and learn how each piece is made.</p>
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="home-feature-card home-feature-card--neo h-100">
-                        <h3 class="home-feature-card__title">Artisan profiles</h3>
-                        <p class="home-feature-card__text mb-0">View information about sellers before buying.</p>
+                        <div class="tourism-icon-badge"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
+                        <h3 class="home-feature-card__title">Trust &amp; clarity</h3>
+                        <p class="home-feature-card__text mb-0">Prices, stock, and delivery tracking in one place.</p>
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-xl-3">
                     <div class="home-feature-card home-feature-card--neo h-100">
-                        <h3 class="home-feature-card__title">Simple checkout</h3>
-                        <p class="home-feature-card__text mb-0">Add items, place orders, and track status.</p>
+                        <div class="tourism-icon-badge"><i class="bi bi-truck" aria-hidden="true"></i></div>
+                        <h3 class="home-feature-card__title">Reliable delivery</h3>
+                        <p class="home-feature-card__text mb-0">COD and rider updates keep your visit worry-free.</p>
                     </div>
                 </div>
             </div>
