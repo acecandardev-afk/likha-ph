@@ -6,7 +6,7 @@
 <div class="container py-2 py-md-3">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-4">
         <div>
-            <h1 class="h2 fw-semibold mb-1">Shop insights</h1>
+            <h1 class="h2 fw-semibold mb-1">See shop insights</h1>
             <p class="text-muted small mb-0">Lightweight numbers to see how orders move and which items move fastest. They’re based on sign-ups and orders in this app — not third-party ad tracking.</p>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to dashboard</a>
