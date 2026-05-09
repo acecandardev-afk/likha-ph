@@ -13,7 +13,7 @@
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
         <div>
-            <h1 class="h3 fw-semibold mb-1">Pay when delivered — your amounts</h1>
+            <h1 class="h3 fw-semibold mb-1">Pay when delivered — your amount</h1>
             <p class="text-muted mb-0 small">
                 See how cash from each drop-off lines up when an order ships in more than one package.
                 Daily COD totals for the office are recorded automatically when you mark each delivery complete — no separate form needed.
