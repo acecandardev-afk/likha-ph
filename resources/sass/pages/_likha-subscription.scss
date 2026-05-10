@@ -585,6 +585,12 @@
   }
 }
 
+// Global `h1 { color: $brand-dark }` would override; keep hero headline white on photo/gradient
+.artisans-page--sub .artisans-hero-sub .artisans-hero-sub-title {
+  color: #fff;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.45);
+}
+
 .artisans-hero-sub-text {
   color: rgba(255, 255, 255, 0.85);
   font-size: 1rem;

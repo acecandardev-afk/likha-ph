@@ -44,8 +44,8 @@
     </div>
 </div>
 
-<div class="offcanvas offcanvas-start" tabindex="-1" id="adminNavOffcanvas" aria-labelledby="adminNavOffcanvasLabel">
-    <div class="offcanvas-header">
+<div class="offcanvas offcanvas-start admin-nav-offcanvas" tabindex="-1" id="adminNavOffcanvas" aria-labelledby="adminNavOffcanvasLabel">
+    <div class="offcanvas-header flex-shrink-0 border-bottom">
         <h5 class="offcanvas-title" id="adminNavOffcanvasLabel">Admin menu</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>

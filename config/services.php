@@ -35,6 +35,21 @@ return [
         ],
     ],
 
+    /*
+    | Google OAuth (Laravel Socialite) — sign-in with Google on login/register UI.
+    |
+    | 1. Google Cloud Console → APIs & Services → Credentials → Create Credentials → OAuth client ID
+    |    → Application type: Web application.
+    | 2. Authorized JavaScript origins: https://your-domain.com (e.g. https://likha-ph.shop)
+    | 3. Authorized redirect URIs (must match exactly — trailing slash matters):
+    |      https://your-domain.com/auth/google/callback
+    |    Or set GOOGLE_REDIRECT_URI in .env to that full URL.
+    | 4. OAuth consent screen: publish app or add test users while in Testing.
+    | 5. Copy Client ID and Client Secret into .env:
+    |      GOOGLE_CLIENT_ID=....apps.googleusercontent.com
+    |      GOOGLE_CLIENT_SECRET=GOCSPX-...
+    |      APP_URL must match the origin you registered (Socialite uses request URL when GOOGLE_REDIRECT_URI is unset).
+    */
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

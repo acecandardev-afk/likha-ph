@@ -1,3 +1,9 @@
+@php
+    $navIsAdmin = auth()->check() && auth()->user()->isAdmin();
+    $navAdminInAdminArea = $navIsAdmin && request()->routeIs('admin.*');
+    $navHideCart = $navIsAdmin && request()->routeIs('admin.*');
+@endphp
+
 <nav class="navbar navbar-expand-lg navbar-light nav-editorial">
     <div class="container-fluid px-3 px-lg-5">
         <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url('/') }}" aria-label="{{ config('app.name') }} — {{ config('guihulngan.city_name') }}, home">
@@ -20,14 +26,23 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            @if($navAdminInAdminArea)
+                <div class="d-lg-none px-1 pt-1 pb-3 mb-2 border-bottom border-dark border-opacity-10">
+                    <button type="button" class="btn btn-primary w-100 py-2 rounded-3 admin-sidebar-trigger shadow-sm" aria-label="Open full admin menu">
+                        <i class="bi bi-grid-3x3-gap-fill me-2" aria-hidden="true"></i> All admin pages
+                    </button>
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-dark w-100 mt-2 py-2 rounded-3">Browse storefront</a>
+                </div>
+            @endif
+
             <ul class="navbar-nav nav-editorial__center mx-lg-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1">
-                <li class="nav-item">
+                <li class="nav-item {{ $navAdminInAdminArea ? 'd-none d-lg-block' : '' }}">
                     <a class="nav-link nav-editorial__link px-lg-3 {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{ $navAdminInAdminArea ? 'd-none d-lg-block' : '' }}">
                     <a class="nav-link nav-editorial__link px-lg-3 {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Shop</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{ $navAdminInAdminArea ? 'd-none d-lg-block' : '' }}">
                     <a class="nav-link nav-editorial__link px-lg-3 {{ request()->routeIs('artisans.*') ? 'active' : '' }}" href="{{ route('artisans.index') }}">Artisans</a>
                 </li>
             </ul>
@@ -42,7 +57,7 @@
 
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <li class="nav-item">
+                        <li class="nav-item {{ $navAdminInAdminArea ? 'd-none d-lg-block' : '' }}">
                             <button
                                 type="button"
                                 class="btn btn-link nav-link nav-editorial__icon px-2 px-lg-3 text-decoration-none admin-sidebar-trigger"
@@ -55,6 +70,7 @@
                     @endif
                 @endauth
 
+                @if($showCartNav && ! $navHideCart)
                 <li class="nav-item">
                     <a class="nav-link nav-editorial__icon px-2 px-lg-3 d-flex align-items-center position-relative"
                        href="{{ $cartLink }}"
@@ -68,6 +84,7 @@
                         @endif
                     </a>
                 </li>
+                @endif
 
                 @auth
                     <li class="nav-item">
@@ -117,9 +134,16 @@
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link nav-editorial__link dropdown-toggle px-2 px-lg-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="d-none d-lg-inline">{{ Auth::user()->name }}</span>
+                            <span class="d-lg-none small fw-semibold">Account</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 rounded-0">
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2 rounded-0 nav-account-dropdown">
                             @if(auth()->user()->isAdmin())
+                                <li class="d-lg-none">
+                                    <button type="button" class="dropdown-item py-2 text-start border-0 bg-transparent w-100 js-open-admin-offcanvas">
+                                        <i class="bi bi-grid-3x3-gap-fill me-2 text-primary" aria-hidden="true"></i>All admin pages
+                                    </button>
+                                </li>
+                                <li class="d-lg-none"><hr class="dropdown-divider my-2"></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('admin.reports.monthly') }}">Monthly report</a></li>
                                 <li><a class="dropdown-item py-2" href="{{ route('admin.deliveries.index') }}">Deliveries</a></li>
@@ -158,3 +182,27 @@
         </div>
     </div>
 </nav>
+
+@auth
+    @if(auth()->user()->isAdmin())
+        @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.js-open-admin-offcanvas').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var toggle = document.getElementById('navbarDropdown');
+                        if (toggle && window.bootstrap && bootstrap.Dropdown) {
+                            var dd = bootstrap.Dropdown.getInstance(toggle);
+                            if (dd) dd.hide();
+                        }
+                        var panel = document.getElementById('adminNavOffcanvas');
+                        if (panel && window.bootstrap && bootstrap.Offcanvas) {
+                            bootstrap.Offcanvas.getOrCreateInstance(panel).show();
+                        }
+                    });
+                });
+            });
+        </script>
+        @endpush
+    @endif
+@endauth

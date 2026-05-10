@@ -17,16 +17,37 @@
   z-index: 1025;
   transition: width 0.2s ease;
   overflow: hidden;
+  min-height: 0;
 }
 
 .admin-sidebar__head {
+  flex-shrink: 0;
   padding: 0.9rem 0.85rem;
   border-bottom: 1px solid rgba($neo-black, 0.08);
 }
 
 .admin-sidebar__links {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0.6rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile / small screens: Bootstrap offcanvas menu — must shrink so the link list scrolls */
+.admin-nav-offcanvas.offcanvas {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav-offcanvas .offcanvas-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .admin-sidebar__link {

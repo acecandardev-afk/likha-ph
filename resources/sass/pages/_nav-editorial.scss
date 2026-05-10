@@ -105,3 +105,11 @@
     text-align: center;
   }
 }
+
+// Account dropdown can grow long (admin / artisan); keep it scrollable on short viewports
+.nav-account-dropdown.dropdown-menu {
+  max-height: min(75vh, 28rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
