@@ -6,23 +6,27 @@
 
 @section('content')
 <div class="home-storefront home-storefront--neo home-storefront--tourism">
-    <section class="home-vendor-hero" aria-label="Local crafts — {{ config('guihulngan.city_name') }}" data-parallax-root>
-        <div class="home-vendor-hero__frame">
-            <div class="home-vendor-hero__parallax" data-parallax-layer data-parallax-strength="0.09">
+    <section class="home-bell-hero" aria-label="{{ config('guihulngan.city_name') }} landmark" data-parallax-root>
+        <div class="home-bell-hero__frame">
+            <div class="home-bell-hero__parallax" data-parallax-layer data-parallax-strength="0.11">
                 <img
-                    src="{{ asset('vendor_image.jpg') }}"
-                    alt="Artisans weaving — local crafts from {{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}"
-                    class="home-vendor-hero__img"
-                    width="1600"
-                    height="900"
+                    src="{{ asset('Guihulngan-Bell-Karabow.jpg') }}"
+                    alt="{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }} — bell and carabao landmark"
+                    class="home-bell-hero__img"
+                    width="1920"
+                    height="1080"
                     loading="eager"
                     decoding="async"
                     fetchpriority="high"
                 >
             </div>
-            <div class="home-vendor-hero__gradient" aria-hidden="true"></div>
-            <div class="home-vendor-hero__cta container-fluid px-3 px-lg-5">
-                <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 py-3 py-md-4 justify-content-center justify-content-md-start">
+            <div class="home-bell-hero__gradient" aria-hidden="true"></div>
+            <div class="home-bell-hero__cta container-fluid px-3 px-lg-5 py-4 py-md-5">
+                <div class="home-bell-hero__head text-center text-md-start mb-3 mb-md-4">
+                    <p class="home-bell-hero__eyebrow text-white text-uppercase small mb-1">{{ config('guihulngan.province') }}</p>
+                    <p class="home-bell-hero__title text-white fw-bold mb-0">{{ config('guihulngan.city_name') }}</p>
+                </div>
+                <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 justify-content-center justify-content-md-start pb-1">
                     <a class="btn btn-warning text-dark fw-semibold px-4 py-2" href="{{ route('products.index') }}">
                         <i class="bi bi-bag-heart me-1" aria-hidden="true"></i> Shop souvenirs
                     </a>
@@ -31,14 +35,6 @@
                     </a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="home-landmark-banner reveal home-landmark-banner--scroll home-landmark-banner--parallax-bg" aria-label="{{ config('guihulngan.city_name') }} landmark">
-        <div class="home-landmark-banner__overlay" aria-hidden="true"></div>
-        <div class="container-fluid px-3 px-lg-5 position-relative z-1 py-4 py-md-5 text-center">
-            <p class="home-landmark-banner__eyebrow text-white text-uppercase small mb-1 mb-md-2">{{ config('guihulngan.province') }}</p>
-            <p class="home-landmark-banner__title text-white fw-bold mb-0">{{ config('guihulngan.city_name') }}</p>
         </div>
     </section>
 
@@ -225,7 +221,19 @@
         </div>
     </section>
 
-    <section class="home-cta-band home-cta-band--neo home-cta-band--landmark" aria-labelledby="home-cta-heading">
+    <section class="home-vendor-bottom reveal" aria-label="Local makers — {{ config('guihulngan.city_name') }}">
+        <img
+            src="{{ asset('vendor_image.jpg') }}"
+            alt="Artisans weaving — local crafts from {{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}"
+            class="home-vendor-bottom__img"
+            width="1920"
+            height="1080"
+            loading="lazy"
+            decoding="async"
+        >
+    </section>
+
+    <section class="home-cta-band home-cta-band--neo" aria-labelledby="home-cta-heading">
         <div class="container-fluid px-3 px-lg-5 py-5 py-lg-5">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">

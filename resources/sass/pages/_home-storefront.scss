@@ -500,55 +500,6 @@
   }
 }
 
-.home-cta-band--neo.home-cta-band--landmark {
-  position: relative;
-  overflow: hidden;
-  border-top: 0;
-  color: #fff;
-  background: transparent;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('/Guihulngan-Bell-Karabow.jpg') center 38% / cover no-repeat;
-    z-index: 0;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      125deg,
-      rgba(20, 83, 45, 0.9) 0%,
-      rgba(15, 23, 42, 0.88) 55%,
-      rgba(12, 74, 110, 0.55) 100%
-    );
-    z-index: 0;
-  }
-
-  > .container-fluid {
-    position: relative;
-    z-index: 1;
-  }
-
-  .home-cta-band__title {
-    color: #fff;
-    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
-  }
-
-  .home-cta-band__text {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  @media (min-width: 992px) and (prefers-reduced-motion: no-preference) {
-    &::before {
-      background-attachment: fixed;
-    }
-  }
-}
-
 // Legacy / shared stats strip inner (grid cells)
 .home-stats-strip__grid {
   border-top: 1px solid $border-color;
