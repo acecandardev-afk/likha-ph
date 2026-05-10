@@ -12,6 +12,8 @@ use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\StockService;
 use App\Services\VoucherService;
+use App\Support\GoogleOAuth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -63,6 +65,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Make Google OAuth visible to config() / Socialite when vars exist only in the real env
+        // (cached config from an older deploy, or vars set in php-fpm / panel but not in .env).
+        $googleId = GoogleOAuth::resolvedClientId();
+        $googleSecret = GoogleOAuth::resolvedClientSecret();
+        if ($googleId !== '' && $googleSecret !== '') {
+            Config::set([
+                'services.google.client_id' => $googleId,
+                'services.google.client_secret' => $googleSecret,
+            ]);
+        }
+
         View::composer(
             [
                 'auth.apply-artisan',
