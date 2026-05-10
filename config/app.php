@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Health diagnostic token (production troubleshooting)
+    |--------------------------------------------------------------------------
+    |
+    | When set, GET /up?token=YOUR_TOKEN returns JSON checks (Vite manifest,
+    | DB, writable storage). Remove or rotate after debugging. Never commit the
+    | token; set only in server .env.
+    |
+    */
+
+    'health_diagnostic_token' => env('HEALTH_DIAGNOSTIC_TOKEN'),
+
 ];
