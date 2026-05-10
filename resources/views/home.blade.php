@@ -5,39 +5,39 @@
 @section('main_class', 'pt-0 pb-0')
 
 @section('content')
-<div class="home-storefront home-storefront--neo home-storefront--tourism">
-    <section class="home-bell-hero" aria-label="{{ config('guihulngan.city_name') }} landmark" data-parallax-root>
-        <div class="home-bell-hero__frame">
-            <div class="home-bell-hero__parallax" data-parallax-layer data-parallax-strength="0.11">
-                <img
-                    src="{{ asset('Guihulngan-Bell-Karabow.jpg') }}"
-                    alt="{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }} — bell and carabao landmark"
-                    class="home-bell-hero__img"
-                    width="1920"
-                    height="1080"
-                    loading="eager"
-                    decoding="async"
-                    fetchpriority="high"
-                >
+<section class="home-bell-hero" aria-label="{{ config('guihulngan.city_name') }} landmark" data-parallax-root>
+    <div class="home-bell-hero__frame">
+        <div class="home-bell-hero__parallax" data-parallax-layer data-parallax-strength="0.11">
+            <img
+                src="{{ asset('Guihulngan-Bell-Karabow.jpg') }}"
+                alt="{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }} — bell and carabao landmark"
+                class="home-bell-hero__img"
+                width="1920"
+                height="1080"
+                loading="eager"
+                decoding="async"
+                fetchpriority="high"
+            >
+        </div>
+        <div class="home-bell-hero__gradient" aria-hidden="true"></div>
+        <div class="home-bell-hero__cta container-fluid px-3 px-lg-5 py-4 py-md-5">
+            <div class="home-bell-hero__head text-center text-md-start mb-3 mb-md-4">
+                <p class="home-bell-hero__eyebrow text-white text-uppercase small mb-1">{{ config('guihulngan.province') }}</p>
+                <p class="home-bell-hero__title text-white fw-bold mb-0">{{ config('guihulngan.city_name') }}</p>
             </div>
-            <div class="home-bell-hero__gradient" aria-hidden="true"></div>
-            <div class="home-bell-hero__cta container-fluid px-3 px-lg-5 py-4 py-md-5">
-                <div class="home-bell-hero__head text-center text-md-start mb-3 mb-md-4">
-                    <p class="home-bell-hero__eyebrow text-white text-uppercase small mb-1">{{ config('guihulngan.province') }}</p>
-                    <p class="home-bell-hero__title text-white fw-bold mb-0">{{ config('guihulngan.city_name') }}</p>
-                </div>
-                <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 justify-content-center justify-content-md-start pb-1">
-                    <a class="btn btn-warning text-dark fw-semibold px-4 py-2" href="{{ route('products.index') }}">
-                        <i class="bi bi-bag-heart me-1" aria-hidden="true"></i> Shop souvenirs
-                    </a>
-                    <a class="btn btn-outline-light fw-semibold px-4 py-2" href="{{ route('artisans.index') }}">
-                        <i class="bi bi-people me-1" aria-hidden="true"></i> Meet artisans
-                    </a>
-                </div>
+            <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 justify-content-center justify-content-md-start pb-1">
+                <a class="btn btn-warning text-dark fw-semibold px-4 py-2" href="{{ route('products.index') }}">
+                    <i class="bi bi-bag-heart me-1" aria-hidden="true"></i> Shop souvenirs
+                </a>
+                <a class="btn btn-outline-light fw-semibold px-4 py-2" href="{{ route('artisans.index') }}">
+                    <i class="bi bi-people me-1" aria-hidden="true"></i> Meet artisans
+                </a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
+<div class="home-storefront home-storefront--neo home-storefront--tourism">
     <section class="home-stats-strip home-stats-strip--neo" aria-label="Marketplace highlights">
         <div class="container-fluid px-3 px-lg-5">
             <div class="row g-0 home-stats-strip__grid">
