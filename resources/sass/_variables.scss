@@ -1,16 +1,21 @@
 // Likha PH — Guihulngan tourism + marketplace (sea, sugarcane gold, limestone paper)
+// Palette tuned for WCAG-friendly contrast on light surfaces (body copy vs background).
 $brand-primary: #0e7490; // cyan-700 coast
 $brand-primary-dark: #155e75; // cyan-800
 $brand-primary-light: #99f6e4; // teal-200
 $brand-accent: #f59e0b; // amber-500 sun / heritage gold
 $brand-accent-dark: #d97706;
-$brand-dark: #0c4a6e; // deep water
-$body-bg: #f0fdfa; // mint-50 sand meets lagoon
+$brand-dark: #0c4a6e; // deep water — headings / emphasis
+$body-bg: #f1f5f9; // slate-100 — clearer separation from white cards than mint-50
+$body-text: #0f172a; // slate-900 — primary reading color
 $neo-yellow: #fbbf24;
-$neo-black: $brand-dark;
+$neo-black: #0f172a; // align neo editorial black with readable ink (was brand-dark blue-black)
 $surface: #ffffff;
-$border-color: #e7e5e4; // stone-200
-$text-muted: #64748b; // slate-500
+$border-color: #cbd5e1; // slate-300 — visible hairlines without harsh black
+$text-muted: #475569; // slate-600 — muted but readable on $body-bg
+
+// Bootstrap maps (loaded before bootstrap/scss/bootstrap)
+$body-color: $body-text;
 $card-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
 $card-shadow-hover: 0 14px 30px rgba(15, 23, 42, 0.12);
 $border-radius-sm: 0.5rem;

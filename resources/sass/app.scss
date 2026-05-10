@@ -23,7 +23,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: $body-bg;
-  color: $brand-dark;
+  color: $body-text;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -54,11 +54,11 @@ code {
   cursor: pointer;
 }
 
-// Subtle paper gradient on larger screens
+// Subtle paper gradient on larger screens — keep washes faint so text contrast stays strong
 @media (min-width: 992px) {
   body {
-    background-image: radial-gradient(1200px 600px at 10% -10%, rgba($brand-primary, 0.08), transparent 55%),
-      radial-gradient(900px 500px at 95% 10%, rgba($brand-accent, 0.10), transparent 50%);
+    background-image: radial-gradient(1200px 600px at 10% -10%, rgba($brand-primary, 0.06), transparent 55%),
+      radial-gradient(900px 500px at 95% 10%, rgba($brand-accent, 0.07), transparent 50%);
     background-attachment: fixed;
   }
 }
@@ -298,9 +298,14 @@ a:hover {
   }
 }
 
-// Page titles
+// Page titles — slightly richer than body for hierarchy
 h1, .h1 { color: $brand-dark; }
 h2, .h2 { color: $brand-dark; }
+
+// Bootstrap muted utility: ensure readable on our slate page bg
+.text-muted {
+  color: $text-muted !important;
+}
 
 // Stats cards
 .stat-card {

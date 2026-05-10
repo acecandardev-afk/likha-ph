@@ -146,7 +146,7 @@
 
 .home-hero__deck {
   font-size: clamp(0.95rem, 1.6vw, 1.1rem);
-  color: rgba($neo-black, 0.58);
+  color: rgba($neo-black, 0.78);
   max-width: 32rem;
   line-height: 1.65;
   margin-bottom: 0;
@@ -336,7 +336,7 @@
 }
 
 .home-split-band__caption {
-  color: rgba($neo-black, 0.55);
+  color: rgba($neo-black, 0.72);
 }
 
 // ——— Stats ———
@@ -410,6 +410,12 @@
 .home-section-sub {
   font-size: 0.95rem;
   line-height: 1.6;
+  color: $text-muted;
+}
+
+.home-feature-card__text {
+  color: $body-text;
+  line-height: 1.65;
 }
 
 // ——— Feature cards ———

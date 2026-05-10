@@ -1,9 +1,11 @@
-/* Guihulngan tourism storefront accents — layered sea/sand hero, wayfinding icons */
-.tourism-hero-backdrop {
-  background-color: #0c4a6e;
+/* Guihulngan tourism storefront — dark hero with high-contrast type */
+
+/* Full-bleed backdrop must win over `.lk-min-hero { background: $body-bg }` from subscription SCSS (later import). */
+.lk-min-hero.tourism-hero-backdrop {
+  background-color: #042f4a;
   background-image:
-    linear-gradient(165deg, rgba(14, 116, 144, 0.92) 0%, rgba(15, 118, 110, 0.88) 42%, rgba(245, 158, 11, 0.35) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='%23ffffff' fill-opacity='.06' d='M0 90h120v30H0zM0 30h120v30H0z'/%3E%3C/svg%3E");
+    linear-gradient(155deg, rgba(8, 51, 68, 0.97) 0%, rgba(14, 116, 144, 0.88) 45%, rgba(180, 83, 9, 0.42) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='%23ffffff' fill-opacity='.07' d='M0 90h120v30H0zM0 30h120v30H0z'/%3E%3C/svg%3E");
   background-size: auto, 140px 140px;
 }
 
@@ -18,22 +20,34 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(251, 191, 36, 0.15), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 85% 70%, rgba(6, 182, 212, 0.2), transparent 50%);
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(251, 191, 36, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 70%, rgba(34, 211, 238, 0.14), transparent 50%);
 }
 
+/* Readable “glass” panel: separates copy from busy gradient */
 .home-storefront--tourism .lk-min-hero__inner {
   position: relative;
   z-index: 1;
+  background: rgba(15, 23, 42, 0.55);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
 }
 
 .home-storefront--tourism .lk-min-hero__title {
   color: #fff;
-  text-shadow: 0 2px 18px rgba(15, 23, 42, 0.35);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.45);
 }
 
 .home-storefront--tourism .lk-min-hero__text {
-  color: rgba(255, 255, 255, 0.92);
+  color: #f8fafc;
+  font-weight: 500;
+}
+
+.home-storefront--tourism .lk-min-hero__media {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .home-storefront--tourism .home-stats-strip__cell:nth-child(4) .home-stats-strip__inner--text {
@@ -47,14 +61,14 @@
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   color: #fff;
   font-size: 1.35rem;
   margin-bottom: 0.75rem;
 }
 
 .home-storefront--tourism .home-feature-card .tourism-icon-badge {
-  background: rgba(14, 116, 144, 0.12);
+  background: rgba(14, 116, 144, 0.14);
   color: #0e7490;
 }
 
