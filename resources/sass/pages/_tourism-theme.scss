@@ -1,5 +1,59 @@
 /* Guihulngan tourism storefront — landmark photo hero with high-contrast type */
 
+/* Homepage hero — community crafts photo + bottom CTAs (replaces headline block) */
+.home-vendor-hero {
+  width: 100%;
+}
+
+.home-vendor-hero__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 1.15rem 1.15rem;
+}
+
+.home-vendor-hero__img {
+  width: 100%;
+  display: block;
+  min-height: 200px;
+  max-height: min(58vh, 520px);
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (max-width: 575.98px) {
+  .home-vendor-hero__img {
+    max-height: 42vh;
+    min-height: 180px;
+    object-position: center 35%;
+  }
+}
+
+@media (min-width: 992px) {
+  .home-vendor-hero__img {
+    max-height: min(62vh, 560px);
+  }
+}
+
+.home-vendor-hero__gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(15, 23, 42, 0.82) 0%,
+    rgba(15, 23, 42, 0.35) 42%,
+    transparent 72%
+  );
+}
+
+.home-vendor-hero__cta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
 /* Full-bleed backdrop must win over `.lk-min-hero { background: $body-bg }` from subscription SCSS (later import). */
 .lk-min-hero.tourism-hero-backdrop {
   background-color: #14532d;

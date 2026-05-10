@@ -104,6 +104,19 @@
     padding-top: 0.75rem;
     text-align: center;
   }
+
+  /* Long nav lists + admin blocks: scroll inside collapse instead of clipping viewport */
+  .nav-editorial.navbar .navbar-collapse {
+    max-height: min(75vh, calc(100dvh - 5.5rem));
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-editorial.navbar .navbar-collapse.show {
+    padding-bottom: 0.5rem;
+  }
 }
 
 // Account dropdown can grow long (admin / artisan); keep it scrollable on short viewports

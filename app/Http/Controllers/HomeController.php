@@ -48,11 +48,6 @@ class HomeController extends Controller
             'categories' => Category::active()->count(),
         ];
 
-        $heroProduct = $featuredProducts->first();
-        $heroImageUrl = $heroProduct?->primaryImage?->image_url
-            ?? $heroProduct?->images?->first()?->image_url
-            ?? null;
-
-        return view('home', compact('featuredProducts', 'categories', 'featuredArtisans', 'stats', 'heroImageUrl'));
+        return view('home', compact('featuredProducts', 'categories', 'featuredArtisans', 'stats'));
     }
 }

@@ -6,19 +6,19 @@
 
 <nav class="navbar navbar-expand-lg navbar-light nav-editorial">
     <div class="container-fluid px-3 px-lg-5">
-        <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2 text-decoration-none" href="{{ url('/') }}" aria-label="{{ config('app.name') }} — {{ config('guihulngan.city_name') }}, home">
+        <a class="navbar-brand nav-editorial__brand d-flex align-items-center gap-2 text-decoration-none min-w-0 flex-shrink-1" href="{{ url('/') }}" aria-label="{{ config('app.name') }} — {{ config('guihulngan.city_name') }}, home">
             <img
                 src="{{ asset('likha-ph-logo.png') }}"
                 alt=""
-                class="nav-editorial__logo-img"
+                class="nav-editorial__logo-img flex-shrink-0"
                 width="44"
                 height="44"
                 decoding="async"
                 aria-hidden="true"
             >
-            <span class="d-flex flex-column lh-sm">
-                <span class="nav-editorial__site-name">{{ config('app.name') }}</span>
-                <span class="nav-editorial__site-place small text-muted">{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}</span>
+            <span class="d-flex flex-column lh-sm min-w-0 text-start">
+                <span class="nav-editorial__site-name text-truncate">{{ config('app.name') }}</span>
+                <span class="nav-editorial__site-place small text-muted text-truncate d-none d-sm-block">{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}</span>
             </span>
         </a>
         <button class="navbar-toggler nav-editorial__toggler border-0 rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

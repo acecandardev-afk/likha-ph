@@ -6,30 +6,27 @@
 
 @section('content')
 <div class="home-storefront home-storefront--neo home-storefront--tourism">
-    <section class="lk-min-hero tourism-hero-backdrop" aria-labelledby="home-hero-heading">
-        <div class="container-fluid px-3 px-lg-5">
-            <div class="lk-min-hero__inner">
-                <div class="lk-min-hero__copy">
-                    <h1 id="home-hero-heading" class="lk-min-hero__title">Guihulngan Tourism &amp; Local Crafts</h1>
-                    <p class="lk-min-hero__text">{{ config('guihulngan.site.hero_lead', 'Shop local makers and take home a piece of Negros Oriental.') }}</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-warning text-dark fw-semibold" href="{{ route('products.index') }}"><i class="bi bi-bag-heart me-1"></i> Shop souvenirs</a>
-                        <a class="btn btn-outline-light" href="{{ route('artisans.index') }}"><i class="bi bi-people me-1"></i> Meet artisans</a>
-                    </div>
-                </div>
-                <div class="lk-min-hero__media">
-                    @if($heroImageUrl)
-                        <img src="{{ $heroImageUrl }}" alt="Featured product" class="lk-min-hero__img" width="860" height="520" loading="eager">
-                    @else
-                        <img
-                            src="{{ asset('Guihulngan-Bell-Karabow.jpg') }}"
-                            alt="Guihulngan City landmark — bell and carabao by the sea"
-                            class="lk-min-hero__img"
-                            width="860"
-                            height="520"
-                            loading="lazy"
-                        >
-                    @endif
+    <section class="home-vendor-hero" aria-label="Local crafts — {{ config('guihulngan.city_name') }}">
+        <div class="home-vendor-hero__frame">
+            <img
+                src="{{ asset('vendor_image.jpg') }}"
+                alt="Artisans weaving — local crafts from {{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}"
+                class="home-vendor-hero__img"
+                width="1600"
+                height="900"
+                loading="eager"
+                decoding="async"
+                fetchpriority="high"
+            >
+            <div class="home-vendor-hero__gradient" aria-hidden="true"></div>
+            <div class="home-vendor-hero__cta container-fluid px-3 px-lg-5">
+                <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 py-3 py-md-4 justify-content-center justify-content-md-start">
+                    <a class="btn btn-warning text-dark fw-semibold px-4 py-2" href="{{ route('products.index') }}">
+                        <i class="bi bi-bag-heart me-1" aria-hidden="true"></i> Shop souvenirs
+                    </a>
+                    <a class="btn btn-outline-light fw-semibold px-4 py-2" href="{{ route('artisans.index') }}">
+                        <i class="bi bi-people me-1" aria-hidden="true"></i> Meet artisans
+                    </a>
                 </div>
             </div>
         </div>
