@@ -6,18 +6,20 @@
 
 @section('content')
 <div class="home-storefront home-storefront--neo home-storefront--tourism">
-    <section class="home-vendor-hero" aria-label="Local crafts — {{ config('guihulngan.city_name') }}">
+    <section class="home-vendor-hero" aria-label="Local crafts — {{ config('guihulngan.city_name') }}" data-parallax-root>
         <div class="home-vendor-hero__frame">
-            <img
-                src="{{ asset('vendor_image.jpg') }}"
-                alt="Artisans weaving — local crafts from {{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}"
-                class="home-vendor-hero__img"
-                width="1600"
-                height="900"
-                loading="eager"
-                decoding="async"
-                fetchpriority="high"
-            >
+            <div class="home-vendor-hero__parallax" data-parallax-layer data-parallax-strength="0.09">
+                <img
+                    src="{{ asset('vendor_image.jpg') }}"
+                    alt="Artisans weaving — local crafts from {{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}"
+                    class="home-vendor-hero__img"
+                    width="1600"
+                    height="900"
+                    loading="eager"
+                    decoding="async"
+                    fetchpriority="high"
+                >
+            </div>
             <div class="home-vendor-hero__gradient" aria-hidden="true"></div>
             <div class="home-vendor-hero__cta container-fluid px-3 px-lg-5">
                 <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch align-items-sm-center gap-2 py-3 py-md-4 justify-content-center justify-content-md-start">
@@ -29,6 +31,14 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="home-landmark-banner reveal home-landmark-banner--scroll home-landmark-banner--parallax-bg" aria-label="{{ config('guihulngan.city_name') }} landmark">
+        <div class="home-landmark-banner__overlay" aria-hidden="true"></div>
+        <div class="container-fluid px-3 px-lg-5 position-relative z-1 py-4 py-md-5 text-center">
+            <p class="home-landmark-banner__eyebrow text-white text-uppercase small mb-1 mb-md-2">{{ config('guihulngan.province') }}</p>
+            <p class="home-landmark-banner__title text-white fw-bold mb-0">{{ config('guihulngan.city_name') }}</p>
         </div>
     </section>
 
@@ -215,7 +225,7 @@
         </div>
     </section>
 
-    <section class="home-cta-band home-cta-band--neo" aria-labelledby="home-cta-heading">
+    <section class="home-cta-band home-cta-band--neo home-cta-band--landmark" aria-labelledby="home-cta-heading">
         <div class="container-fluid px-3 px-lg-5 py-5 py-lg-5">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">

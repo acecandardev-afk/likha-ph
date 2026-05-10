@@ -1,3 +1,4 @@
+<div class="site-footer-landmark" role="presentation" aria-hidden="true"></div>
 <footer class="site-footer site-footer--sub">
     <div class="container footer-shell px-3 px-md-4 px-lg-5">
         <div class="row g-4 py-5 py-lg-5 align-items-start">

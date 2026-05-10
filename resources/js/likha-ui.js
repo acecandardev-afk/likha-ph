@@ -80,7 +80,61 @@ export function initAuthOffcanvas() {
     });
 }
 
+/**
+ * Scroll-linked parallax for [data-parallax-layer] inside [data-parallax-root].
+ * Respects prefers-reduced-motion.
+ */
+export function initScrollParallax() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    if (!document.querySelector('[data-parallax-root]')) {
+        return;
+    }
+
+    const layers = document.querySelectorAll('[data-parallax-layer]');
+    if (!layers.length) {
+        return;
+    }
+
+    let ticking = false;
+
+    const update = () => {
+        ticking = false;
+        layers.forEach((layer) => {
+            const root = layer.closest('[data-parallax-root]');
+            if (!root) {
+                return;
+            }
+            const rect = root.getBoundingClientRect();
+            const vh = window.innerHeight || 1;
+            if (rect.bottom < 0 || rect.top > vh) {
+                layer.style.transform = '';
+                return;
+            }
+            const strength = parseFloat(layer.getAttribute('data-parallax-strength') || '0.1');
+            const centerDelta = (rect.top + rect.height / 2 - vh / 2) / vh;
+            const s = Number.isFinite(strength) ? strength : 0.1;
+            const ty = centerDelta * -52 * s * 10;
+            layer.style.transform = `translate3d(0, ${ty}px, 0)`;
+        });
+    };
+
+    const onScroll = () => {
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(update);
+        }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+}
+
 export function initLikhaUi() {
     initScrollReveal();
+    initScrollParallax();
     initAuthOffcanvas();
 }
