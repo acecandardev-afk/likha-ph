@@ -16,8 +16,9 @@ return [
     |
     */
 
-    // Render commonly provides DATABASE_URL; fall back to Postgres when present.
-    'default' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'sqlite'),
+    // DATABASE_URL (e.g. Render) selects pgsql; otherwise default to mysql so deploys
+    // never silently use SQLite when DB_CONNECTION is missing from .env.
+    'default' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'mysql'),
 
     /*
     |--------------------------------------------------------------------------

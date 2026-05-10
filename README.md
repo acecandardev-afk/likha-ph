@@ -20,7 +20,7 @@
 2. Install PHP dependencies: `composer install`
 3. Create the environment file: copy `.env.example` to `.env` (Windows: `copy .env.example .env` in Command Prompt or PowerShell).
 4. Generate the app key: `php artisan key:generate`
-5. Create the SQLite database file if it does not exist: `php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"`
+5. Configure MySQL in `.env` (`DB_CONNECTION=mysql`, host, database name, user, password). Create the empty database in MySQL first.
 6. Run migrations: `php artisan migrate`
 7. Install JS dependencies and build assets: `npm install` then `npm run build`
 

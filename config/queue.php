@@ -104,7 +104,7 @@ return [
     */
 
     'batching' => [
-        'database' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'sqlite'),
+        'database' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'mysql'),
         'table' => 'job_batches',
     ],
 
@@ -123,7 +123,7 @@ return [
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
-        'database' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'sqlite'),
+        'database' => env('DB_CONNECTION', env('DATABASE_URL') ? 'pgsql' : 'mysql'),
         'table' => 'failed_jobs',
     ],
 
