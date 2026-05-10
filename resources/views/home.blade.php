@@ -21,10 +21,14 @@
                     @if($heroImageUrl)
                         <img src="{{ $heroImageUrl }}" alt="Featured product" class="lk-min-hero__img" width="860" height="520" loading="eager">
                     @else
-                        <div class="lk-min-hero__placeholder d-flex flex-column align-items-center justify-content-center text-white-50 border border-white border-opacity-25 rounded-3 bg-white bg-opacity-10 p-4">
-                            <i class="bi bi-water display-4 mb-2"></i>
-                            <span>Featured product image</span>
-                        </div>
+                        <img
+                            src="{{ asset('Guihulngan-Bell-Karabow.jpg') }}"
+                            alt="Guihulngan City landmark — bell and carabao by the sea"
+                            class="lk-min-hero__img"
+                            width="860"
+                            height="520"
+                            loading="lazy"
+                        >
                     @endif
                 </div>
             </div>

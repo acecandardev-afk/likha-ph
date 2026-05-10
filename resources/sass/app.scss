@@ -258,6 +258,11 @@ a:hover {
   margin-top: auto;
   padding-top: 0;
 
+  .site-footer__logo {
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   .footer-shell {
     // Keep the footer content away from screen edges on large monitors.
     max-width: 1240px;

@@ -6,9 +6,9 @@
 
 @section('content')
 <div class="container-fluid px-3 px-lg-5 artisans-page artisans-page--sub">
-    <div class="artisans-hero-sub overflow-hidden reveal">
+    <div class="artisans-hero-sub artisans-hero-sub--guihulngan overflow-hidden reveal">
         <div class="artisans-hero-sub-inner px-3 py-4 py-md-5">
-            <p class="artisans-hero-sub-label mb-2">Likha PH</p>
+            <p class="artisans-hero-sub-label mb-2">Likha · {{ config('guihulngan.city_name') }}</p>
             <h1 class="artisans-hero-sub-title mb-2">Meet our artisans</h1>
             <p class="artisans-hero-sub-text mb-0">The people behind every handcrafted piece. Discover their stories and shop their creations.</p>
         </div>

@@ -17,17 +17,12 @@
   color: $neo-black !important;
 }
 
-.nav-editorial__logo-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  background: $brand-primary;
-  color: #fff !important;
-  border: 2px solid $neo-black;
-  box-shadow: 3px 3px 0 $neo-black;
-  font-size: 1.1rem;
+.nav-editorial__logo-img {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .nav-editorial__site-name {

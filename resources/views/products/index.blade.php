@@ -6,12 +6,12 @@
 
 @section('content')
 <div class="shop-page">
-    <header class="shop-page__hero reveal">
-        <div class="container-fluid px-3 px-lg-5">
+    <header class="shop-page__hero shop-page__hero--guihulngan guihulngan-page-hero guihulngan-page-hero--soft reveal">
+        <div class="container-fluid px-3 px-lg-5 py-4 py-md-5 guihulngan-page-hero__inner">
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-md-between gap-3">
                 <div>
-                    <h1 class="shop-page__title mb-1">Shop</h1>
-                    <p class="text-muted small mb-0">Handmade pieces—filter by category, search, or sort.</p>
+                    <h1 class="shop-page__title shop-page__title--on-hero mb-1">Shop</h1>
+                    <p class="shop-page__lead small mb-0">Handmade pieces—filter by category, search, or sort.</p>
                 </div>
             </div>
         </div>

@@ -2,8 +2,12 @@
     <div class="container footer-shell px-3 px-md-4 px-lg-5">
         <div class="row g-4 py-5 py-lg-5 align-items-start">
             <div class="col-12 col-lg-4">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <h5 class="footer-heading mb-0">Marketplace</h5>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="{{ asset('likha-ph-logo.png') }}" alt="" class="site-footer__logo" width="48" height="48" decoding="async" aria-hidden="true">
+                    <div>
+                        <h5 class="footer-heading mb-0">{{ config('app.name') }}</h5>
+                        <p class="small text-muted mb-0">{{ config('guihulngan.city_name') }}, {{ config('guihulngan.province') }}</p>
+                    </div>
                 </div>
                 <p class="footer-text mb-3">
                     A marketplace for handcrafted products from local makers. Browse approved listings, message artisans, and track your orders in one place.
