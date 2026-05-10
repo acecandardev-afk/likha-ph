@@ -11,12 +11,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // UserSeeder runs AdminSeeder first (admin + Philippine addresses), then demo artisans/customers.
+        // Default seed: admin user only (AdminSeeder also runs PhilippineAddressSeeder for checkout/addresses).
+        // Demo data: php artisan db:seed --class=UserSeeder (includes AdminSeeder first), CategorySeeder, ProductSeeder, etc.
         $this->call([
-            UserSeeder::class,
-            CategorySeeder::class,
-            ProductSeeder::class,
-            // OrderSeeder::class, // Optional: uncomment for test orders
+            AdminSeeder::class,
         ]);
     }
 }
