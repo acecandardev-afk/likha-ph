@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\GoogleOAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class GoogleAuthController extends Controller
 
     public function redirect(Request $request): RedirectResponse
     {
-        if (! config('services.google.client_id') || ! config('services.google.client_secret')) {
+        if (! GoogleOAuth::isConfigured()) {
             return redirect()
                 ->route('login')
                 ->with('error', 'Google sign-in is not configured for this site.');

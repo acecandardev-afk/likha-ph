@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Cart;
 use App\Models\UserNotification;
+use App\Support\GoogleOAuth;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -24,8 +25,7 @@ class ShareUiState
             'uiCartCount' => 0,
             'uiUnreadNotificationsCount' => 0,
             'uiApplicationBanner' => null,
-            'uiGoogleSignInAvailable' => filled(config('services.google.client_id'))
-                && filled(config('services.google.client_secret')),
+            'uiGoogleSignInAvailable' => GoogleOAuth::isConfigured(),
         ];
 
         try {

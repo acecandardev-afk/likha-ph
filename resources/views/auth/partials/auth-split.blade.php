@@ -75,7 +75,7 @@
                             </div>
                         @else
                             <p class="small text-body-secondary text-center mb-0 lh-sm">
-                                Google sign-in is not available on this site yet.
+                                Add <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> to <code class="small">.env</code>, then run <code class="small">php artisan config:clear</code>.
                             </p>
                         @endif
                     </div>

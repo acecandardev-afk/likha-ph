@@ -51,8 +51,8 @@ return [
     |      APP_URL must match the origin you registered (Socialite uses request URL when GOOGLE_REDIRECT_URI is unset).
     */
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'client_id' => trim((string) env('GOOGLE_CLIENT_ID', '')),
+        'client_secret' => trim((string) env('GOOGLE_CLIENT_SECRET', '')),
         // When set, must match an "Authorized redirect URI" in Google Cloud Console exactly.
         // When empty, GoogleAuthController builds the callback from the current request (avoids APP_URL/port/path mismatches).
         'redirect' => env('GOOGLE_REDIRECT_URI', rtrim((string) env('APP_URL', 'http://localhost'), '/').'/auth/google/callback'),
