@@ -1,8 +1,15 @@
 /* Guihulngan tourism storefront — landmark photo hero with high-contrast type */
 
-/* Top-of-page hero — Guihulngan bell (tall + JS scroll parallax) */
+/* Top-of-page hero — Guihulngan bell (edge-to-edge + parallax) */
 .home-bell-hero {
-  width: 100%;
+  width: 100vw;
+  max-width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  overflow: hidden;
 }
 
 .home-bell-hero__frame {
