@@ -26,9 +26,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('artisan_user_id')->constrained('users')->cascadeOnDelete();
-            // FK added after create — MariaDB/MySQL often returns errno 150 for nullable
-            // ledger_journal_id when defined inline with constrained() on CREATE TABLE.
+            // Optional link to ledger_journals — no DB-level FK: MariaDB returns errno 150 for
+            // nullable FK to ledger_journals.id on several versions; enforce in application code.
             $table->unsignedBigInteger('ledger_journal_id')->nullable();
+            $table->index('ledger_journal_id');
             $table->decimal('expected_artisan_payable', 14, 2);
             $table->timestamp('acknowledged_at')->nullable();
             $table->string('note', 500)->nullable();
@@ -53,21 +54,10 @@ return new class extends Migration
 
             $table->index(['status', 'created_at']);
         });
-
-        Schema::table('seller_cod_handoffs', function (Blueprint $table) {
-            $table->foreign('ledger_journal_id')
-                ->references('id')
-                ->on('ledger_journals')
-                ->nullOnDelete();
-        });
     }
 
     public function down(): void
     {
-        Schema::table('seller_cod_handoffs', function (Blueprint $table) {
-            $table->dropForeign(['ledger_journal_id']);
-        });
-
         Schema::dropIfExists('order_financial_disputes');
         Schema::dropIfExists('seller_cod_handoffs');
         Schema::dropIfExists('rider_remittance_reports');
