@@ -54,8 +54,9 @@
                     </div>
                 @else
                     <p class="small text-body-secondary text-center mb-0 lh-sm">
-                        Google sign-in needs <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> in the server <code class="small">.env</code>.
-                        After saving, run <code class="small">php artisan config:clear</code> (cached config won’t see new keys until then).
+                        Google sign-in isn’t enabled on this server yet. Add <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> to the deployment <code class="small">.env</code>, then run
+                        <code class="small">php artisan config:clear</code>.
+                        On the server, run <code class="small">php artisan google-oauth:status</code> to verify credentials are loaded (values are masked).
                     </p>
                 @endif
             </div>

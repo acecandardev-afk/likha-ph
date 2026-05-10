@@ -75,7 +75,7 @@
                             </div>
                         @else
                             <p class="small text-body-secondary text-center mb-0 lh-sm">
-                                Add <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> to <code class="small">.env</code>, then run <code class="small">php artisan config:clear</code>.
+                                Google sign-in isn’t enabled — set <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> in <code class="small">.env</code>, run <code class="small">php artisan config:clear</code>, then check with <code class="small">php artisan google-oauth:status</code>.
                             </p>
                         @endif
                     </div>
