@@ -10,12 +10,18 @@
         Delivery address
     </a>
     @if(auth()->user()->isArtisan())
-        <a class="nav-link {{ $active === 'customer-orders' ? 'active' : '' }}" href="{{ route('artisan.orders.index') }}">
+        <a class="nav-link {{ $active === 'incoming-orders' ? 'active' : '' }}" href="{{ route('artisan.orders.index') }}">
             Incoming orders
+        </a>
+        <a class="nav-link {{ $active === 'returns' ? 'active' : '' }}" href="{{ route('artisan.returns.index') }}">
+            Item returns
         </a>
     @elseif(auth()->user()->isCustomer())
         <a class="nav-link {{ $active === 'my-orders' ? 'active' : '' }}" href="{{ route('customer.orders.index') }}">
             Orders
+        </a>
+        <a class="nav-link {{ $active === 'returns' ? 'active' : '' }}" href="{{ route('customer.returns.index') }}">
+            Returns
         </a>
     @endif
 </nav>

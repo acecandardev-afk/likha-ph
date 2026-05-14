@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container py-2 py-md-3">
-    <x-profile-header-nav active="customer-orders" />
+    <x-profile-header-nav active="incoming-orders" />
     <h1 class="h2 fw-semibold mb-3">Orders</h1>
     <p class="text-muted small mb-4">
         <i class="bi bi-info-circle me-1"></i>
@@ -28,6 +28,7 @@
                                 <th>Est. delivery</th>
                                 <th>Status</th>
                                 <th>Total</th>
+                                <th>Returns</th>
                                 <th class="text-end">Action</th>
                             </tr>
                         </thead>
@@ -40,6 +41,17 @@
                                     <td>{{ $order->estimated_delivery_date }}</td>
                                     <td><x-status-badge :status="$order->status" type="order" /></td>
                                     <td>₱{{ number_format($order->total, 2) }}</td>
+                                    <td class="small">
+                                        @if($order->relationLoaded('itemReturns') && $order->itemReturns->isNotEmpty())
+                                            @if($order->itemReturns->contains(fn ($r) => $r->status === \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN))
+                                                <span class="badge bg-warning text-dark">Pending review</span>
+                                            @else
+                                                <span class="text-muted">{{ $order->itemReturns->count() }} on file</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
                                     <td class="text-end">
                                         @if($order->canBeApproved())
                                             <form action="{{ route('artisan.orders.approve', $order) }}" method="POST" class="d-inline">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Artisan;
 
 use App\Models\Order;
+use App\Models\OrderItemReturn;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends ArtisanController
@@ -14,7 +15,7 @@ class DashboardController extends ArtisanController
     {
         $artisan = $this->getArtisan();
 
-        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v6", 60, function () use ($artisan) {
+        $stats = Cache::remember("dashboard:artisan:{$artisan->id}:stats:v7", 60, function () use ($artisan) {
             $scopedOrders = $artisan->artisanOrders()->notStaleCancelled();
 
             return [
@@ -29,6 +30,10 @@ class DashboardController extends ArtisanController
                 'delivered_orders' => $scopedOrders->clone()->delivered()->count(),
                 'confirmed_orders' => $scopedOrders->clone()->wherePaymentVerified()->count(),
                 'completed_orders' => $scopedOrders->clone()->completed()->count(),
+                'returns_pending_admin' => OrderItemReturn::query()
+                    ->where('artisan_id', $artisan->id)
+                    ->where('status', OrderItemReturn::STATUS_PENDING_ADMIN)
+                    ->count(),
                 'estimated_share_total' => (float) Order::query()
                     ->where('artisan_id', $artisan->id)
                     ->whereIn('status', ['delivered', 'completed'])

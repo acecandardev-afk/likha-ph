@@ -25,7 +25,7 @@ class OrderController extends CustomerController
         $customer = $this->getCustomer();
 
         $query = $customer->orders()
-            ->with(['artisan.artisanProfile', 'items.product', 'payment', 'rider'])
+            ->with(['artisan.artisanProfile', 'items.product', 'payment', 'rider', 'itemReturns'])
             ->notStaleCancelled();
 
         // Filter by status
@@ -54,11 +54,13 @@ class OrderController extends CustomerController
         $order->load([
             'artisan.artisanProfile',
             'items.product.images',
+            'items.returns',
             'payment',
             'messages.sender',
             'rider',
             'packages.rider',
             'packages.items.orderItem.product',
+            'itemReturns.orderItem',
         ]);
 
         return view('customer.orders.show', compact('order'));

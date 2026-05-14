@@ -6,6 +6,7 @@ use App\Models\DirectMessage;
 use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderFinancialDispute;
+use App\Models\OrderItemReturn;
 use App\Models\OrderPackage;
 use App\Models\Payment;
 use App\Models\Product;
@@ -379,6 +380,81 @@ class NotificationService
             "Dispute on {$num}: {$dispute->category}. Review in Admin.",
             route('admin.financial-disputes.index')
         );
+    }
+
+    public function notifyOrderItemReturnSubmitted(OrderItemReturn $return): void
+    {
+        $return->loadMissing(['order', 'orderItem']);
+        $num = $return->order?->order_number ?? 'Order';
+        $product = $return->orderItem?->product_name ?? 'Item';
+        $reason = $return->reasonLabel();
+
+        $this->notifyAdmins(
+            'order_item_return_submitted',
+            'Return request needs review',
+            "{$num}: {$product} — {$reason} (qty {$return->quantity}).",
+            route('admin.order-returns.show', $return)
+        );
+
+        if ($return->artisan_id) {
+            $this->notifyUser(
+                (int) $return->artisan_id,
+                'order_item_return_submitted_artisan',
+                'Buyer requested a return',
+                "{$num}: {$product} — {$reason}. Awaiting admin approval.",
+                route('artisan.returns.show', $return)
+            );
+        }
+    }
+
+    public function notifyOrderItemReturnApproved(OrderItemReturn $return): void
+    {
+        $return->loadMissing(['order', 'orderItem']);
+        $num = $return->order?->order_number ?? 'Order';
+        $product = $return->orderItem?->product_name ?? 'Item';
+
+        $this->notifyUser(
+            (int) $return->customer_id,
+            'order_item_return_approved_customer',
+            'Return approved',
+            "Your return for {$product} on {$num} was approved. Stock for the item has been adjusted.",
+            route('customer.returns.show', $return)
+        );
+
+        if ($return->artisan_id) {
+            $this->notifyUser(
+                (int) $return->artisan_id,
+                'order_item_return_approved_artisan',
+                'Return approved',
+                "Admin approved a return for {$product} on {$num}.",
+                route('artisan.returns.show', $return)
+            );
+        }
+    }
+
+    public function notifyOrderItemReturnRejected(OrderItemReturn $return): void
+    {
+        $return->loadMissing(['order', 'orderItem']);
+        $num = $return->order?->order_number ?? 'Order';
+        $product = $return->orderItem?->product_name ?? 'Item';
+
+        $this->notifyUser(
+            (int) $return->customer_id,
+            'order_item_return_rejected_customer',
+            'Return not approved',
+            "Your return for {$product} on {$num} was not approved. Check the return details for admin notes.",
+            route('customer.returns.show', $return)
+        );
+
+        if ($return->artisan_id) {
+            $this->notifyUser(
+                (int) $return->artisan_id,
+                'order_item_return_rejected_artisan',
+                'Return closed',
+                "Admin rejected the return for {$product} on {$num}.",
+                route('artisan.returns.show', $return)
+            );
+        }
     }
 
     protected function notifyUser(int $userId, string $type, string $title, ?string $body, ?string $actionUrl = null): void

@@ -45,9 +45,11 @@
                         @if(auth()->user()->isCustomer())
                             <li class="mb-2"><a href="{{ route('customer.dashboard') }}">Dashboard</a></li>
                             <li class="mb-2"><a href="{{ route('customer.orders.index') }}">My orders</a></li>
+                            <li class="mb-2"><a href="{{ route('customer.returns.index') }}">Returns</a></li>
                         @elseif(auth()->user()->isArtisan())
                             <li class="mb-2"><a href="{{ route('artisan.dashboard') }}">Dashboard</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.orders.index') }}">Incoming orders</a></li>
+                            <li class="mb-2"><a href="{{ route('artisan.returns.index') }}">Item returns</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.earnings.index') }}">After delivery</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.ledger.index') }}">Payment records</a></li>
                             <li class="mb-2"><a href="{{ route('artisan.products.index') }}">My products</a></li>

@@ -130,6 +130,11 @@ class Order extends Model
         return $this->hasMany(OrderFinancialDispute::class)->latest();
     }
 
+    public function itemReturns()
+    {
+        return $this->hasMany(OrderItemReturn::class)->latest();
+    }
+
     public function messages()
     {
         return $this->hasMany(Message::class);
@@ -258,6 +263,18 @@ class Order extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    /**
+     * Buyer may request returns after goods were received (delivered / completed / received).
+     */
+    public function isEligibleForItemReturns(): bool
+    {
+        if ($this->isCancelled()) {
+            return false;
+        }
+
+        return $this->isDelivered() || $this->isCompleted() || $this->isReceived();
     }
 
     public function isDeliveryCompleted(): bool

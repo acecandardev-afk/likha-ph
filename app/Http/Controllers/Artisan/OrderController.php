@@ -19,7 +19,7 @@ class OrderController extends ArtisanController
         $artisan = $this->getArtisan();
 
         $query = $artisan->artisanOrders()
-            ->with(['customer', 'items.product', 'payment', 'rider'])
+            ->with(['customer', 'items.product', 'payment', 'rider', 'itemReturns'])
             ->notStaleCancelled();
 
         // Filter by status
@@ -47,6 +47,7 @@ class OrderController extends ArtisanController
         $order->load([
             'customer',
             'items.product.images',
+            'items.returns',
             'payment',
             'messages.sender',
             'rider',
@@ -54,6 +55,7 @@ class OrderController extends ArtisanController
             'packages.items.orderItem',
             'sellerCodHandoff',
             'deliverySettlementJournal.lines',
+            'itemReturns.orderItem',
         ]);
 
         $ledgerSnapshot = $ledgerReader->snapshotForOrder($order);

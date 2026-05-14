@@ -36,11 +36,29 @@
                                 <div class="col-4 col-md-2">₱{{ number_format($item->price, 2) }}</div>
                                 <div class="col-4 col-md-2">× {{ $item->quantity }}</div>
                                 <div class="col-4 col-md-2 text-end fw-semibold">₱{{ number_format($item->price * $item->quantity, 2) }}</div>
+                                @if($order->isEligibleForItemReturns())
+                                    <div class="col-12 mt-2 pt-2 border-top border-light">
+                                        @php
+                                            $rq = $item->returnableQuantity();
+                                            $pendingLine = $item->returns->contains(fn ($r) => $r->status === \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN);
+                                        @endphp
+                                        @if($pendingLine)
+                                            <span class="badge bg-secondary">Return pending admin review</span>
+                                        @elseif($rq > 0)
+                                            <a href="{{ route('customer.orders.items.returns.create', [$order, $item]) }}" class="btn btn-sm btn-outline-warning">Request return</a>
+                                            <span class="text-muted small ms-2">Up to {{ $rq }} unit(s) returnable</span>
+                                        @else
+                                            <span class="text-muted small">No returnable quantity left for this line.</span>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     @endif
                 </div>
             </div>
+
+            @include('partials.order-returns-summary', ['order' => $order, 'returnShowRoute' => 'customer.returns.show'])
 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Models\OrderItemReturn;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends CustomerController
@@ -13,7 +14,7 @@ class DashboardController extends CustomerController
     {
         $customer = $this->getCustomer();
 
-        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats:v4", 60, function () use ($customer) {
+        $stats = Cache::remember("dashboard:customer:{$customer->id}:stats:v5", 60, function () use ($customer) {
             $scoped = $customer->orders()->notStaleCancelled();
 
             return [
@@ -25,6 +26,10 @@ class DashboardController extends CustomerController
                 'confirmed_orders' => $scoped->clone()->wherePaymentVerified()->count(),
                 'completed_orders' => $scoped->clone()->completed()->count(),
                 'total_spent' => $scoped->clone()->whereIn('status', ['delivered', 'completed'])->sum('total'),
+                'returns_pending_review' => OrderItemReturn::query()
+                    ->where('customer_id', $customer->id)
+                    ->where('status', OrderItemReturn::STATUS_PENDING_ADMIN)
+                    ->count(),
             ];
         });
 

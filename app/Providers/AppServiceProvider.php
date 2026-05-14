@@ -9,6 +9,7 @@ use App\Services\ImageUploadService;
 use App\Services\LedgerPostingService;
 use App\Services\NotificationService;
 use App\Services\OrderService;
+use App\Services\OrderItemReturnService;
 use App\Services\PaymentService;
 use App\Services\StockService;
 use App\Services\VoucherService;
@@ -53,11 +54,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentService::class, function ($app) {
             return new PaymentService(
                 $app->make(ImageUploadService::class),
-                $app->make(NotificationService::class)
+                $app->make(NotificationService::class),
+                $app->make(DeliveryService::class)
             );
         });
 
         $this->app->singleton(AddressService::class);
+        $this->app->singleton(OrderItemReturnService::class, function ($app) {
+            return new OrderItemReturnService(
+                $app->make(NotificationService::class)
+            );
+        });
     }
 
     /**
@@ -98,13 +105,15 @@ class AppServiceProvider extends ServiceProvider
                         (SELECT COUNT(*) FROM {$t}payments WHERE verification_status = ?) AS payments,
                         (SELECT COUNT(*) FROM {$t}users WHERE role = ? AND status = ?) AS artisans,
                         (SELECT COUNT(*) FROM {$t}order_packages WHERE delivery_status = ?) AS deliveries,
-                        (SELECT COUNT(*) FROM {$t}delivery_reports WHERE status = 'open') AS reports",
+                        (SELECT COUNT(*) FROM {$t}delivery_reports WHERE status = 'open') AS reports,
+                        (SELECT COUNT(*) FROM {$t}order_item_returns WHERE status = ?) AS returns_pending",
                     [
                         'pending',
                         'pending',
                         'artisan',
                         'pending',
                         DeliveryService::STATUS_PENDING_ASSIGNMENT,
+                        \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN,
                     ]
                 );
 
@@ -114,6 +123,7 @@ class AppServiceProvider extends ServiceProvider
                     'artisans' => (int) ($row->artisans ?? 0),
                     'deliveries' => (int) ($row->deliveries ?? 0),
                     'reports' => (int) ($row->reports ?? 0),
+                    'returns' => (int) ($row->returns_pending ?? 0),
                 ]);
             } catch (\Throwable $e) {
                 report($e);
@@ -123,6 +133,7 @@ class AppServiceProvider extends ServiceProvider
                     'artisans' => 0,
                     'deliveries' => 0,
                     'reports' => 0,
+                    'returns' => 0,
                 ]);
             }
         });

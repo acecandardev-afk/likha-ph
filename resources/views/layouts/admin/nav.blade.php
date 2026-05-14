@@ -7,6 +7,7 @@
         ['route' => 'admin.ledger.index', 'label' => 'Payment records', 'icon' => 'bi-journal-richtext'],
         ['route' => 'admin.cod-treasury.index', 'label' => 'Cash vs rider reports', 'icon' => 'bi-cash-stack'],
         ['route' => 'admin.financial-disputes.index', 'label' => 'Financial disputes', 'icon' => 'bi-exclamation-octagon'],
+        ['route' => 'admin.order-returns.index', 'label' => 'Item returns', 'icon' => 'bi-arrow-counterclockwise', 'badge_key' => 'returns'],
         ['route' => 'admin.products.pending', 'label' => 'Product review', 'icon' => 'bi-hourglass-split', 'badge_key' => 'products'],
         ['route' => 'admin.products.approved', 'label' => 'Approved products', 'icon' => 'bi-check2-circle'],
         ['route' => 'admin.products.rejected', 'label' => 'Rejected products', 'icon' => 'bi-x-circle'],

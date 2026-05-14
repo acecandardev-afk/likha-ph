@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Models\ArtisanProfile;
 use App\Models\Message;
 use App\Models\Order;
+use App\Models\OrderItemReturn;
 use App\Models\Product;
 use App\Models\Review;
+use App\Policies\OrderItemReturnPolicy;
 use App\Policies\ArtisanProfilePolicy;
 use App\Policies\MessagePolicy;
 use App\Policies\OrderPolicy;
@@ -22,6 +24,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        OrderItemReturn::class => OrderItemReturnPolicy::class,
         Product::class => ProductPolicy::class,
         Order::class => OrderPolicy::class,
         ArtisanProfile::class => ArtisanProfilePolicy::class,

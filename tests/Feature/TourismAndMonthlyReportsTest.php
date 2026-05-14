@@ -44,7 +44,7 @@ class TourismAndMonthlyReportsTest extends TestCase
     {
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Guihulngan Tourism', false)
+            ->assertSee('Discover Guihulngan', false)
             ->assertSee('home-storefront--tourism', false);
     }
 

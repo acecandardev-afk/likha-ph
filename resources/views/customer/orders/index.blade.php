@@ -64,6 +64,7 @@
                         <th>Est. delivery</th>
                         <th>Status</th>
                         <th>Total</th>
+                        <th>Returns</th>
                         <th class="text-end">Action</th>
                     </tr>
                 </thead>
@@ -76,6 +77,17 @@
                             <td>{{ $order->estimated_delivery_date }}</td>
                             <td><x-status-badge :status="$order->status" type="order" /></td>
                             <td>₱{{ number_format($order->total, 2) }}</td>
+                            <td class="small">
+                                @if($order->relationLoaded('itemReturns') && $order->itemReturns->isNotEmpty())
+                                    @if($order->itemReturns->contains(fn ($r) => $r->status === \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN))
+                                        <span class="badge bg-warning text-dark">Pending review</span>
+                                    @else
+                                        <span class="text-muted">{{ $order->itemReturns->count() }} on file</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td class="text-end">
                                 <a href="{{ route('customer.orders.show', $order) }}" class="btn btn-sm btn-outline-primary">View details</a>
                             </td>

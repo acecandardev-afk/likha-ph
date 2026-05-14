@@ -152,6 +152,20 @@ return [
                 'visibility' => 'public',
                 'throw' => false,
             ],
+
+        'order_returns' => $mediaUseS3
+            ? array_merge($mediaS3Base, [
+                'root' => $objectRoot('order-returns'),
+                'visibility' => 'public',
+                'throw' => false,
+            ])
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/order-returns'),
+                'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/order-returns',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
     ],
 
     /*

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\DeliveryReport;
 use App\Models\Order;
+use App\Models\OrderItemReturn;
 use App\Models\OrderPackage;
 use App\Models\Payment;
 use App\Models\Product;
@@ -20,7 +21,7 @@ class DashboardController extends AdminController
      */
     public function index()
     {
-        $stats = Cache::remember('dashboard:admin:stats:v4', 60, function () {
+        $stats = Cache::remember('dashboard:admin:stats:v5', 60, function () {
             return [
                 'pending_products' => Product::pending()->count(),
                 'pending_payments' => Payment::pending()->count(),
@@ -35,6 +36,9 @@ class DashboardController extends AdminController
                 'unapproved_reviews' => Review::where('is_approved', false)->count(),
                 'open_delivery_reports' => DeliveryReport::query()
                     ->where('status', DeliveryReport::STATUS_OPEN)
+                    ->count(),
+                'pending_item_returns' => OrderItemReturn::query()
+                    ->where('status', OrderItemReturn::STATUS_PENDING_ADMIN)
                     ->count(),
                 'total_riders' => Rider::count(),
                 'available_riders' => Rider::where('status', Rider::STATUS_AVAILABLE)->count(),

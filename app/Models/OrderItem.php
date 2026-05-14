@@ -35,9 +35,34 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function returns()
+    {
+        return $this->hasMany(OrderItemReturn::class);
+    }
+
     // Helpers
     public function calculateSubtotal(): float
     {
         return $this->price * $this->quantity;
+    }
+
+    /**
+     * Units of this line still available to request a return for (excludes approved & pending admin returns).
+     */
+    public function returnableQuantity(): int
+    {
+        if ($this->relationLoaded('returns')) {
+            $reserved = (int) $this->returns
+                ->whereIn('status', [OrderItemReturn::STATUS_PENDING_ADMIN, OrderItemReturn::STATUS_APPROVED])
+                ->sum('quantity');
+
+            return max(0, (int) $this->quantity - $reserved);
+        }
+
+        $reserved = (int) $this->returns()
+            ->whereIn('status', [OrderItemReturn::STATUS_PENDING_ADMIN, OrderItemReturn::STATUS_APPROVED])
+            ->sum('quantity');
+
+        return max(0, (int) $this->quantity - $reserved);
     }
 }

@@ -64,6 +64,15 @@
                 </div>
             </div>
         </div>
+        <div class="col">
+            <div class="card stat-card h-100 border-secondary">
+                <div class="card-body p-3 p-md-4">
+                    <p class="text-muted small fw-medium mb-1">Returns pending review</p>
+                    <h2 class="h3 mb-0">{{ $stats['returns_pending_review'] ?? 0 }}</h2>
+                    <a href="{{ route('customer.returns.index', ['status' => \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN]) }}" class="small">View returns</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
@@ -79,6 +88,9 @@
                         </a>
                         <a href="{{ route('account.edit') }}" class="btn btn-outline-dark w-100">
                             <i class="bi bi-geo-alt me-1"></i> Delivery address
+                        </a>
+                        <a href="{{ route('customer.returns.index') }}" class="btn btn-outline-dark w-100">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> My returns
                         </a>
                         @if(!auth()->user()->isArtisan())
                             <a href="{{ route('register.artisan') }}" class="btn btn-outline-dark w-100">

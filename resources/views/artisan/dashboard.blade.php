@@ -63,6 +63,16 @@
         </div>
 
         <div class="col">
+            <div class="card stat-card h-100 bg-secondary bg-opacity-10 border-secondary">
+                <div class="card-body p-3 p-md-4">
+                    <p class="text-muted small fw-medium mb-1">Returns awaiting admin</p>
+                    <h2 class="h3 mb-1">{{ $stats['returns_pending_admin'] ?? 0 }}</h2>
+                    <a href="{{ route('artisan.returns.index', ['status' => \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN]) }}" class="small">View returns</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
             <div class="card stat-card h-100 bg-danger bg-opacity-10 border-danger">
                 <div class="card-body p-3 p-md-4">
                     <p class="text-muted small fw-medium mb-1">Rejected products</p>
@@ -103,6 +113,9 @@
                         </a>
                         <a href="{{ route('artisan.orders.index') }}" class="btn btn-outline-secondary w-100">
                             <i class="bi bi-receipt me-1"></i> Incoming orders
+                        </a>
+                        <a href="{{ route('artisan.returns.index') }}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Item returns
                         </a>
                         <a href="{{ route('artisan.profile.edit') }}" class="btn btn-outline-dark w-100">
                             <i class="bi bi-person-circle me-1"></i> Profile

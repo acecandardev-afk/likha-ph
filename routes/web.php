@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DeliveryReportController as AdminDeliveryReportCo
 use App\Http\Controllers\Admin\FinancialDisputeController as AdminFinancialDisputeController;
 use App\Http\Controllers\Admin\LedgerController as AdminLedgerController;
 use App\Http\Controllers\Admin\MonthlyReportController as AdminMonthlyReportController;
+use App\Http\Controllers\Admin\OrderItemReturnController as AdminOrderItemReturnController;
 use App\Http\Controllers\Admin\PaymentVerificationController;
 // Admin Controllers
 use App\Http\Controllers\Admin\ProductApprovalController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Artisan\EarningsController as ArtisanEarningsController
 use App\Http\Controllers\Artisan\LedgerController as ArtisanLedgerController;
 use App\Http\Controllers\Artisan\MonthlyReportController as ArtisanMonthlyReportController;
 use App\Http\Controllers\Artisan\OrderController as ArtisanOrderController;
+use App\Http\Controllers\Artisan\OrderItemReturnController as ArtisanOrderItemReturnController;
 use App\Http\Controllers\Artisan\ProductController as ArtisanProductController;
 use App\Http\Controllers\Artisan\ProfileController as ArtisanProfileEditController;
 use App\Http\Controllers\ArtisanProfileController;
@@ -44,6 +46,7 @@ use App\Http\Controllers\Customer\DeliveryReportController as CustomerDeliveryRe
 use App\Http\Controllers\Customer\FinancialDisputeRedirectController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\OrderFinancialDisputeController as CustomerOrderFinancialDisputeController;
+use App\Http\Controllers\Customer\OrderItemReturnController as CustomerOrderItemReturnController;
 use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\DirectMessageController;
 use App\Http\Controllers\HealthController;
@@ -152,6 +155,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('throttle:120,1')
         ->name('financial-disputes.resolve');
 
+    Route::prefix('order-returns')->name('order-returns.')->group(function () {
+        Route::get('/', [AdminOrderItemReturnController::class, 'index'])->name('index');
+        Route::get('/{orderItemReturn}', [AdminOrderItemReturnController::class, 'show'])->name('show');
+        Route::patch('/{orderItemReturn}/approve', [AdminOrderItemReturnController::class, 'approve'])
+            ->middleware('throttle:60,1')
+            ->name('approve');
+        Route::patch('/{orderItemReturn}/reject', [AdminOrderItemReturnController::class, 'reject'])
+            ->middleware('throttle:60,1')
+            ->name('reject');
+    });
+
     Route::resource('vouchers', AdminVoucherController::class)->except(['show']);
 
     // Product Approval
@@ -232,6 +246,9 @@ Route::middleware(['auth', 'artisan'])->prefix('artisan')->name('artisan.')->gro
     Route::get('/ledger', [ArtisanLedgerController::class, 'index'])->name('ledger.index');
     Route::get('/ledger/journals/{journal}', [ArtisanLedgerController::class, 'show'])->name('ledger.show');
 
+    Route::get('/returns', [ArtisanOrderItemReturnController::class, 'index'])->name('returns.index');
+    Route::get('/returns/{orderItemReturn}', [ArtisanOrderItemReturnController::class, 'show'])->name('returns.show');
+
     // Products
     Route::resource('products', ArtisanProductController::class);
 
@@ -266,6 +283,9 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Dashboard
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/returns', [CustomerOrderItemReturnController::class, 'index'])->name('returns.index');
+    Route::get('/returns/{orderItemReturn}', [CustomerOrderItemReturnController::class, 'show'])->name('returns.show');
+
     // Cart
     Route::prefix('cart')->name('cart.')->group(function () {
         Route::get('/', [CartController::class, 'index'])->name('index');
@@ -287,6 +307,11 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Orders
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [CustomerOrderController::class, 'index'])->name('index');
+        Route::get('/{order}/items/{orderItem}/returns/create', [CustomerOrderItemReturnController::class, 'create'])
+            ->name('items.returns.create');
+        Route::post('/{order}/items/{orderItem}/returns', [CustomerOrderItemReturnController::class, 'store'])
+            ->middleware('throttle:12,1')
+            ->name('items.returns.store');
         Route::get('/{order}', [CustomerOrderController::class, 'show'])->name('show');
         Route::get('/{order}/tracking', [CustomerOrderController::class, 'tracking'])->name('tracking');
         Route::get('/{order}/financial-disputes', FinancialDisputeRedirectController::class)

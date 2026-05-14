@@ -148,6 +148,23 @@ class ImageUploadService
     }
 
     /**
+     * Customer proof photo for an item return request (required for admin review).
+     */
+    public function uploadOrderReturnProof(UploadedFile $file, int $returnId): string
+    {
+        if ($this->isLocalDisk('order_returns')) {
+            $this->ensureStorageDir('order-returns');
+        }
+
+        $filename = $this->generateFilename('order_return_'.$returnId);
+        $image = Image::read($file);
+        $image->scale(width: 1200);
+        $this->putJpegToDisk('order_returns', $filename, $image, 85);
+
+        return $filename;
+    }
+
+    /**
      * Delete product images.
      */
     public function deleteProductImage(string $filename): bool

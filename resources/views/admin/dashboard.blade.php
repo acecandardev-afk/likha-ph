@@ -66,6 +66,19 @@
         </div>
 
         <div class="col">
+            <div class="card stat-card h-100 bg-secondary bg-opacity-10 border-secondary">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small fw-medium mb-1">Item returns (pending)</p>
+                        <h2 class="h3 mb-2">{{ $stats['pending_item_returns'] ?? 0 }}</h2>
+                        <a href="{{ route('admin.order-returns.index', ['status' => \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN]) }}" class="btn btn-sm btn-outline-secondary">Review queue</a>
+                    </div>
+                    <i class="bi bi-arrow-counterclockwise text-secondary opacity-75 fs-2"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
             <div class="card stat-card h-100 bg-danger bg-opacity-10 border-danger">
                 <div class="card-body p-3 p-md-4">
                     <p class="text-muted small fw-medium mb-1">Unapproved reviews</p>
@@ -111,6 +124,13 @@
                         <div class="col-6">
                             <div class="text-muted small fw-medium">Open delivery reports</div>
                             <div class="fw-semibold fs-4">{{ $stats['open_delivery_reports'] ?? 0 }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small fw-medium">Pending item returns</div>
+                            <div class="fw-semibold fs-4">{{ $stats['pending_item_returns'] ?? 0 }}</div>
+                            @if(($stats['pending_item_returns'] ?? 0) > 0)
+                                <a href="{{ route('admin.order-returns.index', ['status' => \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN]) }}" class="small">Open queue</a>
+                            @endif
                         </div>
                         <div class="col-6">
                             <div class="text-muted small fw-medium">Platform fee realized</div>

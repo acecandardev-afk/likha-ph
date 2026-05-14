@@ -36,11 +36,21 @@
                                 <div class="col-4 col-md-2">₱{{ number_format($item->price, 2) }}</div>
                                 <div class="col-4 col-md-2">× {{ $item->quantity }}</div>
                                 <div class="col-4 col-md-2 text-end fw-semibold">₱{{ number_format($item->price * $item->quantity, 2) }}</div>
+                                @if($item->returns->isNotEmpty())
+                                    <div class="col-12 mt-1">
+                                        <span class="text-muted small me-1">Returns:</span>
+                                        @foreach($item->returns as $ret)
+                                            <a href="{{ route('artisan.returns.show', $ret) }}" class="badge text-decoration-none bg-light text-dark border">{{ $ret->statusLabel() }} · {{ $ret->reasonLabel() }}</a>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     @endif
                 </div>
             </div>
+
+            @include('partials.order-returns-summary', ['order' => $order, 'returnShowRoute' => 'artisan.returns.show'])
 
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
