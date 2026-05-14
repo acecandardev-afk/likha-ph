@@ -63,6 +63,12 @@ class DeliveryController extends RiderController
         abort_unless($orderPackage->rider_id === $rider?->id, 403);
 
         $orderPackage->refresh();
+        if ($orderPackage->order->isCancelled()) {
+            return back()->withErrors([
+                'delivery' => 'This order was cancelled. Delivery can no longer be updated.',
+            ]);
+        }
+
         if ($orderPackage->isDelivered()) {
             return back()->withErrors([
                 'delivery' => 'This package is delivered. Progress can no longer be changed.',

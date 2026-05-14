@@ -16,6 +16,10 @@ final class SafeUserMessage
     {
         $message = $e->getMessage();
 
+        if (str_contains($message, 'was cancelled')) {
+            return 'This order was cancelled. Delivery can no longer be updated.';
+        }
+
         if (str_contains($message, 'already been delivered')) {
             return 'This package has already been delivered. Its status can no longer be changed.';
         }

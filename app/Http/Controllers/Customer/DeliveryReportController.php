@@ -13,6 +13,7 @@ class DeliveryReportController extends CustomerController
     {
         $orderPackage->load('order');
         abort_unless($orderPackage->order->customer_id === $this->getCustomer()->id, 403);
+        abort_if($orderPackage->order->isCancelled(), 403, 'This order was cancelled.');
 
         return view('customer.delivery-reports.create', compact('orderPackage'));
     }
@@ -21,6 +22,7 @@ class DeliveryReportController extends CustomerController
     {
         $orderPackage->load('order');
         abort_unless($orderPackage->order->customer_id === $this->getCustomer()->id, 403);
+        abort_if($orderPackage->order->isCancelled(), 403, 'This order was cancelled.');
 
         $validated = $request->validate([
             'concern' => ['required', 'string', 'max:120'],

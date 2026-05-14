@@ -12,7 +12,8 @@ class PaymentService
 {
     public function __construct(
         protected ImageUploadService $imageUploadService,
-        protected NotificationService $notificationService
+        protected NotificationService $notificationService,
+        protected DeliveryService $deliveryService
     ) {}
 
     /**
@@ -108,6 +109,10 @@ class PaymentService
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
             ]);
+
+            $this->deliveryService->voidDeliveryStateForCancelledOrder(
+                $payment->order->fresh(['packages.rider'])
+            );
         });
 
         // Notify customer

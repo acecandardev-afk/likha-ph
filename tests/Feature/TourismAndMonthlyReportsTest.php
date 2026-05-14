@@ -198,6 +198,7 @@ class TourismAndMonthlyReportsTest extends TestCase
         $order->refresh();
         $this->assertSame('cancelled', $order->status);
         $this->assertNotNull($order->cancelled_at);
+        $this->assertSame(\App\Services\DeliveryService::STATUS_CANCELLED, $order->delivery_status);
 
         $list = $this->actingAs($customer)->get(route('customer.orders.index'));
         $list->assertOk();

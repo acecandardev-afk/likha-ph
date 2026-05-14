@@ -49,6 +49,10 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
+        if ($order->isCancelled()) {
+            return false;
+        }
+
         // Only artisan can update order status (for fulfillment)
         return $user->isArtisan()
             && $order->artisan_id === $user->id
@@ -74,6 +78,10 @@ class OrderPolicy
      */
     public function complete(User $user, Order $order): bool
     {
+        if ($order->isCancelled()) {
+            return false;
+        }
+
         // Artisan can mark their orders as completed
         if ($user->isArtisan() && $order->artisan_id === $user->id) {
             return $order->canBeCompleted();
@@ -88,6 +96,10 @@ class OrderPolicy
      */
     public function approve(User $user, Order $order): bool
     {
+        if ($order->isCancelled()) {
+            return false;
+        }
+
         if ($user->isArtisan() && $order->artisan_id === $user->id) {
             return $order->canBeApproved();
         }

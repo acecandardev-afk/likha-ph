@@ -15,6 +15,10 @@ class OrderFinancialDisputeController extends CustomerController
     {
         $this->authorize('view', $order);
 
+        if ($order->isCancelled()) {
+            return back()->withErrors(['order' => 'This order was cancelled. You cannot submit a new concern for it.']);
+        }
+
         $validated = $request->validate([
             'category' => ['required', 'string', Rule::in([
                 OrderFinancialDispute::CATEGORY_COD_PARTIAL,

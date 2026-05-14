@@ -42,6 +42,10 @@ class DeliveryController extends AdminController
 
     public function assign(OrderPackage $orderPackage)
     {
+        if ($orderPackage->order->isCancelled()) {
+            return back()->withErrors(['delivery' => 'This order was cancelled. Rider assignment is not available.']);
+        }
+
         if (! $orderPackage->order->payment?->isVerified()) {
             return back()->withErrors(['delivery' => 'Order payment must be verified before assignment.']);
         }
@@ -62,6 +66,12 @@ class DeliveryController extends AdminController
     public function updateStatus(Request $request, OrderPackage $orderPackage)
     {
         $orderPackage->refresh();
+        if ($orderPackage->order->isCancelled()) {
+            return back()->withErrors([
+                'delivery' => 'This order was cancelled. Delivery can no longer be updated.',
+            ]);
+        }
+
         if ($orderPackage->isDelivered()) {
             return back()->withErrors([
                 'delivery' => 'Delivered packages can no longer be updated.',

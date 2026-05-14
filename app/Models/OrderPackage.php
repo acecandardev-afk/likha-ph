@@ -83,6 +83,7 @@ class OrderPackage extends Model
             'out_for_delivery' => 'Out for Delivery',
             'delivered' => 'Delivered',
             'pending_assignment' => 'Pending Delivery Assignment',
+            'cancelled' => 'Cancelled',
             default => ucwords(str_replace('_', ' ', (string) $this->delivery_status)),
         };
     }

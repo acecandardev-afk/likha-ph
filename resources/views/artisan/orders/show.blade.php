@@ -74,7 +74,7 @@
                     @include('partials.order-totals')
                     <div class="d-flex justify-content-between mb-1 mt-2"><span>Your estimated share from items</span><span class="fw-semibold">₱{{ number_format($order->artisanMerchandiseShare(), 2) }}</span></div>
                     <p class="small text-muted mb-3">Rough guide after any promo savings and marketplace fee.</p>
-                    <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->estimated_delivery_date }}</span></div>
+                    <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->isCancelled() ? '—' : $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
                     <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
                     @if($order->rider)
@@ -85,7 +85,7 @@
 
             @php($payCod = $order->payment && strtolower((string) $order->payment->payment_method) === 'cod')
 
-            @if($payCod || $ledgerSnapshot)
+            @if(!$order->isCancelled() && ($payCod || $ledgerSnapshot))
                 <div class="card mb-3 border-primary border-opacity-25">
                     <div class="card-header py-3">
                         <h5 class="mb-0 fw-semibold">Pay on delivery — amounts</h5>

@@ -73,6 +73,10 @@ class OrderController extends ArtisanController
     {
         $this->authorize('view', $order);
 
+        if ($order->isCancelled()) {
+            return back()->withErrors(['cod' => 'This order was cancelled. Rider handoff cannot be recorded.']);
+        }
+
         if (! $order->isDelivered()) {
             return back()->withErrors(['cod' => 'You can confirm rider handoff after the order is fully delivered.']);
         }

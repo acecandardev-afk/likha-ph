@@ -26,6 +26,9 @@ class DeliveryService
 
     public const STATUS_DELIVERED = 'delivered';
 
+    /** Terminal: order was cancelled; no rider work remains on this package. */
+    public const STATUS_CANCELLED = 'cancelled';
+
     public const TRACKING_STATUSES = [
         self::STATUS_ORDER_CONFIRMED,
         self::STATUS_PREPARING_PACKAGE,
@@ -53,6 +56,7 @@ class DeliveryService
             self::STATUS_ARRIVED_SORT_CENTER => 4,
             self::STATUS_OUT_FOR_DELIVERY => 5,
             self::STATUS_DELIVERED => 6,
+            self::STATUS_CANCELLED => 99,
         ];
     }
 
@@ -60,7 +64,7 @@ class DeliveryService
     {
         return OrderPackage::query()
             ->where('rider_id', $rider->id)
-            ->where('delivery_status', '!=', self::STATUS_DELIVERED)
+            ->whereNotIn('delivery_status', [self::STATUS_DELIVERED, self::STATUS_CANCELLED])
             ->count();
     }
 
@@ -70,6 +74,10 @@ class DeliveryService
     public function assignRandomAvailableRider(OrderPackage $package): ?Rider
     {
         $package->loadMissing('order.payment');
+
+        if ($package->order->isCancelled()) {
+            return null;
+        }
 
         if ($package->rider_id) {
             return $package->rider;
@@ -153,6 +161,10 @@ class DeliveryService
     public function updateDeliveryStatus(OrderPackage $package, string $status, ?User $actor = null, ?string $note = null): OrderPackage
     {
         $package->refresh();
+
+        if ($package->order->isCancelled()) {
+            throw new \InvalidArgumentException('This order was cancelled. Delivery can no longer be updated.');
+        }
 
         if ($package->isDelivered()) {
             throw new \InvalidArgumentException('This package has already been delivered. Its status can no longer be changed.');
@@ -244,5 +256,43 @@ class DeliveryService
         unset($options[self::STATUS_DELIVERED]);
 
         return $options;
+    }
+
+    /**
+     * Mark order-level and package-level delivery as cancelled, release riders, and sync rider availability.
+     * Delivered packages are left unchanged (historical record).
+     */
+    public function voidDeliveryStateForCancelledOrder(Order $order): void
+    {
+        $order->loadMissing('packages.rider');
+        $riderIdsToSync = [];
+
+        foreach ($order->packages as $package) {
+            if ($package->isDelivered()) {
+                continue;
+            }
+            if ($package->rider_id) {
+                $riderIdsToSync[] = (int) $package->rider_id;
+            }
+            $package->update([
+                'rider_id' => null,
+                'delivery_status' => self::STATUS_CANCELLED,
+                'delivery_assigned_at' => null,
+            ]);
+        }
+
+        $order->update([
+            'delivery_status' => self::STATUS_CANCELLED,
+            'rider_id' => null,
+            'delivery_assigned_at' => null,
+            'delivery_completed_at' => null,
+        ]);
+
+        foreach (array_unique($riderIdsToSync) as $riderId) {
+            $rider = Rider::query()->find($riderId);
+            if ($rider) {
+                $this->syncRiderBusyState($rider);
+            }
+        }
     }
 }

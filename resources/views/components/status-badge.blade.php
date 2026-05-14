@@ -32,6 +32,7 @@
             'arrived_sort_center' => ['class' => 'info', 'icon' => 'building', 'text' => 'Arrived at Sort Center'],
             'out_for_delivery' => ['class' => 'warning', 'icon' => 'truck', 'text' => 'Out for Delivery'],
             'delivered' => ['class' => 'success', 'icon' => 'check2-circle', 'text' => 'Delivered'],
+            'cancelled' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Cancelled'],
             'available' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Available'],
             'busy' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Busy'],
             'offline' => ['class' => 'secondary', 'icon' => 'slash-circle', 'text' => 'Offline'],

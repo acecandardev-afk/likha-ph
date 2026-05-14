@@ -75,13 +75,17 @@
                 </div>
                 <div class="card-body">
                     @include('partials.order-totals')
-                    @if($order->payment && strtolower((string) $order->payment->payment_method) === 'cod' && $order->packages->count() > 1)
-                        <p class="small text-muted mb-2 border-start border-primary border-3 ps-2">You may receive more than one delivery. Pay the <strong>same full order total</strong> shown here at each rider stop (it matches your receipt). The order is financially complete when every package is delivered.</p>
-                        <p class="small text-muted mb-0">Have the exact total ready for your rider.</p>
+                    @unless($order->isCancelled())
+                        @if($order->payment && strtolower((string) $order->payment->payment_method) === 'cod' && $order->packages->count() > 1)
+                            <p class="small text-muted mb-2 border-start border-primary border-3 ps-2">You may receive more than one delivery. Pay the <strong>same full order total</strong> shown here at each rider stop (it matches your receipt). The order is financially complete when every package is delivered.</p>
+                            <p class="small text-muted mb-0">Have the exact total ready for your rider.</p>
+                        @else
+                            <p class="small text-muted mb-0">Pay your rider the total shown above when they arrive.</p>
+                        @endif
                     @else
-                        <p class="small text-muted mb-0">Pay your rider the total shown above when they arrive.</p>
-                    @endif
-                    <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->estimated_delivery_date }}</span></div>
+                        <p class="small text-muted mb-0">This order was cancelled. No delivery will be scheduled.</p>
+                    @endunless
+                    <div class="d-flex justify-content-between mb-2 mt-3"><span>Est. delivery window</span><span>{{ $order->isCancelled() ? '—' : $order->estimated_delivery_date }}</span></div>
                     <div class="d-flex justify-content-between align-items-center mb-0"><span>Status</span><x-status-badge :status="$order->status" type="order" /></div>
                     <div class="d-flex justify-content-between align-items-center mt-2"><span>Delivery</span><x-status-badge :status="$order->delivery_status" type="delivery" /></div>
                     @if($order->rider)
@@ -133,13 +137,16 @@
                             @if($pkg->delivery_proof_image_url)
                                 <p class="small mb-2"><a href="{{ $pkg->delivery_proof_image_url }}" target="_blank" rel="noopener">View delivery photo</a></p>
                             @endif
-                            <a href="{{ route('customer.delivery-reports.create', $pkg) }}" class="btn btn-sm btn-outline-secondary">Report an issue with this delivery</a>
+                            @unless($order->isCancelled())
+                                <a href="{{ route('customer.delivery-reports.create', $pkg) }}" class="btn btn-sm btn-outline-secondary">Report an issue with this delivery</a>
+                            @endunless
                         </div>
                     @endforeach
                 </div>
             </div>
             @endif
 
+            @unless($order->isCancelled())
             <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="mb-0 fw-semibold">Need help with payment or delivery?</h5>
@@ -174,6 +181,7 @@
                     </form>
                 </div>
             </div>
+            @endunless
 
             @if($order->country || $order->region || $order->province || $order->city || $order->barangay || $order->street_address || $order->shipping_phone)
             <div class="card mb-3">

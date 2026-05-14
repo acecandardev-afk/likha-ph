@@ -506,9 +506,13 @@ class OrderService
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
             ]);
+
+            $this->deliveryService->voidDeliveryStateForCancelledOrder(
+                $order->fresh(['packages.rider'])
+            );
         });
 
-        $this->notificationService->notifyOrderCancelled($order);
+        $this->notificationService->notifyOrderCancelled($order->fresh());
 
         return $order->fresh();
     }
