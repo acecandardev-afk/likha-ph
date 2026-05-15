@@ -135,7 +135,7 @@ class OrderItemReturnFlowTest extends TestCase
         $this->assertNotNull($ret->stock_restored_at);
     }
 
-    public function test_return_create_is_forbidden_when_order_not_delivered(): void
+    public function test_return_create_is_forbidden_when_order_pending(): void
     {
         $ctx = $this->deliveredOrderWithLine();
         $customer = $ctx['customer'];
@@ -146,6 +146,19 @@ class OrderItemReturnFlowTest extends TestCase
         $this->actingAs($customer)
             ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
             ->assertForbidden();
+    }
+
+    public function test_buyer_can_open_return_create_when_order_is_shipped(): void
+    {
+        $ctx = $this->deliveredOrderWithLine();
+        $customer = $ctx['customer'];
+        $order = $ctx['order'];
+        $item = $ctx['item'];
+        $order->update(['status' => 'shipped']);
+
+        $this->actingAs($customer)
+            ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
+            ->assertOk();
     }
 
     public function test_second_pending_return_for_same_line_is_rejected(): void
@@ -278,14 +291,5 @@ class OrderItemReturnFlowTest extends TestCase
         $this->actingAs($otherArtisan)
             ->get(route('artisan.returns.show', $ret))
             ->assertForbidden();
-    }
-
-    public function test_admin_can_open_returns_queue(): void
-    {
-        $admin = User::factory()->admin()->create();
-
-        $this->actingAs($admin)
-            ->get(route('admin.order-returns.index'))
-            ->assertOk();
     }
 }

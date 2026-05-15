@@ -266,7 +266,9 @@ class Order extends Model
     }
 
     /**
-     * Buyer may request returns after goods were received (delivered / completed / received).
+     * Buyer may request returns once the seller has released the order for fulfillment or it is delivered.
+     * Includes shipped / on_delivery so the return action is visible during normal delivery, not only
+     * after terminal statuses (many orders sit in shipped for a long time before rider completion).
      */
     public function isEligibleForItemReturns(): bool
     {
@@ -274,7 +276,15 @@ class Order extends Model
             return false;
         }
 
-        return $this->isDelivered() || $this->isCompleted() || $this->isReceived();
+        if ($this->isPending()) {
+            return false;
+        }
+
+        return $this->isShipped()
+            || $this->isOnDelivery()
+            || $this->isDelivered()
+            || $this->isCompleted()
+            || $this->isReceived();
     }
 
     public function isDeliveryCompleted(): bool
