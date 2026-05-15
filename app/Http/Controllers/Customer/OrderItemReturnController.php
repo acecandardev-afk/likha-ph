@@ -44,7 +44,7 @@ class OrderItemReturnController extends CustomerController
         $this->authorize('view', $order);
 
         abort_unless($orderItem->order_id === $order->id, 404);
-        abort_unless($order->isEligibleForItemReturns(), 403, 'Returns are available after your order is shipped or out for delivery, or once it is delivered.');
+        abort_unless($order->isEligibleForItemReturns(), 403, 'Returns are available for paid orders that are in fulfillment or delivered, or when delivery is marked complete.');
         abort_unless($order->customer_id === $this->getCustomer()->id, 403);
 
         $returnable = $orderItem->returnableQuantity();

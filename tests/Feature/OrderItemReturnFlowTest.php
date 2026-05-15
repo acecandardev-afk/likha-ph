@@ -6,9 +6,11 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemReturn;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Services\DeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -155,6 +157,60 @@ class OrderItemReturnFlowTest extends TestCase
         $order = $ctx['order'];
         $item = $ctx['item'];
         $order->update(['status' => 'shipped']);
+
+        $this->actingAs($customer)
+            ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
+            ->assertOk();
+    }
+
+    public function test_buyer_can_open_return_create_for_legacy_confirmed_with_verified_payment(): void
+    {
+        $ctx = $this->deliveredOrderWithLine();
+        $customer = $ctx['customer'];
+        $order = $ctx['order'];
+        $item = $ctx['item'];
+        $order->update(['status' => 'confirmed']);
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => 'bank_transfer',
+            'amount' => 100,
+            'verification_status' => 'verified',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
+            ->assertOk();
+    }
+
+    public function test_return_create_forbidden_for_confirmed_without_verified_payment(): void
+    {
+        $ctx = $this->deliveredOrderWithLine();
+        $customer = $ctx['customer'];
+        $order = $ctx['order'];
+        $item = $ctx['item'];
+        $order->update(['status' => 'confirmed']);
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => 'bank_transfer',
+            'amount' => 100,
+            'verification_status' => 'pending',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
+            ->assertForbidden();
+    }
+
+    public function test_buyer_can_open_return_when_delivery_marked_delivered_even_if_status_stale(): void
+    {
+        $ctx = $this->deliveredOrderWithLine();
+        $customer = $ctx['customer'];
+        $order = $ctx['order'];
+        $item = $ctx['item'];
+        $order->update([
+            'status' => 'confirmed',
+            'delivery_status' => DeliveryService::STATUS_DELIVERED,
+        ]);
 
         $this->actingAs($customer)
             ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))

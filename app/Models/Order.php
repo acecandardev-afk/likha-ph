@@ -269,6 +269,9 @@ class Order extends Model
      * Buyer may request returns once the seller has released the order for fulfillment or it is delivered.
      * Includes shipped / on_delivery so the return action is visible during normal delivery, not only
      * after terminal statuses (many orders sit in shipped for a long time before rider completion).
+     *
+     * Legacy rows: older data may still use "confirmed" / "approved" with verified payment, or may have
+     * delivery_status "delivered" while status was never normalized — those are included when appropriate.
      */
     public function isEligibleForItemReturns(): bool
     {
@@ -280,11 +283,16 @@ class Order extends Model
             return false;
         }
 
+        if ($this->isDeliveryCompleted()) {
+            return true;
+        }
+
         return $this->isShipped()
             || $this->isOnDelivery()
             || $this->isDelivered()
             || $this->isCompleted()
-            || $this->isReceived();
+            || $this->isReceived()
+            || (($this->isApproved() || $this->isConfirmed()) && ($this->payment?->isVerified() ?? false));
     }
 
     public function isDeliveryCompleted(): bool
