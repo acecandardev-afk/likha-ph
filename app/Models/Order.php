@@ -266,12 +266,10 @@ class Order extends Model
     }
 
     /**
-     * Buyer may request returns once the seller has released the order for fulfillment or it is delivered.
-     * Includes shipped / on_delivery so the return action is visible during normal delivery, not only
-     * after terminal statuses (many orders sit in shipped for a long time before rider completion).
+     * Whether the buyer may open a return request for this order.
      *
-     * Legacy rows: older data may still use "confirmed" / "approved" with verified payment, or may have
-     * delivery_status "delivered" while status was never normalized — those are included when appropriate.
+     * COD and other paid checkouts often stay status "pending" while payment is already verified;
+     * blocking all pending orders hid the return button for most real orders.
      */
     public function isEligibleForItemReturns(): bool
     {
@@ -279,20 +277,40 @@ class Order extends Model
             return false;
         }
 
-        if ($this->isPending()) {
-            return false;
+        if ($this->payment?->isVerified()) {
+            return true;
         }
 
+        if ($this->hasFulfillmentProgress()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Order or any package has moved past checkout (delivery started or terminal order status).
+     */
+    public function hasFulfillmentProgress(): bool
+    {
         if ($this->isDeliveryCompleted()) {
             return true;
         }
 
-        return $this->isShipped()
-            || $this->isOnDelivery()
-            || $this->isDelivered()
-            || $this->isCompleted()
-            || $this->isReceived()
-            || (($this->isApproved() || $this->isConfirmed()) && ($this->payment?->isVerified() ?? false));
+        if ($this->packages()->where('delivery_status', DeliveryService::STATUS_DELIVERED)->exists()) {
+            return true;
+        }
+
+        return in_array($this->status, [
+            'shipped',
+            'on_delivery',
+            'delivered',
+            'completed',
+            'received',
+            'approved',
+            'confirmed',
+            'processing',
+        ], true);
     }
 
     public function isDeliveryCompleted(): bool

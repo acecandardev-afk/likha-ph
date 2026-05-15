@@ -36,13 +36,16 @@
                                 <div class="col-4 col-md-2">₱{{ number_format($item->price, 2) }}</div>
                                 <div class="col-4 col-md-2">× {{ $item->quantity }}</div>
                                 <div class="col-4 col-md-2 text-end fw-semibold">₱{{ number_format($item->price * $item->quantity, 2) }}</div>
-                                @if($order->isEligibleForItemReturns())
+                                @unless($order->isCancelled())
                                     <div class="col-12 mt-2 pt-2 border-top border-light">
                                         @php
-                                            $rq = $item->returnableQuantity();
+                                            $returnsOpen = $order->isEligibleForItemReturns();
+                                            $rq = $returnsOpen ? $item->returnableQuantity() : 0;
                                             $pendingLine = $item->returns->contains(fn ($r) => $r->status === \App\Models\OrderItemReturn::STATUS_PENDING_ADMIN);
                                         @endphp
-                                        @if($pendingLine)
+                                        @if(! $returnsOpen)
+                                            <span class="text-muted small">Returns open after payment is verified or delivery starts.</span>
+                                        @elseif($pendingLine)
                                             <span class="badge bg-secondary">Return pending admin review</span>
                                         @elseif($rq > 0)
                                             <a href="{{ route('customer.orders.items.returns.create', [$order, $item]) }}" class="btn btn-sm btn-outline-warning">Request return</a>
@@ -51,7 +54,7 @@
                                             <span class="text-muted small">No returnable quantity left for this line.</span>
                                         @endif
                                     </div>
-                                @endif
+                                @endunless
                             </div>
                         @endforeach
                     @endif

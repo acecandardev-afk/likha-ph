@@ -163,6 +163,25 @@ class OrderItemReturnFlowTest extends TestCase
             ->assertOk();
     }
 
+    public function test_buyer_can_open_return_create_when_order_pending_but_cod_verified(): void
+    {
+        $ctx = $this->deliveredOrderWithLine();
+        $customer = $ctx['customer'];
+        $order = $ctx['order'];
+        $item = $ctx['item'];
+        $order->update(['status' => 'pending']);
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => 'cod',
+            'amount' => 100,
+            'verification_status' => 'verified',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.orders.items.returns.create', [$order->fresh(), $item]))
+            ->assertOk();
+    }
+
     public function test_buyer_can_open_return_create_for_legacy_confirmed_with_verified_payment(): void
     {
         $ctx = $this->deliveredOrderWithLine();
@@ -182,13 +201,13 @@ class OrderItemReturnFlowTest extends TestCase
             ->assertOk();
     }
 
-    public function test_return_create_forbidden_for_confirmed_without_verified_payment(): void
+    public function test_return_create_forbidden_for_pending_without_verified_payment(): void
     {
         $ctx = $this->deliveredOrderWithLine();
         $customer = $ctx['customer'];
         $order = $ctx['order'];
         $item = $ctx['item'];
-        $order->update(['status' => 'confirmed']);
+        $order->update(['status' => 'pending']);
         Payment::create([
             'order_id' => $order->id,
             'payment_method' => 'bank_transfer',
